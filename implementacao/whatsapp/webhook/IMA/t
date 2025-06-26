@@ -1,0 +1,11 @@
+ sou tudo antes de tudo {
+  from: '553191810047',
+  id: 'wamid.HBgMNTUzMTkxODEwMDQ3FQIAEhgWM0VCMDVBRTNFRDMyMzVGMEFFRENCMwA=',
+  timestamp: '1708454719',
+  type: 'image',
+  image: {
+    mime_type: 'image/jpeg',
+    sha256: 'yChEdR86Y6KSOIbPCE8MUykIY+c5lFbRY1pJW39ZxcA=',
+    id: '1862280084210055'
+  }
+}

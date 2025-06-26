@@ -1,0 +1,23 @@
+create table meso_finaliza(
+    idFinaliza int primary key auto_increment,
+    idMealing int,
+    idOportunidade int,
+    idPlataforma int,
+    idEspecialista int,
+    observacao mediumtext,
+    estado varchar(40),
+    dataFim datetime,
+    foreign key (idMealing) references meso_mealing (idMealing),
+    foreign key (idOportunidade) references meso_oportunidade (idOportunidade),
+    foreign key (idPlataforma) references meso_plataforma (idPlatarforma),
+    foreign key (idEspecialista) references meso_usuariologin (id)
+    );
+
+
+    select u.usuario,(
+        
+        select u.usuario,p.platarforma,count(o.idOportunidade),sec_to_time(sum(time_to_sec(timediff(o.dataFim,o.dataInicio))))  from meso_oportunidade as o inner join meso_plataforma as p on (o.idOportunidade = p.idPlatarforma) inner join meso_usuariologin as u on (o.idAnalista = u.id) where p.idPlatarforma = 2 and o.idAnalista = 20;
+        
+        select count(idOportunidade),sec_to_time(sum(time_to_sec(timediff(o.dataFim,o.dataInicio))))  from meso_oportunidade where idPlataforma = 1 and idAnalista = 20
+        
+        

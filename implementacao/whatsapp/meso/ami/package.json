@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "asterisk-manager": "^0.2.0",
+    "mysql2": "^3.10.0"
+  }
+}

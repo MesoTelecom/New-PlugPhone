@@ -1,0 +1,1 @@
+insert into meso_oportunidade(telefone,idAgente,idMealing) values ('',(select id from meso_usuariologin where usuario = 'lucas')','(select idmealing from meso_mealing where processo = '5000565-93.2021.8.13.0327'))

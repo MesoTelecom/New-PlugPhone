@@ -1,0 +1,77 @@
+1 - Send
+
+{
+    "messaging_product": "whatsapp",
+    "contacts": [
+        {
+            "input": "31993171915",
+            "wa_id": "553193171915"
+        }
+    ],
+    "messages": [
+        {
+            "id": "wamid.HBgMNTUzMTkzMTcxOTE1FQIAERgSNUM5M0VGMThGNkFBRjc0RTI3AA=="
+        }
+    ]
+}
+
+
+2 - Download
+
+Não há retorno
+
+3 - SendImage
+
+{
+    "data": {
+        "messaging_product": "whatsapp",
+        "contacts": [
+            {
+                "input": "31993171915",
+                "wa_id": "553193171915"
+            }
+        ],
+        "messages": [
+            {
+                "id": "wamid.HBgMNTUzMTkzMTcxOTE1FQIAERgSNDdGMDk1NzczNDYwODFCMEZDAA=="
+            }
+        ]
+    }
+}
+
+
+4 - SendAudio
+
+{
+    "data": {
+        "messaging_product": "whatsapp",
+        "contacts": [
+            {
+                "input": "31989738409",
+                "wa_id": "553189738409"
+            }
+        ],
+        "messages": [
+            {
+                "id": "wamid.HBgMNTUzMTg5NzM4NDA5FQIAERgSODU5QTFERTM5OTY3MTU1RUNGAA=="
+            }
+        ]
+    }
+}
+5 - sendDocument
+{
+    "data": {
+        "messaging_product": "whatsapp",
+        "contacts": [
+            {
+                "input": "31989738409",
+                "wa_id": "553189738409"
+            }
+        ],
+        "messages": [
+            {
+                "id": "wamid.HBgMNTUzMTg5NzM4NDA5FQIAERgSODU5QTFERTM5OTY3MTU1RUNGAA=="
+            }
+        ]
+    }
+}
