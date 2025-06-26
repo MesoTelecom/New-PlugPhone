@@ -3,19 +3,19 @@
     <Navbar />
     <div>
       <v-card class="filtrorelatorios">
-            <!--Entrada do Período da API-->
-            <input type="date" class="datest" v-model="d1" required />
+        <!--Entrada do Período da API-->
+        <input type="date" class="datest" v-model="d1" required />
 
-            <!--Saída do Período da API-->
-            <input type="date" class="datest" v-model="d2" required />
-            <v-select :items="items" label="Matheus" v-model="analista" class="filtro"></v-select>
-            <v-btn class="botaoA" @click="tmazap()"> Consultar </v-btn>
+        <!--Saída do Período da API-->
+        <input type="date" class="datest" v-model="d2" required />
+        <v-select :items="items" label="Matheus" v-model="analista" class="filtro"></v-select>
+        <v-btn class="botaoA" @click="tmazap()"> Consultar </v-btn>
 
-            <router-link to="./menuwhastapp" class="linkp">
-                <v-btn dark class="botaoSair">voltar</v-btn>
-            </router-link>
-            <v-btn class="botaoB" @click="saveCSV()"> Download<br />CSV </v-btn>
-        </v-card>
+        <router-link to="./menuwhastapp" class="linkp">
+          <v-btn dark class="botaoSair">voltar</v-btn>
+        </router-link>
+        <v-btn class="botaoB" @click="saveCSV()"> Download<br />CSV </v-btn>
+      </v-card>
     </div>
     <br>
     <v-card class="cardform">
@@ -69,7 +69,7 @@ export default {
     carregar: async function () {
 
       //Lista filas
-      let listafila = await api.get(`dados/listafilastotais`);
+      let listafila = await api.get(`/listafilastotais`);
       // let entrajoin = join.data.dados;
       //console.log(listafila);
       let listatotalfilas = listafila.data.dados;

@@ -45,7 +45,7 @@ import Footer from "../components/footer.vue";
 
 export default {
   async beforeMount() {
-    let a = await api.get("dados/datalhesligacoes");
+    let a = await api.get("/datalhesligacoes");
     console.log(a.data.dados);
     this.dados = a.data.dados;
   },
@@ -85,7 +85,7 @@ export default {
           estado: "Em Atendimento",
           dataInicio: "24-09-2024 09:56:52",
           dataFim: "",
-          plataforma: "Whatsapp",          
+          plataforma: "Whatsapp",
         },
         {
           usuario: "Lucas Alves",
@@ -93,15 +93,15 @@ export default {
           estado: "Finalizado",
           dataInicio: "24-09-2024 12:28:52",
           dataFim: "24-09-2024 12:40:00",
-          plataforma: "Telefone",          
-        },        
+          plataforma: "Telefone",
+        },
         {
           usuario: "Marcelo Santo",
           credor: "Luana Ferreira",
           estado: "Em Andamento",
           dataInicio: "24-09-2024 13:32:53",
           dataFim: "",
-          plataforma: "Whatsapp",          
+          plataforma: "Whatsapp",
         },
       ],
       items: [

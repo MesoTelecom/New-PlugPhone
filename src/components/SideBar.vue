@@ -30,19 +30,19 @@
           </v-list-item-icon>
           <v-list-item-title>WhatsApp Chat</v-list-item-title>
         </v-list-item>
-
+        <!--
         <v-list-item to="/novodashboard" link>
           <v-list-item-icon>
             <v-icon>mdi-home-outline</v-icon>
           </v-list-item-icon>
           <v-list-item-title>Novo Dashboard</v-list-item-title>
         </v-list-item>
-
+-->
         <v-list-item to="/menusupervisor" link>
           <v-list-item-icon>
             <v-icon>mdi-chart-multiple</v-icon>
           </v-list-item-icon>
-          <v-list-item-title>Relatório</v-list-item-title>
+          <v-list-item-title>Relatório Entrante</v-list-item-title>
         </v-list-item>
 
         <v-list-item to="/menusupervisorsainte" link>
@@ -81,8 +81,23 @@
             </a>
           </v-list-item-icon>
           <v-list-item-title>
-            <a href="https://meso.plugphone.cloud/index.php?menu=monitoring" style="color: white;">
+            <a href="https://meso.plugphone.cloud/index.php?menu=monitoring"
+              style="color: white; text-decoration: none;">
               Gravação de Sistema
+            </a>
+          </v-list-item-title>
+        </v-list-item>
+
+        <v-list-item>
+          <v-list-item-icon>
+            <a href="https://nuvem.mesotelecom.com.br:8080/index.php/apps/spreed/" style="color: white;">
+              <v-icon>mdi-wechat</v-icon>
+            </a>
+          </v-list-item-icon>
+          <v-list-item-title>
+            <a href="https://nuvem.mesotelecom.com.br:8080/index.php/apps/spreed/"
+              style="color: white; text-decoration: none;">
+              Team Chat
             </a>
           </v-list-item-title>
         </v-list-item>

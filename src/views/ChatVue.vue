@@ -12,7 +12,7 @@
             </v-icon>
           </router-link>
           <v-icon @click="b = true" class="imageIcon" style="left: 65%;font-size: 169%; margin-bottom: -1%;">
-            mdi-cog
+            mdi-filter-variant
           </v-icon>
 
 
@@ -36,10 +36,14 @@
                     style="font-size: 15px; left: 3%;">mdi-checkbox-blank-circle
                   </v-icon>
 
-                  <v-icon
-                    :style="{ color: contact.estado === 'mdi-checkbox-marked-circle-outline' ? '#8bff9a' : contact.estado === 'mdi-cancel' ? 'red' : 'black' }">
+                  <v-icon v-if="contact.estado && contact.estado.startsWith('mdi-')" :style="{
+                    color: contact.estado === 'mdi-checkbox-marked-circle-outline'
+                      ? '#8bff9a'
+                      : contact.estado === 'mdi-cancel'
+                        ? 'red'
+                        : 'black'
+                  }">
                     {{ contact.estado }}
-
                   </v-icon>
                   <br>
                   <datahora style="margin-left: 21%; color: #8f8f8f !important;">{{ contact.datahora }}</datahora>
@@ -58,11 +62,21 @@
 
       <img src="../assets/PlugPhoneCentro.png" class="plugPhone" />
 
-      <v-main style="padding: 0px; ">
+      <v-main style="padding: 0px; height: 100vh; display: flex; flex-direction: column;">
         <v-container fluid>
+          <v-row class="cabecalho">
+            <v-btn @click="buscarContato(estadoContatoFiltro = 'Todos')" class="botaoEstado">Todos</v-btn>
+            <v-btn @click="buscarContato(estadoContatoFiltro = 'Novo')" class="botaoEstado">Novo</v-btn>
+            <v-btn @click="buscarContato(estadoContatoFiltro = 'Aguardando Cliente')" class="botaoEstado">Aguard...
+              Cliente</v-btn>
+            <v-btn @click="buscarContato(estadoContatoFiltro = 'Aguardando Atendimento')" class="botaoEstado">Aguard...
+              Atendimento</v-btn>
+            <v-btn @click="buscarContato(estadoContatoFiltro = 'Concluido')" class="botaoEstado">Concluido</v-btn>
+          </v-row>
+
           <v-row style="margin-right: 25%;">
             <v-col cols="12" md="12" style="padding: 0%;">
-              <div class="messages" ref="messages" style="margin-bottom: -10px;     margin-left: 3%;">
+              <div class="messages" ref="messages" style="margin-left: 3%; max-height: 80vh; overflow-y: auto;">
                 <div v-for="(message, index) in messages" :key="'server-' + index" :class="{
                   'message-requester': !message.sender.includes('-PlugPhone'),
                   'message-agent': message.sender.includes('-PlugPhone'),
@@ -70,9 +84,7 @@
                   <div :class="{
                     buttonSender: !message.sender.includes('-PlugPhone'),
                     button: message.sender.includes('-PlugPhone'),
-                  }" :style="{
-                    'text-align': message.sender.includes('-PlugPhone') ? 'end' : 'start',
-                  }">
+                  }" :style="{ 'text-align': message.sender.includes('-PlugPhone') ? 'end' : 'start' }">
                     <span :class="{
                       tituloSender: !message.sender.includes('-PlugPhone'),
                       titulo: message.sender.includes('-PlugPhone'),
@@ -81,10 +93,9 @@
                     </span>
                     <span class="message-text">
                       <span v-if="message.isImage">
-                        <img :src="message.text" alt="Imagem" style="max-width: 100%; height: auto;">
-                        <br>
+                        <img :src="message.text" alt="Imagem" style="max-width: 100%; height: auto;" />
+                        <br />
                         <data style="font-size: 12px; color: #ffffff">{{ message.datetime }}</data>
-
                       </span>
                       <span v-else-if="message.isAudio">
                         <audio controls>
@@ -93,20 +104,28 @@
                         </audio>
                       </span>
                       <span v-else>
-                        {{ message.text }} <br>
+                        {{ message.text }} <br />
                         <data style="font-size: 12px; color: #ffffff">{{ message.datetime }}</data>
                       </span>
                     </span>
-
-
-
                   </div>
                 </div>
               </div>
             </v-col>
           </v-row>
+
+          <!-- Botão de seta para descer -->
+          <div style="    position: absolute;
+    left: 4%;
+    bottom: 16%;">
+            <v-btn icon color="#6d6d6d;" @click="scrollToBottom" style="z-index: 999;">
+              <v-icon style="font-size: 35px;">mdi-arrow-down-circle</v-icon>
+            </v-btn>
+          </div>
         </v-container>
       </v-main>
+
+
       <div class="info" style="background-color: #ffffff !important;
   border-color: #ffffff !important;">
         <br>
@@ -138,20 +157,29 @@
 
 
 
-    <div class="bottom-bar" style="width: 73%;padding-top: 5%;position: sticky;bottom: 0%;">
-      <v-icon @click="openDialogAnexo = true" class="imageIcon" style="left: 5%;font-size: 169%;">
+    <div class="bottom-bar" style="width: 73%;padding-top: 5%;position: absolute;bottom: 0%;">
+      <img src="../assets/plugcinza.png" @click="openDialog2 = true" class="imageIcon" style="
+    margin-left: 5%;
+    width: 4%;
+    margin-bottom: -2%;" />
+
+      <v-icon @click="openDialogAnexo = true" class="imageIcon" style="left: 0%;font-size: 169%;">
         mdi-paperclip
       </v-icon>
-      <v-icon @click="openDialog1 = true" class="imageIcon" style="left: 5%;font-size: 169%;">
+      <v-icon @click="openDialog1 = true" class="imageIcon" style="left: 0%;font-size: 169%;">
         mdi-microphone
       </v-icon>
-      <v-icon @click="openDialog = true" class="imageIcon" style="left: 5%;font-size: 169%;">
+      <v-icon @click="openDialog = true" class="imageIcon" style="left: 0%;font-size: 169%;">
         mdi-image
       </v-icon>
 
-      <v-icon @click="toggleEmojiPicker" class="imageIcon" style="left: 5%; font-size: 169%;">
+      <v-icon @click="toggleEmojiPicker" class="imageIcon" style="left: 0%; font-size: 169%;">
         mdi-emoticon
       </v-icon>
+      <v-icon @click="openDialogConcluir = true" class="imageIcon" style="left: 0%; font-size: 169%"
+        :disabled="tipo === 'Analista'">
+        mdi-checkbox-marked-circle</v-icon>
+
       <input type="text" v-model="newMessage" @keyup.enter="sendMessage" placeholder="Digite sua mensagem aqui..."
         class="input-message"
         style="left: 53px;bottom: 50%;width: 91%;border-radius: 1px;border-style: unset;border-bottom-style: solid;" />
@@ -222,7 +250,7 @@
           </v-card-text>
           <v-row class="linhaBtn">
             <v-card-actions>
-              <!--<v-btn color="primary" @click="uploadDocument">Enviar</v-btn>-->
+              <v-btn color="primary" @click="uploadDocumento">Enviar</v-btn>
             </v-card-actions>
             <v-card-actions>
               <v-btn color="primary" @click="openDialogAnexo = false">Fechar</v-btn>
@@ -246,8 +274,7 @@
               <v-btn @click="populaOportunidade(whatsapp), sendTemplate(), openDialog2 = false" class="btnAudio">
                 Whatsapp <v-icon>mdi-whatsapp</v-icon>
               </v-btn>
-              <v-btn @click="populaOportunidade(telefone), openDialogLigacao = true, openDialog2 = false"
-                class="btnCall">
+              <v-btn @click="openDialogLigacao = true, openDialog2 = false" class="btnCall">
                 Ligação <v-icon>mdi-phone</v-icon>
               </v-btn>
               <audio v-if="audioUrl" :src="audioUrl" controls></audio>
@@ -256,30 +283,62 @@
 
         </v-card>
       </v-dialog>
-      <v-dialog v-if="tipo === 'Analista'" v-model="openDialogLigacao" max-width="500px" persistent>
+
+
+      <!------------------------------------------------------------------------->
+
+      <v-dialog v-model="openDialogLigacao" max-width="500px" persistent>
         <v-card class="dialogo1">
           <v-card-title>Por favor digite seu Ramal</v-card-title>
-          <v-card-text>
-            <v-text-field v-model="ramal" label="Ramal" @keyup.enter="Ligar"
-              placeholder="Digite seu ramal"></v-text-field>
-          </v-card-text>
 
-          <v-row class="linhaBtn">
-            <v-card-actions>
-              <v-btn @click="ligar(), openDialogForm = true" class="btnCall">
+          <v-row class="linhaBtnCall">
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <v-card-actions style="padding-left: 1%;">
+              <v-btn @click="ligar()" class="btnCall">
                 Ligar <v-icon>mdi-phone</v-icon>
               </v-btn>
             </v-card-actions>
-            <v-card-actions>
-              <v-btn color="primary" @click="openDialog1 = false">Fechar</v-btn>
+            <v-card-actions style="padding-left: 10%; ">
+              <v-btn color="primary" @click="openDialogLigacao = false"
+                style="background-color: #e74343 !important;">Cancelar</v-btn>
             </v-card-actions>
           </v-row>
         </v-card>
       </v-dialog>
 
+      <!------------------------------------------------------------------------->
+
+      <v-dialog v-model="openDialogRamal" max-width="500px" persistent>
+        <v-card>
+          <v-card-title class="text-h6">
+            Para tornar-se disponível, digite seu ramal
+          </v-card-title>
+
+          <v-card-text>
+            <!-- Aqui vai seu campo de ramal -->
+            <v-text-field label="Ramal" v-model="ramal" />
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer />
+            <v-btn color="primary" @click="ramalDigitado()">Confirmar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-------------------------------------------------------------------------->
+
       <v-dialog v-model="openDialogConcluir" max-width="500px" persistent>
         <v-card class="dialogoZap">
-          <v-card-title>Como foi a conclusão do atendimento</v-card-title>
+          <v-card-title>Deseja Concluir o atendimento?</v-card-title>
           <br>
 
 
@@ -338,6 +397,7 @@ import io from 'socket.io-client';
 import Navbar from "../components/Navbar.vue";
 //import { Picker } from 'emoji-mart-vue'
 import 'emoji-picker-element'
+import { apiWP } from "@/conf/apiWP";
 
 
 
@@ -346,7 +406,8 @@ import 'emoji-picker-element'
 
 export default {
   mounted() {
-    this.scrollToBottom(); // Rola para o final ao carregar
+    this.verificaEstado();
+
   },
   async beforeMount() {
     this.buscaCidadao();
@@ -355,8 +416,7 @@ export default {
     this.tipo = usuario.tipo;
     this.usuario = usuario.usuario + "-PlugPhone"
     //this.idsetinterval = setInterval(() => this.buscarContato(), 5000);
-
-    this.buscarContato();
+    this.buscarContato("Todos");
 
 
   },
@@ -410,18 +470,20 @@ export default {
       agents: [],
       showEmojiPicker: false,
       observacao: "",
+      openDialogLigacao: false,
       openDialogConcluir: false,
       idsetinterval: null,
+      apiWPurl: apiWP.defaults.baseURL,
       name: "template_plugphone2",
       wppnum: "",
       ramal: "",
       items: [],
+      openDialogRamal: false,
       plataforma: "",
       openDialog: false,
       openDialogAnexo: false,
       openDialog1: false,
       openDialog2: false,
-      openDialogLigacao: false,
       openDialogForm: false,
       tipo: null,
       selectedFile: null,
@@ -432,6 +494,9 @@ export default {
       socket: "",
       usuario: "",
       finaliza: "",
+      estadoContatoFiltro: "Todos",
+
+      estadoContatoAtual: "Todos",
       newMessage: "",
       audioBlob: "",
       contacts: [],
@@ -458,9 +523,12 @@ export default {
      });*/
 
     // Evento para imagens
+
+
+
     this.socket.on('chat message', async (nome, msg, telefone) => {
       this.verificaMensagem(telefone, this.tipo, this.usuario)
-      this.buscarContato()
+      this.buscarContato(this.estadoContatoAtual)
       if (telefone == this.wppnum) {
 
         this.messages.push({ text: msg, sender: nome });
@@ -479,7 +547,7 @@ export default {
 
 
     this.socket.on('chat image', async (nome, base64Image, telefone) => {
-      this.buscarContato()
+      this.buscarContato(this.estadoContatoAtual)
       console.log('eu sou o telefone', telefone)
 
       console.log("Imagem recebida em Base64:", base64Image);
@@ -494,7 +562,7 @@ export default {
 
           // Teste abrindo em uma nova aba
           //window.open(imageUrl, '_blank');
-          this.playSound()
+          //this.playSound()
           this.lido(telefone)
           let a = await api.get(`/lidamsg/${this.wppnum}`,);
           console.log(a)
@@ -511,7 +579,7 @@ export default {
 
 
       } else {
-        this.playSound()
+        //this.playSound()
         console.log('foi aqui não my badkkkkkkkkk')
         this.mudaEstado(telefone)
       }
@@ -521,7 +589,7 @@ export default {
 
 
     this.socket.on('chat audio', async (nome, base64Audio, telefone) => {
-      this.buscarContato()
+      this.buscarContato(this.estadoContatoAtual)
       console.log("audio recebida em Base64:", base64Audio);
       if (telefone == this.wppnum) {
         console.log('EU TO AQUIIIIIIIIIIIIIIIIIIIIIIIIII')
@@ -534,7 +602,7 @@ export default {
 
           // Teste abrindo em uma nova aba
           //window.open(audioUrl, '_blank');
-          this.playSound()
+          // this.playSound()
           this.lido(telefone)
           let a = await api.get(`/lidamsg/${this.wppnum}`,);
           console.log(a)
@@ -549,7 +617,7 @@ export default {
         }
 
       } else {
-        this.playSound()
+        //this.playSound()
         console.log('foi aqui não my badkkkkkkkkk')
         this.mudaEstado(telefone)
       }
@@ -597,6 +665,29 @@ export default {
 
     },
 
+    async ramalDigitado() {
+      if (this.ramal == "" || this.ramal == undefined) {
+        alert('Seu ramal não pode ser Nulo')
+      } else {
+        let verRamal = await api.get(`/verificaramal/${this.ramal}`)
+        console.log('existe ramal?', verRamal.data.dados[0].ramal)
+        console.log('EEEEU SOU SIMPLEEEES :D', this.ramal)
+        let pegaRamal = verRamal.data.dados[0].ramal
+        console.log('peguei o ramal', pegaRamal)
+        if (pegaRamal >= 1) {
+          this.openDialogRamal = false
+        } else {
+          alert('O Ramal não existe')
+        }
+      }
+
+    },
+
+    verificaEstado() {
+
+      this.openDialogRamal = true
+    },
+
     toggleEmojiPicker() {
       this.showEmojiPicker = !this.showEmojiPicker
     },
@@ -606,12 +697,10 @@ export default {
     },
 
     scrollToBottom() {
-      this.$nextTick(() => {
-        const messagesContainer = this.$refs.messages;
-        if (messagesContainer) {
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-      });
+      const el = this.$refs.messages;
+      if (el) {
+        el.scrollTop = el.scrollHeight;
+      }
     },
 
 
@@ -627,19 +716,18 @@ export default {
     },
     async finalizar(finaliza) {
       console.log('finaliza', finaliza)
-      console.log('eu sou oportunidade', this.processo[this.selectedContact])
-      let processo = this.processo[this.selectedContact].processo
-      //console.log('eu sou plataforma', plataforma, processo)
 
       if (finaliza == true) {
-        let response = await api.get(`/finaliza/${processo}/aprovado`);
-        console.log(response)
+        //   let response = await api.get(`/finaliza/${processo}/aprovado`);
+        //  console.log(response)
+        let a = await api.get(`/concluido/${this.wppnum}`)
+        console.log(a)
         location.reload()
 
       } else {
-        let response = await api.get(`/finaliza/${processo}/reprovado`);
-        console.log(response)
-        location.reload()
+        //let response = await api.get(`/finaliza/${processo}/reprovado`);
+        //console.log(response)
+        //location.reload()
 
       }
     },
@@ -839,7 +927,7 @@ export default {
       location.reload()
     },
     selectContact(contact) {
-      this.openDialog2 = true
+      //this.openDialog2 = true
       console.log('eu sou o contact XURASTAY OU XURAIGO', this.contact)
       this.messages = [];
       this.selectedContact = contact;
@@ -847,7 +935,7 @@ export default {
 
       this.wppnum = this.selectedContact;
       api.get(`/lidamsg/${this.wppnum}`);
-      this.buscarContato()
+      this.buscarContato(this.estadoContatoAtual)
       this.receiveMessage();
     },
     async startRecording() {
@@ -974,12 +1062,13 @@ export default {
       let usuario = JSON.parse(localStorage.getItem('usu'))
       this.token = usuario.tokenFirebase
       let token = {
-        token: this.token
+        token: this.token,
+        "usuario": this.usuario
       }
       console.log(token)
       console.log('que gemido foi esse?', this.token)
       let a = await api.post(
-        `/whatsapp/registrar-token`, token
+        `/registrar-token`, token
       );
       console.log(a)
     },
@@ -1086,6 +1175,79 @@ export default {
         this.openDialog = false;
       }
     },
+    async uploadDocumento() {
+      if (!this.selectedFile) {
+        console.error("Nenhum documento selecionado.");
+        return;
+      }
+
+      // Tipos de documentos permitidos
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+      ];
+
+      if (!allowedTypes.includes(this.selectedFile.type)) {
+        console.error("O arquivo selecionado não é um documento válido.");
+        return;
+      }
+
+      let formData = new FormData();
+      formData.append("file", this.selectedFile, this.selectedFile.name);
+
+      try {
+        // Envia o documento para o backend
+        let response = await api.post("/upload-document", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        let pegaId = response.data.id;
+        let caminho = response.data.caminhoFinal
+
+        let caminhoLimpo = caminho.replace(/^uploads\//, '');
+        console.log('eu sou o caminho limpo, eu sou a luz', caminhoLimpo);
+        //console.log('eu sou o caminho, eu sou a verdade', caminho)
+        // Mensagem no chat indicando que o doc foi enviado (com nome e link temporário)
+        this.messages.push({
+          text: `${this.apiWPurl}/midia/${caminhoLimpo}`,
+          file: URL.createObjectURL(this.selectedFile),
+          sender: this.usuario,
+          isDocument: true
+        });
+
+        // Envio para o WhatsApp
+        let enviaDoc = {
+          to: this.wppnum,
+          id: `${this.apiWPurl}/midia/${caminhoLimpo}`,
+          nomeArquivo: this.selectedFile.name,
+          usuario: this.usuario
+        };
+
+        console.log('eu sou o enviaDoc', enviaDoc)
+        await api.post("/senddocument", enviaDoc);
+
+        // Recupera URL final do documento
+        let getURL = await api.get(`/midia/${caminhoLimpo}`);
+        let docURL = { url: getURL.data.url, id: pegaId };
+
+        console.log('URL DO DOCUMENTO:', docURL);
+
+        // Chamada final pro backend processar (se necessário)
+        //await apiWP.post("/geraDocumento", docURL);
+
+        this.selectedFile = null
+        this.openDialogAnexo = false;
+      } catch (error) {
+        console.error("Erro ao enviar documento:", error);
+        this.messages.push({ text: "Erro ao enviar documento.", sender: this.usuario });
+        this.openDialogAnexo = false;
+      }
+    },
+
+
 
     async verificaMensagem(telefone, setor, usuario) {
       this.contacts = []
@@ -1105,7 +1267,7 @@ export default {
       console.log('passei', tel
         , setorV
         , usuarioV, '// \n', telefone, setor, usuario)
-      this.playSound()
+      //this.playSound()
 
 
       if ((setorV == setor || setor == 'admin') && (usuarioV == usuario || usuarioV == null)) {
@@ -1117,9 +1279,11 @@ export default {
 
     },
 
-    async buscarContato() {
+    async buscarContato(estadoContato) {
+
+      this.estadoContatoAtual = estadoContato
       this.contacts = [];
-      let contatos = await api.get(`/buscarcontatos/${this.tipo}/${this.usuario}`);
+      let contatos = await api.get(`/buscarcontatos1/${this.tipo}/${this.usuario}/${estadoContato}`);
       let contatosArray = contatos.data.dados;
       console.log("Esse é o contato array", contatosArray);
 
@@ -1204,6 +1368,15 @@ export default {
 
 
 
+}
+
+.cabecalho {
+
+  width: 100%;
+  position: fixed;
+  top: 12px;
+  background-color: white;
+  margin-left: 2%;
 }
 
 .bottom-bar {
@@ -1438,5 +1611,14 @@ export default {
   padding: 0px;
   font-size: 22px;
   cursor: pointer;
+}
+
+.linhaBtnCall {
+  width: 75%;
+  margin-left: 22%;
+}
+
+.botaoEstado {
+  margin-left: 10px !important;
 }
 </style>

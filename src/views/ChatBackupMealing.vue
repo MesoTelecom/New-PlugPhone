@@ -464,7 +464,7 @@ export default {
       if (this.tipo == 'Analista') {
         console.log('OLA O PROCESSO AQUIIIII', processo)
         var response = await api.get(`/oportunidade/${processo}/${this.plataforma}`);
-        
+
 
         let msg = {
           to: this.wppnum,
@@ -704,7 +704,7 @@ export default {
       formData.append("image", this.selectedFile, this.selectedFile.name);
 
       try {
-        let response = await apiWP.post("dados/saveImage", formData, {
+        let response = await apiWP.post("/saveImage", formData, {
           headers: { "Content-Type": "multipart/form-data" }
         });
 

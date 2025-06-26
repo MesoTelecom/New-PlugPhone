@@ -30,10 +30,11 @@
               <v-list-item-content>
                 <v-list-item-title class="sidebar" @click="selectContact(contact.telefone)">
                   <v-icon style="color: white; font-size: 35px;">mdi-account-circle</v-icon>
-                  {{ contact.nome }} <v-icon :style="{ color: contact.estado === 'mdi-checkbox-marked-circle-outline' ? '#8bff9a' : contact.estado === 'mdi-cancel' ? 'red' : 'black' }">
+                  {{ contact.nome }} <v-icon
+                    :style="{ color: contact.estado === 'mdi-checkbox-marked-circle-outline' ? '#8bff9a' : contact.estado === 'mdi-cancel' ? 'red' : 'black' }">
                     {{ contact.estado }}
                   </v-icon>
-                 
+
 
                 </v-list-item-title>
               </v-list-item-content>
@@ -420,7 +421,7 @@ export default {
       if (this.tipo == 'Analista') {
         console.log('OLA O PROCESSO AQUIIIII', processo)
         var response = await api.get(`/oportunidade/${processo}/${this.plataforma}`);
-        
+
 
         let msg = {
           to: this.wppnum,
@@ -660,7 +661,7 @@ export default {
       formData.append("image", this.selectedFile, this.selectedFile.name);
 
       try {
-        let response = await apiWP.post("dados/saveImage", formData, {
+        let response = await apiWP.post("/saveImage", formData, {
           headers: { "Content-Type": "multipart/form-data" }
         });
 
@@ -686,7 +687,7 @@ export default {
         this.processo.push({ processo: e.processo })
         //this.wppnum.push({telefone: e.Telefone})
         console.log(this.wppnum)
-        console.log('eu sou os contatos :D',this.contacts)
+        console.log('eu sou os contatos :D', this.contacts)
       });
 
     },
