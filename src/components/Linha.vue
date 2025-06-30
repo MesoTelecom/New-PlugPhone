@@ -15,7 +15,7 @@ export default {
    
   },
 
-  async beforeDestroy() {
+  async beforeUnmount() {
   },
 
   data: () => ({

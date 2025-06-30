@@ -13,7 +13,7 @@ export default {
     this.idsetinterval = setInterval(() => this.drawChart(), 7000);
   },
 
-  async beforeDestroy() {
+  async beforeUnmount() {
     clearInterval(this.idsetinterval);
   },
 

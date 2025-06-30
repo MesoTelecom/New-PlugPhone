@@ -122,7 +122,7 @@ export default {
 
 
 
-  async beforeDestroy() {
+  async beforeUnmount() {
     //console.log("eu sou idsetinterval", this.idsetinterval);
     clearInterval(this.idsetinterval)
     clearInterval(this.idsetinterval2)

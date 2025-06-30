@@ -421,7 +421,7 @@ export default {
 
   },
 
-  async beforeDestroy() {
+  async beforeUnmount() {
 
     console.log('sol apareça')
 

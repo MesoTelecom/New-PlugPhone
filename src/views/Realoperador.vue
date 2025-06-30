@@ -256,7 +256,7 @@ export default {
     
   },
 
-  async beforeDestroy(){
+  async beforeUnmount(){
     console.log('eu sou idsetinterval',this.idsetinterval)
     clearInterval(this.idsetinterval)
     this.idsetinterval = 0

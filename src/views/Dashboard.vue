@@ -79,7 +79,7 @@ export default {
     this.idsetinterval3 = setInterval(async () => await this.realtime(), 2000);
   },
 
-  async beforeDestroy() {
+  async beforeUnmount() {
     console.log("eu sou idsetinterval", this.idsetinterval);
     clearInterval(this.idsetinterval);
     this.idsetinterval = 0;
