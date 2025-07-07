@@ -6,17 +6,22 @@
         <v-img src="../assets/PlugPhoneCentro.png" class="avatar"></v-img>
         <br>
         <v-row>
+
           <router-link to="/dashboard">
             <v-icon @click="a = true" id="seta" class="imageIcon" style="margin-bottom: -25%;left: 100%;">
               mdi-arrow-left
             </v-icon>
           </router-link>
-          <v-icon @click="b = true" class="imageIcon" style="left: 65%;font-size: 169%; margin-bottom: -1%;">
+          <v-icon @click="openDialogContato = true" class="imageIcon"
+            style="left: 58%;font-size: 169%; margin-bottom: -1%;">
+            mdi-plus
+          </v-icon>
+          <v-icon @click="b = true" class="imageIcon" style="left: 59%;font-size: 169%; margin-bottom: -1%;">
             mdi-filter-variant
           </v-icon>
 
 
-          <v-icon @click="a = true" class="imageIcon" style="left: 70%; margin-bottom: -1%;">
+          <v-icon @click="a = true" class="imageIcon" style="left: 60%; margin-bottom: -1%;">
             mdi-help-circle</v-icon>
         </v-row>
         <v-list dense>
@@ -183,7 +188,7 @@
       <input type="text" v-model="newMessage" @keyup.enter="sendMessage" placeholder="Digite sua mensagem aqui..."
         class="input-message"
         style="left: 53px;bottom: 50%;width: 91%;border-radius: 1px;border-style: unset;border-bottom-style: solid;" />
-      <v-icon @click="openDialogForm = true" class="imageIcon" style="left: 79%;font-size: 169%;">
+      <v-icon @click="openDialogForm = true" class="imageIcon" style="left: 70%;font-size: 169%;">
         mdi-transfer
       </v-icon>
 
@@ -210,6 +215,46 @@
             </v-card-actions>
             <v-card-actions>
               <v-btn color="primary" @click="openDialog = false">Fechar</v-btn>
+            </v-card-actions>
+          </v-row>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="openDialogContato" max-width="500px" persistent>
+        <v-card>
+          <v-card-title>Adicionar Contatos</v-card-title>
+          <v-card-text>
+            <v-text-field v-model="novoNome" label="Digite o nome do seu contato"></v-text-field>
+          </v-card-text>
+
+          <v-card-text>
+
+            <v-text-field v-model="novoNum" label="Número com DDD"
+              hint="Ex: 553187654321 (sem o 9 após o DDD)"></v-text-field>
+          </v-card-text>
+          <v-card-text>
+
+            <v-select :items="setor" label="Setor" v-model="setorSelect" @update:modelValue="listar(setorSelect)">
+            </v-select>
+          </v-card-text>
+          <v-card-text>
+
+            <v-text-field v-model="novoEmail" label="Digite o email do seu contato"></v-text-field>
+          </v-card-text>
+
+          <v-card-text>
+
+
+            <v-text-field v-model="novoEmpresa" label="Digite a empresa do seu contato"></v-text-field>
+
+
+          </v-card-text>
+          <v-row class="linhaBtn">
+            <v-card-actions>
+              <v-btn color="primary" @click="addContato">Enviar</v-btn>
+            </v-card-actions>
+            <v-card-actions>
+              <v-btn color="primary" @click="openDialogContato = false">Fechar</v-btn>
             </v-card-actions>
           </v-row>
         </v-card>
@@ -467,10 +512,13 @@ export default {
       messages: [],
       setor: ['Técnico', 'Comercial', 'Financeiro', 'Admin'],
       setorSelect: "",
+      novoNome: "",
+      novoNum: "",
       agents: [],
       showEmojiPicker: false,
       observacao: "",
       openDialogLigacao: false,
+      openDialogContato: false,
       openDialogConcluir: false,
       idsetinterval: null,
       apiWPurl: api.defaults.baseURL,
@@ -665,6 +713,26 @@ export default {
 
     },
 
+    async addContato() {
+
+      let add = {
+        nome: this.novoNome,
+        telefone: this.novoNum,
+        setor: this.setorSelect,
+        email: this.novoEmail,
+        empresa: this.novoEmpresa
+
+      }
+      console.log('eu sou add', add)
+      let addContatoArray = await api.post(`/cadastrarcontato`, add)
+
+      console.log('eu sou o addContatoArray', addContatoArray)
+
+      this.buscarContato(this.estadoContatoAtual)
+
+      this.openDialogContato = false
+    },
+
     async ramalDigitado() {
       if (this.ramal == "" || this.ramal == undefined) {
         alert('Seu ramal não pode ser Nulo')
@@ -711,7 +779,8 @@ export default {
 
       let a = await api.get(`/transferirchamado/${area}/${this.wppnum}/${usuario}`);
       console.log(a)
-      location.reload()
+      this.buscarContato(this.estadoContatoAtual)
+
 
     },
     async finalizar(finaliza) {
@@ -722,7 +791,7 @@ export default {
         //  console.log(response)
         let a = await api.get(`/concluido/${this.wppnum}`)
         console.log(a)
-        location.reload()
+        this.buscarContato(this.estadoContatoAtual)
 
       } else {
         //let response = await api.get(`/finaliza/${processo}/reprovado`);
