@@ -2,12 +2,12 @@ const mysql = require('mysql2/promise');
 
 // create the connection to database
 const con = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "Mtes0206",
-  database: "asterisk",
-
-});
+    host: "localhost",
+    user: "root",
+    password: "mTES0206",
+    database: "asterisk",
+    
+  });
 /*
 function pegarLogin(){
     let client = await con.getConnection();
@@ -40,41 +40,41 @@ function pegarLogin(){
     
 }*/
 async function executaQry1(qry) {
-  //let resposta;
-  let connection = await con.getConnection();
-  try {
-
-
-    // let [rows, fields] = await connection.execute(qry);
-    let res = await connection.execute(qry);
-
-
-    // resposta = { dados: res, msg: "" };
-  } catch (e) {
-    // resposta = { dados: null, msg: "erro" };
-    console.log(e.message);
-  } finally {
-    connection.release();
+    //let resposta;
+    let connection = await con.getConnection();
+    try {
+      
+  
+      // let [rows, fields] = await connection.execute(qry);
+      let res = await connection.execute(qry);
+      
+  
+      // resposta = { dados: res, msg: "" };
+    } catch (e) {
+      // resposta = { dados: null, msg: "erro" };
+      console.log(e.message);
+    } finally {
+      connection.release();
+    }
+  
+    // return resposta;
   }
-
-  // return resposta;
-}
-
-
-module.exports = {
-  executaQry1
+  
+  
+module.exports ={
+    executaQry1
 }
 /*
 
 const pegarAgentLogin = async function (id) {
     let client = await con.getConnection();
-
+  
     try {
       let qry = `
           select *
           from AgentLogin
           where  uniqueid = ${id}
-
+          
         `;
       //console.log(qry);
       let result = await client.execute(qry);

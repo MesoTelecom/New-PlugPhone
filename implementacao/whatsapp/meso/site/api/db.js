@@ -5,7 +5,7 @@ const pool = mysql.createPool({
   host: "localhost",
   user: "root",
   database: "asteriskcdrdb",
-  password: "Mtes0206",
+  password: "mTES0206",
   dateStrings: true,
   waitForConnections: true,
   connectionLimit: 5,
@@ -18,7 +18,7 @@ async function executaQry(qry) {
   try {
     // let [rows, fields] = await connection.execute(qry);
     let [rows, fields] = await connection.execute(qry);
-    // console.log('rrr',rows);
+   // console.log('rrr',rows);
 
     resposta = { dados: rows, msg: "" };
   } catch (e) {

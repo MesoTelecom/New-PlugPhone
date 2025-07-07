@@ -33,7 +33,7 @@ class ExpressController {
       res.send('***!');
     });
 
-    this.expressAppWrapper.app.use('/whatsapp', proxy('https://poc.plugphone.cloud:3993/'));
+    this.expressAppWrapper.app.use('/whatsapp', proxy('https://meso.plugphone.cloud:3993/'));
 
     this.expressAppWrapper.get('/api/data', (req, res) => {
       res.json({ message: 'This is some data' });
@@ -2346,7 +2346,7 @@ class ExpressController {
       let name = req.body.name
       let usuario = req.body.usuario
 
-      sendTemplate(to, name, usuario, res)
+        (to, name, usuario, res)
     })
 
     this.expressAppWrapper.post("/senddocument", async (req, res) => {
@@ -2436,7 +2436,9 @@ class ExpressController {
 
     });
 
-    this.expressAppWrapper.listen(this.porta, () => console.log('serv on ' + this.porta))
+    this.expressAppWrapper.listen(this.porta, '0.0.0.0', () =>
+      console.log('🔥 Servidor rodando na porta ' + this.porta + ' em 0.0.0.0')
+    );
   }
 }
 

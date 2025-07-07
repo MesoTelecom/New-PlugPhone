@@ -33,7 +33,7 @@ class ExpressController {
       res.send('***!');
     });
 
-    this.expressAppWrapper.app.use('/whatsapp', proxy('https://poc.plugphone.cloud:3993/'));
+    this.expressAppWrapper.app.use('/whatsapp', proxy('https://meso.plugphone.cloud:3993/'));
 
     this.expressAppWrapper.get('/api/data', (req, res) => {
       res.json({ message: 'This is some data' });
@@ -2434,7 +2434,7 @@ class ExpressController {
 
     });
 
-    this.expressAppWrapper.listen(this.porta, () => console.log('serv on ' + this.porta))
+    this.expressAppWrapper.listen(this.porta, () => console.log('perereca' + this.porta))
   }
 }
 

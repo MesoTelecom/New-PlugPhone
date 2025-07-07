@@ -37,20 +37,20 @@ class SocketController {
 
 
         //console.log('entrando em deslogafila')
-
+        
         let ramal = evt.membername
         let ramalnum = ramal.replace(/[^\d]+/g, "");
         let qry2 = `UPDATE users set fila = '${evt.queue}' where extension = ${ramalnum}`
 
         //console.log('eu sou qry2 CARALHO',qry2)
-
+        
         await executaQry2(qry2)
 
-        //        let qry3 = `UPDATE users set fila = 0 where extension = ${ramalnum}`
+//        let qry3 = `UPDATE users set fila = 0 where extension = ${ramalnum}`
 
         //console.log('1 dado gravado ou atualizado, Bridge')
 
-        //       await executaQry2(qry3)
+ //       await executaQry2(qry3)
 
 
 
@@ -72,7 +72,7 @@ class SocketController {
 
         let qry1 = `insert into meso_entrar(evento, privilege, channel, calleridnum, calleridname, connectedlinenum, connectedlinename, fila, position, conta, uniqueid) values ('${evt.event}','${evt.privilege}','${evt.channel}','${evt.calleridnum}','${evt.calleridname}','${evt.connectedlinenum}','${evt.connectedlinename}','${evt.queue}',' ${evt.position}','${evt.count}','${evt.uniqueid}');`
 
-        console.log('1 dado gravado ou atualizado, entrar', qry1)
+        //console.log('1 dado gravado ou atualizado, entrar')
 
         await executaQry(qry1)
 
@@ -120,16 +120,16 @@ class SocketController {
           await executaQry(qry1)
 
           //console.log('entrando no banco Meso_detalhe')
-
-        } else if (evt.dialstatus != 'ANSWER') {
+          
+        }else if (evt.dialstatus != 'ANSWER'){
           let qry2 = `update meso_detalhe_sainte set estado = 'abandonado' where uniqueid = '${evt.uniqueid}';`
-          console.log('1 dado gravado ou atualizado, complete', qry2)
+          console.log('1 dado gravado ou atualizado, complete',qry2)
           await executaQry(qry2)
         }
 
         //console.log('entrando no banco Meso_detalhe')
         let qry = `update meso_detalhe_sainte set dialend = now() where uniqueid = '${evt.uniqueid}';`
-        console.log('1 dado gravado ou atualizado, complete', qry)
+        console.log('1 dado gravado ou atualizado, complete',qry)
         await executaQry(qry)
 
         let qry2 = `update meso_dial set terminochamada = now(), dialstatus = '${evt.dialstatus}' where uniqueid= '${evt.uniqueid}'`
@@ -310,22 +310,22 @@ class SocketController {
 
         //console.log('entrando no banco Meso_detalhe')
         let qry = `update meso_detalhe_sainte set estado = 'abandonado' where uniqueid = '${evt.uniqueid}';`
-        console.log('1 dado gravado ou atualizado, complete', qry)
+        console.log('1 dado gravado ou atualizado, complete',qry)
         await executaQry(qry)
 
       }
       else if (evt.dialstatus == 'ANSWER') {
         //console.log('entrando no banco Meso_detalhe')
         let qry = `update meso_detalhe_sainte set estado = 'atendida' where uniqueid = '${evt.uniqueid}';`
-        console.log('1 dado gravado ou atualizado, complete', qry)
+        console.log('1 dado gravado ou atualizado, complete',qry)
         await executaQry(qry)
         let qry1 = `update meso_detalhe_sainte set teleatendente = '${evt.connectedlinenum}' where uniqueid = '${evt.uniqueid}';`
         //console.log(qry)
-        // console.log('1 dado gravado ou atualizado, complete',qry1)
+       // console.log('1 dado gravado ou atualizado, complete',qry1)
         await executaQry(qry1)
       }
       let qry = `update meso_detalhe_sainte set dialend = now() where uniqueid = '${evt.uniqueid}';`
-      console.log('1 dado gravado ou atualizado, complete', qry)
+      console.log('1 dado gravado ou atualizado, complete',qry)
       await executaQry(qry)
 
       qry = `update meso_dial set terminochamada = now(), dialstatus = '${evt.dialstatus}' where uniqueid= '${evt.uniqueid}'`
@@ -340,7 +340,7 @@ class SocketController {
       ////////////console.log('1 dado gravado ou atualizado, sainte')
       await executaQry(qry)
 
-    });
+});
 
     this.asteriskController.on('agentcomplete', async function (evt) {
 
@@ -412,7 +412,7 @@ class SocketController {
 
         await executaQry(qry)
         let qry1 = `update meso_detalhe_sainte set inicioligacao = now() where uniqueid = '${evt.uniqueid}';`
-        console.log('Olha aquik', qry1)
+        console.log('Olha aquik',qry1)
         //console.log('Eu acho que foi atualizado algum dado na tabela meso_detelhe_sainte')
         await executaQry(qry1)
       }
@@ -616,8 +616,8 @@ class SocketController {
         //console.log('1 dado gravado ou atualizado, Bridge')
 
         await executaQry2(qry)
-
-      }
+      
+    }
 
 
 
@@ -649,55 +649,55 @@ class SocketController {
     });
 
 
-    this.asteriskController.on('attendedtransfer', async function (evt) {
+this.asteriskController.on('attendedtransfer', async function (evt) {
 
-      if (
-        evt.event != "rtcpsent" && evt.event != "rtcpreceived" && evt.event != "varset") {
-
-
-        //console.log('entrando no banco TRANSFERENCIA COM CONSULTA')
-        let qry = `insert into meso_transf_consult(evento, privilege, result, transfererchannel, transfererchannelstate, transferercalleridnum, transferercalleridname, transfererconnectedlinenum, transfererconnectedlinename, transfererlanguage, transfereraccountcode, transferercontext, transfererexten, transfererpriority, transfereruniqueid, transfererlinkedid, transfereechannel, transfereechannelstate, transfereechannelstatedesc, transfereecalleridnum, transfereecalleridname, transfereeconnectedlinenum, transfereeconnectedlinename, transfereelanguage, transfereeaccountcode, transfereecontext, transfereeexten, transfereepriority, transfereeuniqueid, transfereelinkedid, bridgeuniqueid, bridgetype, bridgetechnology, bridgecreator, bridgename, bridgenumchannels, bridgevideosourcemode, isexternal, context, extension)VALUES('${evt.event}', '${evt.privilege}', '${evt.result}','${evt.transfererchannel}', '${evt.transfererchannelstate}', '${evt.transferercalleridnum}', '${evt.transferercalleridname}', '${evt.transfererconnectedlinenum}', '${evt.transfererconnectedlinename}', '${evt.transfererlanguage}', '${evt.transfereraccountcode}', '${evt.transferercontext}', '${evt.transfererexten}', '${evt.transfererpriority}', '${evt.transfereruniqueid}', '${evt.transfererlinkedid}', '${evt.transfereechannel}', '${evt.transfereechannelstate}', '${evt.transfereechannelstatedesc}', '${evt.transfereecalleridnum}', '${evt.transfereecalleridname}', '${evt.transfereeconnectedlinenum}', '${evt.transfereeconnectedlinename}', '${evt.transfereelanguage}', '${evt.transfereeaccountcode}','${evt.transfereecontext}', '${evt.transfereeexten}', '${evt.transfereepriority}', '${evt.transfereeuniqueid}', '${evt.transfereelinkedid}', '${evt.origbridgeuniqueid}', '${evt.bridgetype}', '${evt.bridgetechnology}', '${evt.bridgecreator}', '${evt.bridgename}', '${evt.bridgenumchannels}', '${evt.bridgevideosourcemode}', '${evt.isexternal}', 'transferido com consulta', '${evt.extension}')`
-
-        //console.log('1 dado gravado de TRANSFERENCIA COM CONSULTA')
-
-        await executaQry(qry)
-      }
-
-    });
-
-    this.socketWrapper.on('connection', (socket) => {
-
-      //console.log('New client connected:', socket.id);
-
-      socket.on('message', (data) => {
-        //console.log('Message received:', data);
-      });
-
-      socket.on('asteriskAction', (actionData) => {
-        //console.log('Asterisk action requested:', actionData);
-        this.asteriskController.performAsteriskAction(actionData);
-      });
+  if (
+    evt.event != "rtcpsent" && evt.event != "rtcpreceived" && evt.event != "varset") {
 
 
+    //console.log('entrando no banco TRANSFERENCIA COM CONSULTA')
+    let qry = `insert into meso_transf_consult(evento, privilege, result, transfererchannel, transfererchannelstate, transferercalleridnum, transferercalleridname, transfererconnectedlinenum, transfererconnectedlinename, transfererlanguage, transfereraccountcode, transferercontext, transfererexten, transfererpriority, transfereruniqueid, transfererlinkedid, transfereechannel, transfereechannelstate, transfereechannelstatedesc, transfereecalleridnum, transfereecalleridname, transfereeconnectedlinenum, transfereeconnectedlinename, transfereelanguage, transfereeaccountcode, transfereecontext, transfereeexten, transfereepriority, transfereeuniqueid, transfereelinkedid, bridgeuniqueid, bridgetype, bridgetechnology, bridgecreator, bridgename, bridgenumchannels, bridgevideosourcemode, isexternal, context, extension)VALUES('${evt.event}', '${evt.privilege}', '${evt.result}','${evt.transfererchannel}', '${evt.transfererchannelstate}', '${evt.transferercalleridnum}', '${evt.transferercalleridname}', '${evt.transfererconnectedlinenum}', '${evt.transfererconnectedlinename}', '${evt.transfererlanguage}', '${evt.transfereraccountcode}', '${evt.transferercontext}', '${evt.transfererexten}', '${evt.transfererpriority}', '${evt.transfereruniqueid}', '${evt.transfererlinkedid}', '${evt.transfereechannel}', '${evt.transfereechannelstate}', '${evt.transfereechannelstatedesc}', '${evt.transfereecalleridnum}', '${evt.transfereecalleridname}', '${evt.transfereeconnectedlinenum}', '${evt.transfereeconnectedlinename}', '${evt.transfereelanguage}', '${evt.transfereeaccountcode}','${evt.transfereecontext}', '${evt.transfereeexten}', '${evt.transfereepriority}', '${evt.transfereeuniqueid}', '${evt.transfereelinkedid}', '${evt.origbridgeuniqueid}', '${evt.bridgetype}', '${evt.bridgetechnology}', '${evt.bridgecreator}', '${evt.bridgename}', '${evt.bridgenumchannels}', '${evt.bridgevideosourcemode}', '${evt.isexternal}', 'transferido com consulta', '${evt.extension}')`
 
-      this.socketWrapper.emitToClient(socket.id, 'welcome', { message: 'Welcome to the server!' });
-    });
+    //console.log('1 dado gravado de TRANSFERENCIA COM CONSULTA')
+
+    await executaQry(qry)
+  }
+
+});
+
+this.socketWrapper.on('connection', (socket) => {
+
+  //console.log('New client connected:', socket.id);
+
+  socket.on('message', (data) => {
+    //console.log('Message received:', data);
+  });
+
+  socket.on('asteriskAction', (actionData) => {
+    //console.log('Asterisk action requested:', actionData);
+    this.asteriskController.performAsteriskAction(actionData);
+  });
 
 
 
-    setInterval(() => {
-      this.socketWrapper.broadcast('serverMessage', { message: 'Hello to all clients!' });
-    }, 5000);
+  this.socketWrapper.emitToClient(socket.id, 'welcome', { message: 'Welcome to the server!' });
+});
+
+
+
+setInterval(() => {
+  this.socketWrapper.broadcast('serverMessage', { message: 'Hello to all clients!' });
+}, 5000);
   }
 
   async printAgora(msg) {
-    //console.log(msg)
-    return msg
-  }
+  //console.log(msg)
+  return msg
+}
 
-  emitToClients(event, data) {
-    this.socketWrapper.broadcast(event, data);
-  }
+emitToClients(event, data) {
+  this.socketWrapper.broadcast(event, data);
+}
 }
 
 module.exports = SocketController;

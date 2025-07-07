@@ -397,7 +397,7 @@ import io from 'socket.io-client';
 import Navbar from "../components/Navbar.vue";
 //import { Picker } from 'emoji-mart-vue'
 import 'emoji-picker-element'
-import { apiWP } from "@/conf/apiWP";
+//import { apiWP } from "@/conf/apiWP";
 
 
 
@@ -473,7 +473,7 @@ export default {
       openDialogLigacao: false,
       openDialogConcluir: false,
       idsetinterval: null,
-      apiWPurl: apiWP.defaults.baseURL,
+      apiWPurl: api.defaults.baseURL,
       name: "template_plugphone2",
       wppnum: "",
       ramal: "",

@@ -1,7 +1,9 @@
+// public/firebase-messaging-sw.js
+
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
 
-// 🔥 Configuração do Firebase
+// Inicializa o Firebase no Service Worker
 const firebaseConfig = {
     apiKey: 'AIzaSyDhmZQqTr0GVtdBSTwNa1EeOPvRG-VA1dI',
     authDomain: 'flutterpushnotification-6cb4d.firebaseapp.com',
@@ -12,40 +14,29 @@ const firebaseConfig = {
     measurementId: 'G-6Q2LNGT70E',
 };
 
-// 🚀 Inicializa o Firebase no Service Worker
+// Inicializa o Firebase com a configuração fornecida
 firebase.initializeApp(firebaseConfig);
+
+// Cria uma instância do Firebase Messaging
 const messaging = firebase.messaging();
 
-// 📩 Listener para mensagens em segundo plano
+// Listener para mensagens recebidas em segundo plano
 messaging.onBackgroundMessage((payload) => {
-    console.log('📩 Mensagem recebida em segundo plano:', payload);
+  console.log('Mensagem recebida em segundo plano:', payload);
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: 'path/to/your/icon.png', // Adicione o caminho para o ícone da notificação
+  };
 
-    const notificationTitle = payload.notification.title;
-    const notificationOptions = {
-        body: payload.notification.body,
-       // icon: '/icons/icon-192x192.png', // 📌 Altere para o caminho do seu ícone real
-        vibrate: [200, 100, 200], // 📳 Faz o celular vibrar ao receber
-        data: { url: 'https://poc.plugphone.cloud:5001/chat' }, // 🌍 Altere para a URL que deseja abrir ao clicar
-        sound: '/sounds/notification.mp3' // 🔊 Adiciona um som (o navegador pode bloquear)
-    };
-
-    // 🔔 Exibe a notificação
-    self.registration.showNotification(notificationTitle, notificationOptions);
-
-    // 🔊 Força a reprodução de som (se permitido pelo navegador)
-    self.playNotificationSound();
+  // Exibe a notificação
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-// 🔊 Função para tocar o som
-self.playNotificationSound = () => {
-    const audio = new Audio('/sounds/notification.mp3');
-    audio.play().catch(error => console.error('🚨 Erro ao tocar som:', error));
-};
-
-// 🎯 Listener para ações na notificação
+// Listener para ações na notificação (opcional)
 self.addEventListener('notificationclick', (event) => {
-    event.notification.close();
-    event.waitUntil(
-        clients.openWindow(event.notification.data.url) // 🌍 Abre o link da notificação
-    );
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow('https://your-url.com') // Altere para o URL que você deseja abrir
+  );
 });

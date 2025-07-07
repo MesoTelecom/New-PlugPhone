@@ -30,6 +30,12 @@
           </v-list-item-icon>
           <v-list-item-title>WhatsApp Chat</v-list-item-title>
         </v-list-item>
+        <v-list-item to="/editarcontato" link>
+          <v-list-item-icon>
+            <v-icon>mdi-account-edit</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>Editar Contatos</v-list-item-title>
+        </v-list-item>
         <!--
         <v-list-item to="/novodashboard" link>
           <v-list-item-icon>
@@ -73,6 +79,8 @@
           </v-list-item-icon>
           <v-list-item-title>Upload CSV</v-list-item-title>
         </v-list-item>
+
+
 
         <v-list-item>
           <v-list-item-icon>

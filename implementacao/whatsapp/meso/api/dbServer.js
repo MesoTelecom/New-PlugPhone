@@ -34,12 +34,12 @@ async function executaQryServer(qry) {
   try {
     // let [rows, fields] = await connection.execute(qry);
     let [rows, fields] = await connection.execute(qry);
-   // console.log('rrr',rows);
+   // //console.log('rrr',rows);
 
     resposta = { dados: rows, msg: "" };
   } catch (e) {
     resposta = { dados: null, msg: "erro" };
-    console.log(e.message);
+    //console.log(e.message);
   } finally {
     connection.release();
   }
