@@ -13,11 +13,7 @@
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
           <v-dialog v-model="dialog" max-width="500px">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
-                CADASTRAR
-              </v-btn>
-            </template>
+
             <v-card>
               <v-card-title>
                 <span class="text-h5">{{ formTitle }}</span>

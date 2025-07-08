@@ -48,14 +48,14 @@
           <v-list-item-icon>
             <v-icon>mdi-chart-multiple</v-icon>
           </v-list-item-icon>
-          <v-list-item-title>Relatório Entrante</v-list-item-title>
+          <v-list-item-title>Analytics Entrante</v-list-item-title>
         </v-list-item>
 
         <v-list-item to="/menusupervisorsainte" link>
           <v-list-item-icon>
             <v-icon>mdi-exit-to-app</v-icon>
           </v-list-item-icon>
-          <v-list-item-title>Relatório Sainte</v-list-item-title>
+          <v-list-item-title>Analytics Sainte</v-list-item-title>
         </v-list-item>
 
 
@@ -63,7 +63,7 @@
           <v-list-item-icon>
             <v-icon>mdi-wechat</v-icon>
           </v-list-item-icon>
-          <v-list-item-title>Relatórios WhatsApp</v-list-item-title>
+          <v-list-item-title>Analytics WhatsApp</v-list-item-title>
         </v-list-item>
 
         <v-list-item to="/menurealtime" link>
