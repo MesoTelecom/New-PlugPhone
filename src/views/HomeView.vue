@@ -80,25 +80,32 @@ export default {
     async login() {
       try {
         //localStorage.removeItem( "jwt");
-        let token = await getToken(messaging, { vapidKey: "BMJb6V3UmgAtIJe_dhTf7RP7jR-8Z4bjRp1eyV3f3CwY7a85xvq7ZIhDH4INKUz2hKHdKNd7-4avPAPjw4IoUK4" });
+        let token = await getToken(messaging, { vapidKey: "BHUHIxXM1SJWjDOOlQS1C3fO4t4My_CFbCFqJ-uDIUTkDeYHg-iW4PvoKgOtidjgqssxgHSQlPJ6s9KyEC1YkUY" });
         console.log('eeh xereco aqui', token)
         this.error = false;
         let res = await api.post("loginconfere/", {
           login: this.usuario + "-PlugPhone",
           senha: this.senha,
         });
+        console.log('dificil heim kkkk', res.data)
         if (res.data && res.data.token) {
           //console.log('res',res.data.token)
           this.$store.state.token = res.data.token;
           this.$store.state.logado = res.data.tipo;
           this.$store.state.adm = res.data.tipo == "admin";
           this.$store.state.tokenFirebase = token;
+          this.$store.state.ramal = res.data.ramal;
           let usu = {
             usuario: this.usuario,
             pin: res.data.token,
             tipo: res.data.tipo,
-            tokenFirebase: token
+            tokenFirebase: token,
+            ramal: res.data.ramal,
+
+
           };
+
+          console.log('usuario de java credo', usu)
           this.$store.dispatch('insereUsuario', usu)
           localStorage.setItem("usu", JSON.stringify(usu));
           localStorage.setItem("jwt", this.$store.state.token);

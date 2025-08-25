@@ -25,12 +25,12 @@ app.get("/", function (req, res) {
 
 app.use("/dados", dadosRouter); 
 
-app.use('/whatsapp', proxy('https://meso.plugphone.cloud:4444'));
+app.use('/whatsapp', proxy('https://poc.plugphone.cloud:4444'));
 
 
 https.createServer({
-  key: fs.readFileSync("/etc/letsencrypt/live/meso.plugphone.cloud/privkey.pem"),
-  cert: fs.readFileSync("/etc/letsencrypt/live/meso.plugphone.cloud/fullchain.pem")
+  key: fs.readFileSync("/etc/letsencrypt/live/poc.plugphone.cloud/privkey.pem"),
+  cert: fs.readFileSync("/etc/letsencrypt/live/poc.plugphone.cloud/fullchain.pem")
 }, app).listen(porta, () => {
   console.log("API server online and running in port " + porta);
 });

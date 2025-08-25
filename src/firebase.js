@@ -4,13 +4,12 @@ import { getMessaging } from 'firebase/messaging';
 
 // Configuração do Firebase
 const firebaseConfig = {
-    apiKey: 'AIzaSyDhmZQqTr0GVtdBSTwNa1EeOPvRG-VA1dI',
-    authDomain: 'flutterpushnotification-6cb4d.firebaseapp.com',
-    projectId: 'flutterpushnotification-6cb4d',
-    storageBucket: 'flutterpushnotification-6cb4d.appspot.com',
-    messagingSenderId: '368837374170',
-    appId: '1:368837374170:web:93b01478747cc839b535e3',
-    measurementId: 'G-6Q2LNGT70E',
+apiKey: "AIzaSyAQ4CqOoGru65wdz8ELizhKvJY-W1fqlvA",
+authDomain: "plugphonechat-f3a19.firebaseapp.com",
+projectId: "plugphonechat-f3a19",
+storageBucket: "plugphonechat-f3a19.firebasestorage.app",
+messagingSenderId: "813008783828",
+appId: "1:813008783828:web:515fcb453cb764a86e2e41"
 };
 
 // Inicializa o Firebase

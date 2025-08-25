@@ -53,6 +53,8 @@ router.post("/reciveMsg", async (req, res, next) => {
 
 });
 
+
+
 router.get("/buscarcontatos/:usuario", async (req, res, next) => {
   let usuario = req.params.usuario
   let qry = `select distinct credor as nome, Telefone, processo from meso_mealing where idAgente = (select id from meso_usuariologin where usuario = '${usuario}')`

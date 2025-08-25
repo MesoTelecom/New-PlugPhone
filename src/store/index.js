@@ -10,6 +10,7 @@ export default new Vuex.Store({
       pin: '',
       tipo: '',
       tokenFirebase: '',
+      ramal: ''
     },
     gravacaoAtual: null,
     tokenFirebase: null,

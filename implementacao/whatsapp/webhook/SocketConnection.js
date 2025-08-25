@@ -1,15 +1,51 @@
 const { executaQry } = require("./db");
 const { cadastrarMensagem } = require("./emit");
-const dadosSocket = require('./chace/filtro')
-let ioGlobal;
+let ioGlobal; // escopo de módulo
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function buscarMensagem(telefone) {
+  if (!ioGlobal) return;
+
+  //console.log("⏳ Aguardando 500ms antes do SELECT...");
+  await sleep(500); // <- espera meio segundo
+
+  const qry = `SELECT * FROM meso_mensagens_solicitante WHERE telefone = '${telefone}'`;
+  const mensagens = await executaQry(qry);
+
+  ioGlobal.emit("mensagens", mensagens.dados || []);
+}
+
+async function emitirContatosAtualizados(io) {
+  const contatosValor = await executaQry(`SELECT * FROM meso_contatos ORDER BY datahora DESC`);
+
+  const estadosValidos = ['Novo', 'Aguardando Cliente', 'Aguardando Atendimento', 'Concluido'];
+  const agrupados = {
+    'Todos': contatosValor.dados,
+    'Novo': [],
+    'Aguardando Cliente': [],
+    'Aguardando Atendimento': [],
+    'Concluido': []
+  };
+
+  contatosValor.dados.forEach(element => {
+    if (estadosValidos.includes(element.estado)) {
+      agrupados[element.estado].push({ ...element });
+    }
+  });
+
+  io.emit("contatos", agrupados); // usa o io recebido
+}
 
 let socketConnection = function (io) {
   ioGlobal = io;
   io.on("connection", async (socket) => {
-    console.log("🟢 Usuário conectado:", socket.id);
+    //console.log("🟢 Usuário conectado:", socket.id);
 
     socket.on("create-message", async (msg) => {
-      //console.log("📩 Nova mensagem recebida:", msg);
+      ////console.log("📩 Nova mensagem recebida:", msg);
 
       try {
         await cadastrarMensagem(msg);
@@ -26,7 +62,7 @@ let socketConnection = function (io) {
 
 
         io.emit("receive-message", [msg.telefone, msg.nome, msg.agente, '551131646301', msg.mensagem, msg.type, horaFormatada]);
-        //  //console.log("📤 Mensagem emitida para todos:", [msg.telefone, msg.nome, msg.agente, '551131646301', msg.mensagem, msg.type, horaFormatada]);
+        ////  //console.log("📤 Mensagem emitida para todos:", [msg.telefone, msg.nome, msg.agente, '551131646301', msg.mensagem, msg.type, horaFormatada]);
       } catch (error) {
         //console.error("❌ Erro ao processar 'create-message':", error);
       }
@@ -34,71 +70,38 @@ let socketConnection = function (io) {
 
     socket.on("buscar-contato", async () => {
       try {
-        console.log("minha data")
-        let qryContatos = `select * from meso_contatos order by datahora desc`
-        let contatosValor = await executaQry(qryContatos)
-
-        console.log("My contacts", contatosValor.dados)
-
-        const estadosValidos = [
-          'Novo',
-          'Aguardando Cliente',
-          'Aguardando Atendimento',
-          'Concluido'
-        ];
-
-        const agrupados = {
-          'Todos': contatosValor.dados,
-          'Novo': [],
-          'Aguardando Cliente': [],
-          'Aguardando Atendimento': [],
-          'Concluido': []
-        };
-
-        contatosValor.dados.forEach(element => {
-          const estado = element.estado;
-
-          if (estadosValidos.includes(estado)) {
-            agrupados[estado].push({
-              estado: element.estado,
-              nome: element.nome,
-              usuario: element.usuario,
-              telefone: element.telefone,
-              ultimamsg: element.ultimamsg,
-              setor: element.setor,
-              datahora: element.datahora
-            });
-          } else {
-            //console.log('Estado desconhecido ou não tratado:', estado);
-          }
-        });
-        console.log("me mostra os contatos", agrupados)
-        io.emit("contatos", agrupados);
+        await emitirContatosAtualizados(io);
       } catch (error) {
         //console.error("❌ Erro ao buscar contatos:", error);
       }
     });
 
+
+
     socket.on("buscar-mensagens", async (telefone) => {
       try {
         //console.log("🔎 Buscando mensagens para telefone:", telefone);
 
-        const qry = `SELECT * FROM meso_mensagens_solicitante WHERE telefone = '${telefone}'`;
+        const qry = `SELECT * FROM meso_mensagens_solicitante WHERE telefone = '${telefone}' and datetime >= '2025-07-14 00:00:00'`;
         const mensagens = await executaQry(qry);
+        console.log('Minhas mensagens aqui por favor', mensagens)
+        //console.log('Tá melhorando tá ficando até educado');
+        //console.log('Tá melhorando o caralho fdp')
+        //console.log("Falei cedo demais")
 
         io.emit("mensagens", mensagens.dados || []);
       } catch (error) {
-        //console.error("❌ Erro ao buscar mensagens:", error);
+        console.error("❌ Erro ao buscar mensagens:", error);
       }
     });
 
     socket.on("buscar-quantidade-contatos", async (data) => {
       try {
-        //console.log("📊 Buscando quantidade de contatos para:", data.estado);
+        ////console.log("📊 Buscando quantidade de contatos para:", data.estado);
 
         let qry;
 
-        console.log("Mama eu", data)
+        ////console.log("Mama eu", data)
 
         if (data.tipo == 'admin') {
           qry = `
@@ -143,11 +146,11 @@ let socketConnection = function (io) {
             ORDER BY FIELD(estado, 'Todos', 'Novo', 'Aguardando Cliente', 'Aguardando Atendimento', 'Concluido');
           `;
         }
-        console.log('me mostrar o select esquisito', qry)
+        //// console.log('me mostrar o select esquisito', qry)
 
 
         const quantContatos = await executaQry(qry);
-        //console.log("Oq retorna", qry)
+        ////console.log("Oq retorna", qry)
         io.emit("quantidade-contatos", quantContatos.dados || []);
       } catch (error) {
         //console.error("❌ Erro ao buscar quantidade de contatos:", error);
@@ -156,6 +159,6 @@ let socketConnection = function (io) {
   });
 };
 
-module.exports = { socketConnection };
+module.exports = { socketConnection, buscarMensagem,emitirContatosAtualizados };
 
 

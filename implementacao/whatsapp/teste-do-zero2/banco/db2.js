@@ -16,8 +16,8 @@ async function executaQry2(qry) {
   let connection = await pool.getConnection();
   try {
     // let [rows, fields] = await connection.execute(qry);
-    let [rows, fields] = await connection.execute(qry);
-   // console.log('rrr',rows);
+    let [rows, fields] = await connection.query(qry);
+    // console.log('rrr',rows);
 
     resposta = { dados: rows, msg: "" };
   } catch (e) {

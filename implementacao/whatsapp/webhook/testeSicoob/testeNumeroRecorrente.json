@@ -1,0 +1,908 @@
+{
+    {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "118701541326382",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "551131646301",
+                                "phone_number_id": "116793154851650"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTk5Mjg1NTczFQIAERgSNThCMTY4NDY1ODJGOUUxQ0VEAA==",
+                                    "status": "delivered",
+                                    "timestamp": "1752236021",
+                                    "recipient_id": "553199285573",
+                                    "conversation": {
+                                        "id": "deb7d880389afddfb77c97ee4ba8056e",
+                                        "origin": {
+                                            "type": "service"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": false,
+                                        "pricing_model": "PMP",
+                                        "category": "service",
+                                        "type": "free_customer_service"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "118701541326382",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "551131646301",
+                                "phone_number_id": "116793154851650"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTk5Mjg1NTczFQIAERgSNThCMTY4NDY1ODJGOUUxQ0VEAA==",
+                                    "status": "delivered",
+                                    "timestamp": "1752236021",
+                                    "recipient_id": "553199285573",
+                                    "conversation": {
+                                        "id": "deb7d880389afddfb77c97ee4ba8056e",
+                                        "origin": {
+                                            "type": "service"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": false,
+                                        "pricing_model": "PMP",
+                                        "category": "service",
+                                        "type": "free_customer_service"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "118701541326382",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "551131646301",
+                                "phone_number_id": "116793154851650"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTk5Mjg1NTczFQIAERgSRTMyNERDMTI4MTA0N0FFM0RBAA==",
+                                    "status": "delivered",
+                                    "timestamp": "1752241493",
+                                    "recipient_id": "553199285573",
+                                    "conversation": {
+                                        "id": "18d3e4b422f20af7312c1b1be3bc5047",
+                                        "origin": {
+                                            "type": "service"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": false,
+                                        "pricing_model": "PMP",
+                                        "category": "service",
+                                        "type": "free_customer_service"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "118701541326382",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "551131646301",
+                                "phone_number_id": "116793154851650"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTk5Mjg1NTczFQIAERgSRkM3ODkxOTUxMThDNjBDNTU3AA==",
+                                    "status": "read",
+                                    "timestamp": "1752243760",
+                                    "recipient_id": "553199285573"
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "118701541326382",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "551131646301",
+                                "phone_number_id": "116793154851650"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTk5Mjg1NTczFQIAERgSNzEzMUU0QjM1RUVDMzUxMDFCAA==",
+                                    "status": "read",
+                                    "timestamp": "1752247702",
+                                    "recipient_id": "553199285573"
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "118701541326382",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "551131646301",
+                                "phone_number_id": "116793154851650"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTk5Mjg1NTczFQIAERgSMzFFNkIzNjFGNkUyMjkwRkY4AA==",
+                                    "status": "read",
+                                    "timestamp": "1751979412",
+                                    "recipient_id": "553199285573",
+                                    "conversation": {
+                                        "id": "abda346a79c96a84b313ec445db16fe3",
+                                        "origin": {
+                                            "type": "marketing"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": true,
+                                        "pricing_model": "PMP",
+                                        "category": "marketing",
+                                        "type": "regular"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "contacts": [
+                                {
+                                    "profile": {
+                                        "name": "Lucas Alves Do Nascimento"
+                                    },
+                                    "wa_id": "553191810047"
+                                }
+                            ],
+                            "messages": [
+                                {
+                                    "from": "553191810047",
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAEhgWM0VCMEI1OUE0MUJDQThFODhGRjRFQwA=",
+                                    "timestamp": "1752583591",
+                                    "text": {
+                                        "body": "Ola, bom dia!"
+                                    },
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+    //Enviando template menu...
+    //Caralho Que Merda 553191810047 seu protocolo é : 2XPKQZ bot-PlugPhone
+    //You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'values ('553191810047','bot-PlugPhone','bot-PlugPhone','553130580254','seu pr...' at line 1
+    {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSRjYyOUVDMkZERjk3RERCRjhDAA==",
+                                    "status": "sent",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "4eef700a445a73774b3d727d6e3ddbce",
+                                        "expiration_timestamp": "1752583595",
+                                        "origin": {
+                                            "type": "marketing"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": true,
+                                        "pricing_model": "PMP",
+                                        "category": "marketing",
+                                        "type": "regular"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSRjYyOUVDMkZERjk3RERCRjhDAA==",
+                                    "status": "delivered",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "4eef700a445a73774b3d727d6e3ddbce",
+                                        "origin": {
+                                            "type": "marketing"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": true,
+                                        "pricing_model": "PMP",
+                                        "category": "marketing",
+                                        "type": "regular"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSMzU1N0UyNDk4MjQ1NDk1MzUyAA==",
+                                    "status": "sent",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "9033fa026f3e91fb9d3d48c195e6dec7",
+                                        "expiration_timestamp": "1752583595",
+                                        "origin": {
+                                            "type": "service"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": false,
+                                        "pricing_model": "PMP",
+                                        "category": "service",
+                                        "type": "free_customer_service"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSMzU1N0UyNDk4MjQ1NDk1MzUyAA==",
+                                    "status": "delivered",
+                                    "timestamp": "1752583596",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "9033fa026f3e91fb9d3d48c195e6dec7",
+                                        "origin": {
+                                            "type": "service"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": false,
+                                        "pricing_model": "PMP",
+                                        "category": "service",
+                                        "type": "free_customer_service"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSRjYyOUVDMkZERjk3RERCRjhDAA==",
+                                    "status": "sent",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "4eef700a445a73774b3d727d6e3ddbce",
+                                        "expiration_timestamp": "1752583595",
+                                        "origin": {
+                                            "type": "marketing"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": true,
+                                        "pricing_model": "PMP",
+                                        "category": "marketing",
+                                        "type": "regular"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSRjYyOUVDMkZERjk3RERCRjhDAA==",
+                                    "status": "delivered",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "4eef700a445a73774b3d727d6e3ddbce",
+                                        "origin": {
+                                            "type": "marketing"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": true,
+                                        "pricing_model": "PMP",
+                                        "category": "marketing",
+                                        "type": "regular"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSMzU1N0UyNDk4MjQ1NDk1MzUyAA==",
+                                    "status": "sent",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "9033fa026f3e91fb9d3d48c195e6dec7",
+                                        "expiration_timestamp": "1752583595",
+                                        "origin": {
+                                            "type": "service"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": false,
+                                        "pricing_model": "PMP",
+                                        "category": "service",
+                                        "type": "free_customer_service"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSMzU1N0UyNDk4MjQ1NDk1MzUyAA==",
+                                    "status": "delivered",
+                                    "timestamp": "1752583596",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "9033fa026f3e91fb9d3d48c195e6dec7",
+                                        "origin": {
+                                            "type": "service"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": false,
+                                        "pricing_model": "PMP",
+                                        "category": "service",
+                                        "type": "free_customer_service"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSRjYyOUVDMkZERjk3RERCRjhDAA==",
+                                    "status": "delivered",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "4eef700a445a73774b3d727d6e3ddbce",
+                                        "origin": {
+                                            "type": "marketing"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": true,
+                                        "pricing_model": "PMP",
+                                        "category": "marketing",
+                                        "type": "regular"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSRjYyOUVDMkZERjk3RERCRjhDAA==",
+                                    "status": "sent",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "4eef700a445a73774b3d727d6e3ddbce",
+                                        "expiration_timestamp": "1752583595",
+                                        "origin": {
+                                            "type": "marketing"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": true,
+                                        "pricing_model": "PMP",
+                                        "category": "marketing",
+                                        "type": "regular"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSMzU1N0UyNDk4MjQ1NDk1MzUyAA==",
+                                    "status": "delivered",
+                                    "timestamp": "1752583596",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "9033fa026f3e91fb9d3d48c195e6dec7",
+                                        "origin": {
+                                            "type": "service"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": false,
+                                        "pricing_model": "PMP",
+                                        "category": "service",
+                                        "type": "free_customer_service"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSMzU1N0UyNDk4MjQ1NDk1MzUyAA==",
+                                    "status": "sent",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "9033fa026f3e91fb9d3d48c195e6dec7",
+                                        "expiration_timestamp": "1752583595",
+                                        "origin": {
+                                            "type": "service"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": false,
+                                        "pricing_model": "PMP",
+                                        "category": "service",
+                                        "type": "free_customer_service"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSRjYyOUVDMkZERjk3RERCRjhDAA==",
+                                    "status": "delivered",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "4eef700a445a73774b3d727d6e3ddbce",
+                                        "origin": {
+                                            "type": "marketing"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": true,
+                                        "pricing_model": "PMP",
+                                        "category": "marketing",
+                                        "type": "regular"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSRjYyOUVDMkZERjk3RERCRjhDAA==",
+                                    "status": "sent",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "4eef700a445a73774b3d727d6e3ddbce",
+                                        "expiration_timestamp": "1752583595",
+                                        "origin": {
+                                            "type": "marketing"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": true,
+                                        "pricing_model": "PMP",
+                                        "category": "marketing",
+                                        "type": "regular"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSMzU1N0UyNDk4MjQ1NDk1MzUyAA==",
+                                    "status": "delivered",
+                                    "timestamp": "1752583596",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "9033fa026f3e91fb9d3d48c195e6dec7",
+                                        "origin": {
+                                            "type": "service"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": false,
+                                        "pricing_model": "PMP",
+                                        "category": "service",
+                                        "type": "free_customer_service"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+ {
+        "object": "whatsapp_business_account",
+        "entry": [
+            {
+                "id": "464844583368500",
+                "changes": [
+                    {
+                        "value": {
+                            "messaging_product": "whatsapp",
+                            "metadata": {
+                                "display_phone_number": "553130580254",
+                                "phone_number_id": "421167414412878"
+                            },
+                            "statuses": [
+                                {
+                                    "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSMzU1N0UyNDk4MjQ1NDk1MzUyAA==",
+                                    "status": "sent",
+                                    "timestamp": "1752583595",
+                                    "recipient_id": "553191810047",
+                                    "conversation": {
+                                        "id": "9033fa026f3e91fb9d3d48c195e6dec7",
+                                        "expiration_timestamp": "1752583595",
+                                        "origin": {
+                                            "type": "service"
+                                        }
+                                    },
+                                    "pricing": {
+                                        "billable": false,
+                                        "pricing_model": "PMP",
+                                        "category": "service",
+                                        "type": "free_customer_service"
+                                    }
+                                }
+                            ]
+                        },
+                        "field": "messages"
+                    }
+                ]
+            }
+        ]
+    }
+}

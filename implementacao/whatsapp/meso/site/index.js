@@ -20,9 +20,9 @@ app.use(fallback('index.html', { root: root }))
 
 
 https.createServer({
-  key: fs.readFileSync("/etc/letsencrypt/live/meso.plugphone.cloud-0002/privkey.pem"),
-  cert: fs.readFileSync("/etc/letsencrypt/live/meso.plugphone.cloud-0002/fullchain.pem")
+    key: fs.readFileSync("/etc/letsencrypt/live/meso.plugphone.cloud/privkey.pem"),
+    cert: fs.readFileSync("/etc/letsencrypt/live/meso.plugphone.cloud/fullchain.pem")
 }, app).listen(porta, () => {
-  console.log("API server online and running in port " + porta);
+    console.log("API server online and running in port " + porta);
 });
 

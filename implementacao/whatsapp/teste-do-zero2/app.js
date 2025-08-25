@@ -26,7 +26,7 @@ const passAst = process.env.passAst
 const port = process.env.port
 // https
 const httpsOptions = {
-
+    
     key: fs.readFileSync(keyCert),
     cert: fs.readFileSync(certCert),
 
@@ -37,9 +37,7 @@ const httpsOptions = {
 };
 
 // Create instances of wrappers
-const expressAppWrapper = new ExpressAppWrapper(httpsOptions, port);
-//const expressAppWrapper = new ExpressAppWrapper(null, port);
-
+const expressAppWrapper = new ExpressAppWrapper(httpsOptions,port);
 const socketWrapper = new SocketIOWrapper(expressAppWrapper.getServer());
 const asteriskManagerWrapper = new AsteriskManagerWrapper(portAst, hostAst, userAst, passAst);
 

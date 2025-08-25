@@ -1,0 +1,42 @@
+{
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Lucas Alves"
+                                },
+                                "wa_id": "553189738409"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "553189738409",
+                                "id": "wamid.HBgMNTUzMTg5NzM4NDA5FQIAEhgUM0ZGM0RBNjVEMURCNTdGNTdDQ0EA",
+                                "timestamp": "1729251608",
+                                "type": "audio",
+                                "audio": {
+                                    "mime_type": "audio/ogg; codecs=opus",
+                                    "sha256": "YeOo0WDem/B8OG+ziwUMv8wU1jdJ2XJDL2taDdZGamw=",
+                                    "id": "1264562634560468",
+                                    "voice": true
+                                }
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ] 
+}

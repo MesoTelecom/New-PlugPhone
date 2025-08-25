@@ -1,0 +1,255 @@
+texto: {
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Lucas Alves Do Nascimento"
+                                },
+                                "wa_id": "553191810047"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "553191810047",
+                                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAEhgWM0VCMDU3NjgxQjZBNzkwNUFERjlFRgA=",
+                                "timestamp": "1713545844",
+                                "text": {
+                                    "body": "oi"
+                                },
+                                "type": "text"
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+
+Imagem: {
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Lucas Alves Do Nascimento"
+                                },
+                                "wa_id": "553191810047"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "553191810047",
+                                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAEhgWM0VCMDZCN0RCM0RCNjg3MDkxMUNDNgA=",
+                                "timestamp": "1713546562",
+                                "type": "image",
+                                "image": {
+                                    "mime_type": "image/jpeg",
+                                    "sha256": "WcuYC2lJBQ/AeEkRde2P6M1xsHN0sB8UbqCpTr2couU=",
+                                    "id": "309456598666091"
+                                }
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+
+Audio: {
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Lucas Alves Do Nascimento"
+                                },
+                                "wa_id": "553191810047"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "553191810047",
+                                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAEhggRjRCMDUwQUM4MjMxOUIyOUY2NjExRDVEMUY5QThCNjcA",
+                                "timestamp": "1713549160",
+                                "type": "audio",
+                                "audio": {
+                                    "mime_type": "audio/ogg; codecs=opus",
+                                    "sha256": "f05mbPIuT455/peNJiFKoWdPB6Ynocfxd6aglV8xMck=",
+                                    "id": "2361808614015363",
+                                    "voice": true
+                                }
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+
+video: {
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Lucas Alves Do Nascimento"
+                                },
+                                "wa_id": "553191810047"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "553191810047",
+                                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAEhgWM0VCMDA1MzlDNDQ1OEZFQTc3MThDRQA=",
+                                "timestamp": "1713549884",
+                                "type": "video",
+                                "video": {
+                                    "mime_type": "video/mp4",
+                                    "sha256": "rBIxWFNPW/sj0eeoRobZN025OLliiNlen4IQZzwHW7c=",
+                                    "id": "454074633796745"
+                                }
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+
+documento: {
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Lucas Alves Do Nascimento"
+                                },
+                                "wa_id": "553191810047"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "553191810047",
+                                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAEhgWM0VCMDcwOEEyN0U5ODhGMThCMEE5NgA=",
+                                "timestamp": "1713549950",
+                                "type": "document",
+                                "document": {
+                                    "filename": "Quiz - Malware_ Attempt review.pdf",
+                                    "mime_type": "application/pdf",
+                                    "sha256": "V0vLN1FimrLhxdXTYbwRAd7wEmQ9jLot9HKwXYo/TO0=",
+                                    "id": "385513301140281"
+                                }
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Negocio aqui {
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Lucas Alves"
+                                },
+                                "wa_id": "553189738409"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "context": {
+                                    "from": "551131646301",
+                                    "id": "wamid.HBgMNTUzMTg5NzM4NDA5FQIAERgSOUMyNDYzNzJDRDAxQkJCRDk4AA=="
+                                },
+                                "from": "553189738409",
+                                "id": "wamid.HBgMNTUzMTg5NzM4NDA5FQIAEhgUM0Y5NTUzNENENzBBQTg5N0FDRDQA",
+                                "timestamp": "1727981495",
+                                "type": "button",
+                                "button": {
+                                    "payload": "Técnico",
+                                    "text": "Técnico"
+                                }
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}

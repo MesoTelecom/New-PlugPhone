@@ -1,0 +1,286 @@
+{
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Lucas Alves Do Nascimento"
+                                },
+                                "wa_id": "553191810047"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "553191810047",
+                                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAEhgWM0VCMDAwOURENjAwM0U5NjJENUU1MQA=",
+                                "timestamp": "1707999010",
+                                "text": {
+                                    "body": "aqui"
+                                },
+                                "type": "text"
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+//-----------------------------------------------------------------------------------------------------------------------------
+{
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "statuses": [
+                            {
+                                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSQ0RGNEM3RjI1NjY0NDg1RkY0AA==",
+                                "status": "delivered",
+                                "timestamp": "1707999294",
+                                "recipient_id": "553191810047",
+                                "conversation": {
+                                    "id": "8a8e4f137fbbf9d71ad76e7f12a21766",
+                                    "origin": {
+                                        "type": "service"
+                                    }
+                                },
+                                "pricing": {
+                                    "billable": true,
+                                    "pricing_model": "CBP",
+                                    "category": "service"
+                                }
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+//--------------------------------------------
+{
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Matheus"
+                                },
+                                "wa_id": "553193171915"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "553193171915",
+                                "id": "wamid.HBgMNTUzMTkzMTcxOTE1FQIAEhgSNTM1MTEzNTM0QUUxQjk0NjZBAA==",
+                                "timestamp": "1707999576",
+                                "text": {
+                                    "body": "Ola"
+                                },
+                                "type": "text"
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+//--------------------------------------------------------
+{
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "statuses": [
+                            {
+                                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSRTk5QkNGNEQ1RTI4RDQ4MzY2AA==",
+                                "status": "delivered",
+                                "timestamp": "1707999780",
+                                "recipient_id": "553191810047",
+                                "conversation": {
+                                    "id": "8a8e4f137fbbf9d71ad76e7f12a21766",
+                                    "origin": {
+                                        "type": "service"
+                                    }
+                                },
+                                "pricing": {
+                                    "billable": true,
+                                    "pricing_model": "CBP",
+                                    "category": "service"
+                                }
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+//---------------------------------------------------
+{
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Lucas Alves Do Nascimento"
+                                },
+                                "wa_id": "553191810047"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "553191810047",
+                                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAEhgWM0VCMEFEMEFBQTI1NzFCOTJEMkVGMgA=",
+                                "timestamp": "1707999853",
+                                "text": {
+                                    "body": "Ola"
+                                },
+                                "type": "text"
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+//------------------------------------------------------------
+{
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Lucas Alves Do Nascimento"
+                                },
+                                "wa_id": "553191810047"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "553191810047",
+                                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAEhgWM0VCMDIwRTRGQTJBRkM0OUY0MzFDQwA=",
+                                "timestamp": "1708000535",
+                                "text": {
+                                    "body": "inicio"
+                                },
+                                "type": "text"
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+
+{
+    "object": "whatsapp_business_account",
+    "entry": [
+        {
+            "id": "118701541326382",
+            "changes": [
+                {
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {
+                            "display_phone_number": "551131646301",
+                            "phone_number_id": "116793154851650"
+                        },
+                        "contacts": [
+                            {
+                                "profile": {
+                                    "name": "Lucas Alves Do Nascimento"
+                                },
+                                "wa_id": "553191810047"
+                            }
+                        ],
+                        "messages": [
+                            {
+                                "from": "553191810047",
+                                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAEhgWM0VCMEREQjI3RjJGQkU1QzA4NTRGMgA=",
+                                "timestamp": "1709559109",
+                                "type": "document",
+                                "document": {
+                                    "filename": "Notas de atualização PlugPhone 2  v1.0 pt-BR (2).pdf",
+                                    "mime_type": "application/pdf",
+                                    "sha256": "nLCemIWcbpK5btne7zs6vO8VKce8zQVIkEZ+bSFFMVY=",
+                                    "id": "1074038907197379"
+                                }
+                            }
+                        ]
+                    },
+                    "field": "messages"
+                }
+            ]
+        }
+    ]
+}
+Jurassic world
+
+
+teste produto undefined

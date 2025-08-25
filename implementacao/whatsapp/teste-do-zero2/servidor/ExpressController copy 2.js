@@ -32,7 +32,7 @@ class ExpressController {
       res.send('Servidor rodando!');
     });
 
-    this.expressAppWrapper.app.use('/whatsapp', proxy('https://meso.plugphone.cloud:3333/'));
+    this.expressAppWrapper.app.use('/whatsapp', proxy('https://poc.plugphone.cloud:3333/'));
 
     // Rota de dados
     this.expressAppWrapper.get('/api/data', (req, res) => {
@@ -2504,7 +2504,7 @@ class ExpressController {
 
     });
 
-    this.expressAppWrapper.listen(this.porta, () => console.log('serv on 312212341231' + this.porta))
+    this.expressAppWrapper.listen(this.porta, () => console.log('serv on ' + this.porta))
   }
 }
 

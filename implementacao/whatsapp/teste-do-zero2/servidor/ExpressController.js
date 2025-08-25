@@ -14,6 +14,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 var proxy = require('express-http-proxy');
 const { exec } = require("child_process");
 const zlib = require('zlib');
+const { buscarMensagem } = require("../../webhook/SocketConnection");
 const upload = multer({ dest: 'uploads/' });
 class ExpressController {
   constructor(expressAppWrapper, porta) {
@@ -76,15 +77,15 @@ class ExpressController {
       let empresa = req.body.empresa
 
       let qry = `insert into meso_contatos (nome,telefone,estado,datahora,setor, email, empresa) values ('${nome}','${telefone}','Novo',now(),'${setor}', '${email}','${empresa}')`
-      console.log('bumbum profundo', qry)
+      //console.log('bumbum profundo', qry)
       await executaQry(qry)
       res.json("Usuário Cadastrado");
     })
 
     // Filtro para arquivos de áudio
     const audioFilter = (req, file, cb) => {
-      console.log('Nome do arquivo recebido:', file.originalname); // Log para verificar o nome do arquivo
-      console.log('MIME type recebido:', file.mimetype);
+      //console.log('Nome do arquivo recebido:', file.originalname); // Log para verificar o nome do arquivo
+      //console.log('MIME type recebido:', file.mimetype);
       const allowedTypes = /audio\/mpeg|audio\/wav/;
       if (allowedTypes.test(file.mimetype)) {
         cb(null, true);
@@ -123,17 +124,17 @@ class ExpressController {
 
     this.expressAppWrapper.post('/upload-image', async (req, res) => {
 
-      console.log('Requisição recebida na rota /upload'); // Log para verificar se a rota é acessada
-      console.log('Body da requisição:', req.body); // Log do corpo da requisição
-      console.log('Arquivo recebido:', req.file); // Log do arquivo recebido
+      //console.log('Requisição recebida na rota /upload'); // Log para verificar se a rota é acessada
+      //console.log('Body da requisição:', req.body); // Log do corpo da requisição
+      //console.log('Arquivo recebido:', req.file); // Log do arquivo recebido
 
       if (!req.file) {
         return res.status(400).send('Nenhuma imagem recebida.');
       }
-      console.log('Arquivo salvo com sucesso:', req.file);
+      //console.log('Arquivo salvo com sucesso:', req.file);
       let caminho = req.file.path
       let idImage = await getImage(caminho)
-      //console.log(id)
+      ////console.log(id)
       res.json({ id: idImage });
 
     });
@@ -142,9 +143,9 @@ class ExpressController {
       let num = req.params.num
 
       let qry1 = `update meso_contatos set estadomsg = NULL where telefone = '${num}'`
-      console.log(qry1)
+      //console.log(qry1)
       let res1 = await executaQry(qry1)
-      console.log(qry1)
+      //console.log(qry1)
 
       res.json(res1)
     })
@@ -167,7 +168,7 @@ class ExpressController {
 
       let qry1 = `update meso_contatos set estadomsg ='novamsg' where telefone = '${num}'`
       let res1 = await executaQry(qry1)
-      console.log(qry1)
+      //console.log(qry1)
 
       res.json(res1)
     })
@@ -221,10 +222,10 @@ class ExpressController {
         return res.status(400).send('Nenhum documento recebido.');
       }
       let caminho = req.file.path;
-      ////console.log(caminho);
+      //////console.log(caminho);
 
       let idDocumento = await getDocument(caminho)
-      ////console.log('id documento', idDocumento)
+      //////console.log('id documento', idDocumento)
 
       // Aqui você pode processar o documento ou salvar as informações no banco
 
@@ -233,13 +234,13 @@ class ExpressController {
     });
 
     this.expressAppWrapper.post('/upload-document', async (req, res) => {
-      ////console.log('oi')
+      //////console.log('oi')
 
       if (!req.file) {
         return res.status(400).send('Nenhum áudio recebido.');
       }
 
-      ////console.log('eu sou o req.file', req.file.path);
+      //////console.log('eu sou o req.file', req.file.path);
 
       let caminho = req.file.path;
       let idocument = await getDocument(caminho);  // Esse é o ID que você quer usar para renomear
@@ -257,8 +258,8 @@ class ExpressController {
         const parts = novoCaminho.split('/');
         const caminhoFinal = parts.slice(5).join('/');  // Adapte isso para seu cenário
 
-        ////console.log('ID do áudio:', idocument);
-        ////console.log('Caminho final do arquivo:', caminhoFinal);
+        //////console.log('ID do áudio:', idocument);
+        //////console.log('Caminho final do arquivo:', caminhoFinal);
 
         res.json({ id: idocument, caminhoFinal: caminhoFinal });
       });
@@ -272,21 +273,21 @@ class ExpressController {
         return res.status(400).send('Nenhum áudio recebido.');
       }
       let caminho = req.file.path
-      console.log(caminho)
+      //console.log(caminho)
       let idaudio = await getAudio(caminho)
-      //console.log(id)
+      ////console.log(id)
       res.json({ id: idaudio });
     });
 
 
     this.expressAppWrapper.post('/upload-audio', async (req, res) => {
-      console.log('entrei aqui');
+      //console.log('entrei aqui');
 
       if (!req.file) {
         return res.status(400).send('Nenhum áudio recebido.');
       }
 
-      console.log('eu sou o req.file', req.file.path);
+      //console.log('eu sou o req.file', req.file.path);
 
       let caminho = req.file.path;
       let idaudio = await getAudio(caminho);  // Esse é o ID que você quer usar para renomear
@@ -304,8 +305,8 @@ class ExpressController {
         const parts = novoCaminho.split('/');
         const caminhoFinal = parts.slice(5).join('/');  // Adapte isso para seu cenário
 
-        console.log('ID do áudio:', idaudio);
-        console.log('Caminho final do arquivo:', caminhoFinal);
+        //console.log('ID do áudio:', idaudio);
+        //console.log('Caminho final do arquivo:', caminhoFinal);
 
         res.json({ id: idaudio, caminhoFinal: caminhoFinal });
       });
@@ -320,7 +321,7 @@ class ExpressController {
 
       let nome = req.body.nome
 
-      //console.log('Nome certo', nome)
+      ////console.log('Nome certo', nome)
       res.json('certo', nome);
 
     });
@@ -336,11 +337,11 @@ class ExpressController {
       let id = req.params.id;
 
 
-      //console.log(qry);
+      ////console.log(qry);
       let res2 = await reciveMediaLink(id, res)
       res.json(res2);
-      console.log("Jesus Cristo eu estou aqui")
-      //console.log(res2);
+      //console.log("Jesus Cristo eu estou aqui")
+      ////console.log(res2);
 
     });
 
@@ -369,7 +370,7 @@ class ExpressController {
         });
 
         // Log para verificar o cabeçalho
-        console.log("Content-Encoding:", response.headers['content-encoding']);
+        //console.log("Content-Encoding:", response.headers['content-encoding']);
 
         let stream = response.data;
         const contentEncoding = response.headers['content-encoding'];
@@ -386,7 +387,7 @@ class ExpressController {
         stream.pipe(writer);
 
         writer.on('finish', () => {
-          console.log('Mídia salva com sucesso:', uploadPath);
+          //console.log('Mídia salva com sucesso:', uploadPath);
           res.status(200).send({ message: 'Mídia salva com sucesso!', path: uploadPath });
         });
 
@@ -415,17 +416,17 @@ class ExpressController {
           }
         });
 
-        console.log("Content-Encoding:", response.headers['content-encoding']);
+        //console.log("Content-Encoding:", response.headers['content-encoding']);
 
         let stream = response.data;
         const contentEncoding = response.headers['content-encoding'];
 
         // Somente descomprime se o encoding for "br" ou "gzip"
         if (contentEncoding && contentEncoding.includes('br')) {
-          console.log("Descompressão Brotli");
+          //console.log("Descompressão Brotli");
           stream = stream.pipe(zlib.createBrotliDecompress());
         } else if (contentEncoding && contentEncoding.includes('gzip')) {
-          console.log("Descompressão Gzip");
+          //console.log("Descompressão Gzip");
           stream = stream.pipe(zlib.createGunzip());
         }
 
@@ -435,7 +436,7 @@ class ExpressController {
         stream.pipe(writer);
 
         writer.on('finish', () => {
-          console.log('Mídia salva com sucesso:', uploadPath);
+          //console.log('Mídia salva com sucesso:', uploadPath);
           res.status(200).send({ message: 'Mídia salva com sucesso!', path: uploadPath });
         });
 
@@ -465,17 +466,17 @@ class ExpressController {
           }
         });
 
-        console.log("Content-Encoding:", response.headers['content-encoding']);
+        //console.log("Content-Encoding:", response.headers['content-encoding']);
 
         let stream = response.data;
         const contentEncoding = response.headers['content-encoding'];
 
         // Somente descomprime se o encoding for "br" ou "gzip"
         if (contentEncoding && contentEncoding.includes('br')) {
-          console.log("Descompressão Brotli");
+          //console.log("Descompressão Brotli");
           stream = stream.pipe(zlib.createBrotliDecompress());
         } else if (contentEncoding && contentEncoding.includes('gzip')) {
-          console.log("Descompressão Gzip");
+          //console.log("Descompressão Gzip");
           stream = stream.pipe(zlib.createGunzip());
         }
 
@@ -485,7 +486,7 @@ class ExpressController {
         stream.pipe(writer);
 
         writer.on('finish', () => {
-          console.log('Mídia salva com sucesso:', uploadPath);
+          //console.log('Mídia salva com sucesso:', uploadPath);
           res.status(200).send({ message: 'Mídia salva com sucesso!', path: uploadPath });
         });
 
@@ -506,11 +507,11 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select * from meso_pesquisa where datahora > '${data1}' and datahora < '${data2}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1);
+      ////console.log(res1);
 
     });
 
@@ -520,14 +521,14 @@ class ExpressController {
       let usuario = req.params.usuario
       let telefone = req.params.telefone
 
-      console.log("Olha que bonito", usuario, telefone)
+      //console.log("Olha que bonito", usuario, telefone)
 
       qry = `update meso_contatos set usuario = '${usuario}' where telefone = ${telefone}`
 
-      console.log('contato', qry)
+      //console.log('contato', qry)
       let res20 = await executaQry(qry)
       res.json(res20)
-      //console.log('contatos resposta', res20)
+      ////console.log('contatos resposta', res20)
 
     })
 
@@ -538,11 +539,19 @@ class ExpressController {
 
       qry = `select telefone, setor, usuario from meso_contatos where telefone = '${telefone}'`
 
-      console.log('contato', qry)
+      //console.log('contato', qry)
       let res20 = await executaQry(qry)
       res.json(res20)
-      //console.log('contatos resposta', res20)
+      ////console.log('contatos resposta', res20)
 
+    })
+
+    this.expressAppWrapper.get("/buscarcontatostel/:telefone", async (req, res, next) => {
+      let telefone = req.params.telefone
+      let qry = `select * from meso_contatos where telefone = '${telefone}'`
+      let res20 = await executaQry(qry)
+      //console.log("pesadão fala lobin", res20.dados[0])
+      res.json(res20.dados[0])
     })
 
     this.expressAppWrapper.get("/buscarcontatos/:tipo/:usuario", async (req, res, next) => {
@@ -559,8 +568,8 @@ class ExpressController {
         qry = `select * from meso_contatos where usuario = '${usuario}' or usuario is NULL and setor = '${tipo}' order by datahora desc`
 
 
-        //console.log('contato', qry)
-        //console.log('contatos resposta', res20)
+        ////console.log('contato', qry)
+        ////console.log('contatos resposta', res20)
       }
       let res20 = await executaQry(qry)
       res.json(res20)
@@ -598,8 +607,8 @@ class ExpressController {
             ORDER BY datahora DESC`;
         }
       }
-      console.log('contato', qry)
-      //console.log('contatos resposta', res20)
+      //console.log('contato', qry)
+      ////console.log('contatos resposta', res20)
 
       let res20 = await executaQry(qry)
       res.json(res20)
@@ -617,10 +626,10 @@ class ExpressController {
         qry = `select distinct m.credor as nome, m.Telefone, m.processo, m.estado from meso_mealing as m inner join meso_oportunidade as o on (m.idMealing = o.idMealing) where o.estado = 'aprovado';`
       }
 
-      //console.log('contato', qry)
+      ////console.log('contato', qry)
       let res20 = await executaQry(qry)
       res.json(res20)
-      //console.log('contatos resposta', res20)
+      ////console.log('contatos resposta', res20)
 
     })
 
@@ -636,10 +645,10 @@ class ExpressController {
         qry = `select distinct m.credor as nome, m.Telefone, m.processo,o.estado from meso_mealing as m inner join meso_oportunidade as o on (m.idMealing = o.idMealing) where o.estado = '${estado}';`
       }
 
-      //console.log('contato', qry)
+      ////console.log('contato', qry)
       let res20 = await executaQry(qry)
       res.json(res20)
-      //console.log('contatos resposta', res20)
+      ////console.log('contatos resposta', res20)
 
     })
 
@@ -647,10 +656,10 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select avg(nota) as medianota from meso_pesquisa where datahora > '${data1}' and datahora < '${data2}' AND gostaria like '%SIM%' `;
-      //console.log(qry);
+      ////console.log(qry);
       let res2 = await executaQry(qry);
       res.json(res2);
-      //console.log(res2);
+      ////console.log(res2);
 
     });
 
@@ -659,10 +668,10 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select sum(pergunta1 + pergunta2) as medianota from meso_pesquisa where datahora > '${data1}' and datahora < '${data2}'`;
-      //console.log(qry);
+      ////console.log(qry);
       let res2 = await executaQry(qry);
       res.json(res2);
-      //console.log(res2);
+      ////console.log(res2);
 
     });
 
@@ -676,10 +685,10 @@ class ExpressController {
 
       let qry = ` select * from meso_mensagens_solicitante where telefone like "${telFormatado}"`;
 
-      console.log('qry:', qry)
+      //console.log('qry:', qry)
       let res3 = await executaQry(qry);
       res.json(res3);
-      console.log(res3);
+      //console.log(res3);
 
     });
 
@@ -687,10 +696,10 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select count(pergunta1)as contapesq from meso_pesquisa where datahora > '${data1}' and datahora < '${data2}'`;
-      //console.log(qry);
+      ////console.log(qry);
       let res2 = await executaQry(qry);
       res.json(res2);
-      //console.log(res2);
+      ////console.log(res2);
 
     });
 
@@ -699,7 +708,7 @@ class ExpressController {
 
       let res27 = await executaQry(qry);
 
-      //console.log('socaminha', res27)
+      ////console.log('socaminha', res27)
       res.json(res27);
 
     });
@@ -709,7 +718,7 @@ class ExpressController {
 
       let res27 = await executaQry(qry);
 
-      //console.log('socaminha', res27)
+      ////console.log('socaminha', res27)
       res.json(res27);
 
     });
@@ -720,11 +729,11 @@ class ExpressController {
     this.expressAppWrapper.get("/listajoin/:fila", async (req, res, next) => {
       let filacompleta = req.params.fila;
       let qry = `select * from meso_join_rt where fila = '${filacompleta}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res30 = await executaQry(qry);
       res.json(res30);
-      //console.log(res30);
+      ////console.log(res30);
 
     });
     //Primeira bolinha do painel das filas
@@ -734,11 +743,11 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select * from meso_entrar where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res31 = await executaQry(qry);
       res.json(res31);
-      //console.log(res31);
+      ////console.log(res31);
 
     });
 
@@ -750,13 +759,13 @@ class ExpressController {
       let filacompleta = req.params.fila;
 
       let qry = `select * from meso_call_connected_rt where fila = '${filacompleta}' and datahora > '${data1}' and datahora < '${data2}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
-      //console.log(qry)
+      ////console.log(qry)
 
       let res32 = await executaQry(qry);
       res.json(res32);
-      //console.log(res32);
+      ////console.log(res32);
 
     });
     //Quarta bolinha de chamadas da fila - Abandonadas do dia
@@ -766,12 +775,12 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select * from meso_abandon where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res33 = await executaQry(qry);
       res.json(res33);
-      //console.log(res33);
+      ////console.log(res33);
 
     });
     //Sexta bolinha tma
@@ -783,11 +792,11 @@ class ExpressController {
 
 
       let qry = `select avg(talktime) as mediaANNA from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res99 = await executaQry(qry);
       res.json(res99);
-      //console.log(res99);
+      ////console.log(res99);
 
     });
 
@@ -797,11 +806,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select time_format(sec_to_time(avg(billsec)), '%H:%i:%s') as mediaTma from cdr where calldate >= '${data1}' and calldate <= '${data2}' and cnum = '${ramal}' and disposition = 'ANSWERED' and lastapp = 'Dial'`;
-      //console.log(qry)
+      ////console.log(qry)
 
       let res1 = await executaQry(qry);
       res.json(res1)
-      //console.log(res1);
+      ////console.log(res1);
     })
 
     //Setima bolinha TME Atendidas
@@ -812,11 +821,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select avg(holdtime) as mediaespera from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res35 = await executaQry(qry);
       res.json(res35);
-      //console.log(res35);
+      ////console.log(res35);
 
     });
 
@@ -826,11 +835,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select sum(duration - billsec) as duracao, count(*) as contduracao from cdr where calldate > '${data1}' and calldate < '${data2}' where cnum = '${ramal}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1);
+      ////console.log(res1);
     })
 
     //Oitava bolinha TME do abandono
@@ -841,11 +850,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select avg(holdtime) as mediaesperaabandonada from meso_abandon where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res35 = await executaQry(qry);
       res.json(res35);
-      //console.log(res35);
+      ////console.log(res35);
 
     });
 
@@ -855,22 +864,22 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select sum(duration - billsec) as duracao, count(*) as contduracao from cdr where calldate > '${data1}' and calldate < '${data2}' where cnum = '${ramal}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1);
+      ////console.log(res1);
     });
     //Fim da campanha fila
     //Listar filas
     this.expressAppWrapper.get("/listafilastotais", async (req, res, next) => {
 
       let qry = `select extension, descr from queues_config `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry2(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -879,11 +888,11 @@ class ExpressController {
     this.expressAppWrapper.get("/listaramais", async (req, res, next) => {
 
       let qry = `select extension, name from users `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry2(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
     //FIM listar ramais
@@ -893,11 +902,11 @@ class ExpressController {
       //let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select * from meso_operadores_rt`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res36 = await executaQry(qry);
       res.json(res36);
-      //console.log(res36);
+      ////console.log(res36);
 
     });
 
@@ -906,12 +915,12 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select distinct * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid and table1.datahora > '${data1}' and table1.datahora < '${data2};' `;
-      //console.log(qry);
+      ////console.log(qry);
 
-      //console.log(qry)
+      ////console.log(qry)
       let res20 = await executaQry(qry);
       res.json(res20);
-      //console.log(res20);
+      ////console.log(res20);
 
 
     });
@@ -920,7 +929,7 @@ class ExpressController {
     this.expressAppWrapper.get("/listaoperadores", async (req, res, next) => {
 
       let qry = `select * from meso_operadores `;
-      //console.log(qry);
+      ////console.log(qry);
       /*select *  from meso_logado msl
       left join meso_operadores mso on msl.pin = mso.pin
       where mso.id is not null
@@ -928,7 +937,7 @@ class ExpressController {
 
       let res4 = await executaQry(qry);
       res.json(res4);
-      //console.log(res4);
+      ////console.log(res4);
 
     });
     //Ligações de entrada
@@ -939,13 +948,46 @@ class ExpressController {
       let qry = `select * from meso_entrar where fila = '${filacompleta}' and datahora > '${data1}' and datahora < '${data2}'; `
 
       //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res20 = await executaQry(qry);
       res.json(res20);
-      //console.log(res20);
+      ////console.log(res20);
 
     });
+
+    this.expressAppWrapper.get("/buscar-usuario-tipo/:tipo", async (req, res, next) => {
+      let tipo = req.params.tipo
+      let qry = `select usuario from meso_usuariologin where tipo = '${tipo}'`
+      let res20 = await executaQry(qry);
+      let res21 = [];
+      for (let x = 0; x < res20.dados.length; x++) {
+        res21.push(res20.dados[x].usuario);
+      }
+
+      res.json(res21)
+
+      // //console.log("neve cobre o chão",qry)
+      //console.log("res20 dados", res21)
+    })
+
+    this.expressAppWrapper.get("/buscar-usuario/:nome", async (req, res, next) => {
+      let nome = req.params.nome
+      let nomeSemPlug;
+
+      if (nome.includes('-PlugPhone')) {
+        nomeSemPlug = nome.replace('-PlugPhone', '');
+        console.log("Caiu aquii será?")
+      }
+
+      let res20 = await executaQry(`select usuario,senha,tipo from meso_usuariologin where usuario like '%${nomeSemPlug}%'`);
+      console.log(`select usuario,senha,tipo from meso_usuariologin where usuario like '%${nomeSemPlug}%'`);
+
+      res.json(res20)
+
+      // //console.log("neve cobre o chão",qry)
+      //console.log("res20 dados", res21)
+    })
 
     this.expressAppWrapper.get("/recebidasucesso/:fila/:d1/:d2", async (req, res, next) => {
       let data1 = req.params.d1 + ' 00:00:00'
@@ -954,11 +996,11 @@ class ExpressController {
       let qry = `select * from meso_agent_complete where fila = '${filacompleta}' and datahora > '${data1}' and datahora < '${data2}'; `
 
       //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res20 = await executaQry(qry);
       res.json(res20);
-      //console.log(res20);
+      ////console.log(res20);
 
     });
 
@@ -969,11 +1011,11 @@ class ExpressController {
       let qry = `select * from meso_abandon where fila = '${filacompleta}' and datahora > '${data1}' and datahora < '${data2}'; `
 
       //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res20 = await executaQry(qry);
       res.json(res20);
-      //console.log(res20);
+      ////console.log(res20);
 
     });
     this.expressAppWrapper.get("/recebidajoin/:fila/:d1/:d2", async (req, res, next) => {
@@ -983,11 +1025,11 @@ class ExpressController {
       let qry = `select * from meso_entrar where fila = '${filacompleta}' and datahora > '${data1}' and datahora < '${data2}'; `
 
       //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res20 = await executaQry(qry);
       res.json(res20);
-      //console.log(res20);
+      ////console.log(res20);
 
     });
     this.expressAppWrapper.get("/recebidaespera/:fila/:d1/:d2", async (req, res, next) => {
@@ -997,11 +1039,11 @@ class ExpressController {
       let qry = `select sec_to_time(sum(meso_abandon.holdtime))as espera from meso_abandon  where meso_abandon.fila= '${filacompleta}' and meso_abandon.datahora > '${data1}' and meso_abandon.datahora < '${data2}';`
 
       //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
-      //console.log(qry);
-      //console.log(qry)
+      ////console.log(qry);
+      ////console.log(qry)
       let res20 = await executaQry(qry);
       res.json(res20);
-      //console.log(res20);
+      ////console.log(res20);
 
     });
     this.expressAppWrapper.get("/recebidaesperaatende/:fila/:d1/:d2", async (req, res, next) => {
@@ -1011,10 +1053,10 @@ class ExpressController {
       let qry = `select sec_to_time(sum(meso_agent_complete.holdtime))as esperaAtende from meso_agent_complete  where meso_agent_complete.fila= '${filacompleta}' and meso_agent_complete.datahora > '${data1}' and meso_agent_complete.datahora < '${data2}';`
 
       //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
-      //console.log(qry);
+      ////console.log(qry);
       let res20 = await executaQry(qry);
       res.json(res20);
-      //console.log(res20);
+      ////console.log(res20);
 
     });
     //FIM DE ligações de entrada
@@ -1024,12 +1066,12 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select * from meso_entrar where datahora > '${data1}' and datahora < '${data2}'`;
-      // console.log(qry);
+      // //console.log(qry);
 
 
       let res24 = await executaQry(qry);
       res.json(res24);
-      //console.log(res24);
+      ////console.log(res24);
 
     });
 
@@ -1044,11 +1086,11 @@ class ExpressController {
 
       let qry = ` select *, timediff(meso_pausa_fila.despausado, meso_pausa_fila.datahora) as duracao from meso_pausa_fila, logs where meso_pausa_fila.despausado != '0000-00-00 00:00:00' and  meso_pausa_fila.datahora = logs.datahora or logs.datahora = meso_pausa_fila.datahora -1 and logs.datahora = meso_pausa_fila.datahora and meso_pausa_fila.datahora > '${data1}'  and meso_pausa_fila.datahora < '${data2}';
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res17 = await executaQry(qry);
       res.json(res17);
-      //console.log(res17);
+      ////console.log(res17);
 
     });
 
@@ -1058,11 +1100,11 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select * from meso_abandon where datahora > '${data1}' and datahora < '${data2}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res25 = await executaQry(qry);
       res.json(res25);
-      //console.log(res25);
+      ////console.log(res25);
 
     });
 
@@ -1071,12 +1113,12 @@ class ExpressController {
     this.expressAppWrapper.get("/dashligacao", async (req, res, next) => {
 
       let qry = `select distinct uniqueid1 from meso_operadores_em_ligacao `;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res5 = await executaQry(qry);
       res.json(res5);
-      //console.log(res5);
+      ////console.log(res5);
 
     });
 
@@ -1085,12 +1127,12 @@ class ExpressController {
     this.expressAppWrapper.get("/dashlogados", async (req, res, next) => {
 
       let qry = `select distinct pin from meso_logado `;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res2 = await executaQry(qry);
       res.json(res2);
-      //console.log(res2);
+      ////console.log(res2);
 
     });
 
@@ -1099,19 +1141,19 @@ class ExpressController {
     this.expressAppWrapper.get("/dashpausados", async (req, res, next) => {
 
       let qry = `select * from meso_pausado `;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res3 = await executaQry(qry);
       res.json(res3);
-      //console.log(res3);
+      ////console.log(res3);
 
     });
 
     this.expressAppWrapper.get("/dashdeslogados", async (req, res, next) => {
 
       let qry = `select * from users `;
-      //console.log(qry);
+      ////console.log(qry);
       /*select *  from meso_logado msl
       left join meso_operadores mso on msl.pin = mso.pin
       where mso.id is not null
@@ -1119,7 +1161,7 @@ class ExpressController {
 
       let res4 = await executaQry2(qry);
       res.json(res4);
-      //console.log(res4);
+      ////console.log(res4);
 
     });
 
@@ -1127,11 +1169,11 @@ class ExpressController {
       let data1 = req.params.d1
 
       let qry = `select * from meso_fluxo_ligacao where datahora = '${data1}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res23 = await executaQry(qry);
       res.json(res23);
-      //console.log(res23);
+      ////console.log(res23);
 
     });
 
@@ -1140,11 +1182,11 @@ class ExpressController {
       let data1 = req.params.d1
       let data2 = req.params.d2
       let qry = `select * from meso_estoque where diaatual >= '${data1}' and diaatual <= '${data2}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res32 = await executaQry(qry);
       res.json(res32);
-      //console.log(res32);
+      ////console.log(res32);
 
     });
 
@@ -1152,11 +1194,11 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select src, dst, duration, recordingfile from cdr where calldate > '${data1}' and calldate < '${data2}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res199 = await executaQry(qry);
       res.json(res199);
-      //console.log(res199);
+      ////console.log(res199);
 
     });
 
@@ -1169,12 +1211,12 @@ class ExpressController {
       let data1 = req.params.d1
 
       let qry = `select * from meso_entrar where datahora like '${data1}%'  order by 'datahora';`;
-      // console.log('teste qualquer coisa', qry);
+      // //console.log('teste qualquer coisa', qry);
 
-      //console.log('aaaaaaaaaaaaaaaaaaaaaaa', qry)
+      ////console.log('aaaaaaaaaaaaaaaaaaaaaaa', qry)
       let res6 = await executaQry(qry);
       res.json(res6);
-      //console.log(res6);
+      ////console.log(res6);
 
     });
 
@@ -1187,32 +1229,33 @@ class ExpressController {
       res.header("Access-Control-Allow-Headers", "Origin, X-Request-Width, Content-Type, Accept");
       let usuario = req.body.login;
       let senha = req.body.senha;
-      console.log('me mostre o usuario e senha', usuario, senha);
+      //console.log('me mostre o usuario e senha', usuario, senha);
       try {
         let qry = `
               select * from meso_usuariologin where
               senha= MD5('${senha}') and 
               usuario= '${usuario}'
             `;
-        console.log('aqui esta o qry', qry);
+        //console.log('aqui esta o qry', qry);
 
         let res1 = await executaQry(qry);
-        console.log('log:', res1)
+        //console.log('log:', res1)
         if (res1.dados.length > 0) {
           const token = geraToken(res1.dados[0].usuario)
           const tipo = res1.dados[0].tipo
           const usuario2 = res1.dados[0].id
           const idPermissao = res1.dados[0].id_permissao
+          const ramal = res1.dados[0].ramal
 
-          console.log('CAIDO', { token, tipo, usuario2, idPermissao })
-          res.json({ token, tipo, usuario2, idPermissao });
-          console.log('pega token', token, tipo);
+          //console.log('CAIDO', { token, tipo, usuario2, idPermissao, ramal })
+          res.json({ token, tipo, usuario2, idPermissao, ramal });
+          //console.log('pega token', token, tipo);
         } else {
-          console.log('Usuario ou senha incorretos.');
+          //console.log('Usuario ou senha incorretos.');
           res.status(401).json({ erro: "Usuario ou senha incorretos." });
         }
       } catch (e) {
-        console.log(e);
+        //console.log(e);
       }
     });
 
@@ -1223,7 +1266,7 @@ class ExpressController {
       }
 
       const filePath = audioFile.path;
-      console.log(`Áudio recebido: ${filePath}`);
+      //console.log(`Áudio recebido: ${filePath}`);
 
       // Você pode optar por armazenar o arquivo ou manipular como desejar
       // Por exemplo, salvar a informação no banco de dados, se necessário
@@ -1272,10 +1315,10 @@ class ExpressController {
     let inserirCsv = async (resultadoCsv, usuario) => {
       for (const e of resultadoCsv) {
         // Primeira query para inserir em meso_mealing
-        //console.log(e.Telefone)
+        ////console.log(e.Telefone)
         let qry = `INSERT INTO meso_mealing VALUES (0, '${e.Ano}', '${e.Orgao}', '${e.Processo}', '${e.Liquidacao}', '${e.Valorface}', '${e.Credor}', '${e.Documento}', '${e.Idade}', '${e.Renda}', '${e.Tipo}', '${e.Telefone}', (SELECT id FROM meso_usuariologin WHERE usuario = '${usuario}'), NOW())`;
 
-        //console.log('eu sou inserir csv', qry);
+        ////console.log('eu sou inserir csv', qry);
         await executaQry(qry);
 
         // Adicionando um delay de 1 segundo
@@ -1321,18 +1364,18 @@ class ExpressController {
       ids = await executaQry(qry1)
 
       let qry3 = `select idPlatarforma from meso_plataforma where platarforma = '${plataforma}' order by idPlatarforma limit 1`
-      //console.log('casca de bala', qry3)
+      ////console.log('casca de bala', qry3)
       let idPlataforma = await executaQry(qry3);
-      //console.log('chupeta de baleia', idPlataforma.dados[0])
+      ////console.log('chupeta de baleia', idPlataforma.dados[0])
 
       let qry4 = `select idMealing from meso_oportunidade where idMealing = ${ids.dados[0].idMealing}`
       let isCadastrado = await executaQry(qry4)
-      //console.log('estou cadastrado?', isCadastrado.dados.length)
+      ////console.log('estou cadastrado?', isCadastrado.dados.length)
 
       if (isCadastrado.dados.length == 0) {
         let qry = `insert into meso_oportunidade (idMealing, idAnalista, idPlataforma,dataInicio,estado) values (${ids.dados[0].idMealing}, ${ids.dados[0].idAgente}, ${idPlataforma.dados[0].idPlatarforma},now(),'em andamento') `
         let res29 = await executaQry(qry);
-        //console.log('sou qry', qry)
+        ////console.log('sou qry', qry)
         res.json(res29);
       }
     })
@@ -1344,22 +1387,22 @@ class ExpressController {
       let ids
 
       let qry1 = `select o.idMealing,o.idOportunidade from meso_mealing as m inner join meso_oportunidade as o on (m.idMealing = o.idMealing) where m.processo = '${processo}'`
-      //console.log('cadelo', qry1)
+      ////console.log('cadelo', qry1)
       ids = await executaQry(qry1)
-      //console.log('Xoxota aqui', ids)
+      ////console.log('Xoxota aqui', ids)
 
       let qry3 = `select idPlatarforma from meso_plataforma where platarforma = '${plataforma}' order by idPlatarforma limit 1`
       let idPlataforma = await executaQry(qry3);
-      //console.log('chupeta de baleia', idPlataforma.dados[0])
+      ////console.log('chupeta de baleia', idPlataforma.dados[0])
 
       let qry5 = `select idMealing from meso_finaliza where idMealing = ${ids.dados[0].idMealing}`
       let isCadastrado = await executaQry(qry5)
-      //console.log('estou cadastrado?', isCadastrado.dados.length)
+      ////console.log('estou cadastrado?', isCadastrado.dados.length)
 
       if (isCadastrado.dados.length == 0) {
         let qry = `insert into meso_finaliza (idMealing,idOportunidade,idPlataforma,idEspecialista,observacao,estado,dataInicio) values (${ids.dados[0].idMealing}, ${ids.dados[0].idOportunidade},${idPlataforma.dados[0].idPlatarforma},(select id from meso_usuariologin where usuario = '${usuario}'),(select observacao from meso_oportunidade where idMealing = ${ids.dados[0].idMealing}),'em atendimento especialista',now())`
         let res29 = await executaQry(qry);
-        //console.log('sou qry', qry)
+        ////console.log('sou qry', qry)
         res.json(res29);
       }
     })
@@ -1374,22 +1417,22 @@ class ExpressController {
 
     this.expressAppWrapper.get('/atendimentogeral/:d1/:d2', async (req, res, next) => {
       let data1 = req.params.d1 + " 00:00:00"
-      //console.log('chapisco')
+      ////console.log('chapisco')
       let data2 = req.params.d2 + " 23:59:59"
       let qry1 = `select u.usuario,count(o.idPlataforma) as quantPlataforma,sum(case when o.atendeu = 1 then 1 else 0 end) as atendeu,p.platarforma from meso_oportunidade as o inner join meso_usuariologin as u on (o.idAnalista = u.id) inner join meso_plataforma as p on (o.idPlataforma = p.idPlatarforma) where idPlataforma IN (1, 2) and  o.dataInicio >= '${data1}' and o.dataInicio <= '${data2}' group by u.usuario, p.platarforma;`
       let res1 = await executaQry(qry1)
-      //console.log(qry1)
+      ////console.log(qry1)
 
       res.json(res1)
     })
 
     this.expressAppWrapper.get('/atendimentogeralespecialista/:d1/:d2', async (req, res, next) => {
       let data1 = req.params.d1 + " 00:00:00"
-      //console.log('chapisco')
+      ////console.log('chapisco')
       let data2 = req.params.d2 + " 23:59:59"
       let qry1 = `select u.usuario,count(f.idPlataforma) as quantPlataforma,sum(case when f.estado = 'aprovado' then 1 else 0 end) as atendeu,p.platarforma from meso_finaliza as f inner join meso_usuariologin as u on (f.idEspecialista = u.id) inner join meso_plataforma as p on (f.idPlataforma = p.idPlatarforma) where idPlataforma IN (1, 2) and  f.dataInicio >= '${data1}' and f.dataInicio <= '${data2}' group by u.usuario, p.platarforma;`
       let res1 = await executaQry(qry1)
-      //console.log(qry1)
+      ////console.log(qry1)
 
       res.json(res1)
     })
@@ -1408,8 +1451,8 @@ class ExpressController {
       let qry4 = `select avg(TIMESTAMPDIFF(SECOND, dataInicio, dataFim)) as media,max(TIMESTAMPDIFF(SECOND, dataInicio, dataFim)) as maxDuracao from meso_oportunidade where idAnalista = (select id from meso_usuariologin where usuario = '${analista}' and idPlataforma = 2);`
       let res4 = await executaQry(qry4)
 
-      //console.log('qry1', qry1)
-      //console.log('qry2', qry2)
+      ////console.log('qry1', qry1)
+      ////console.log('qry2', qry2)
 
       let tudo = {
         whastzap: res1.dados[0], // Supondo que res1 retorne um array com um único objeto
@@ -1430,7 +1473,7 @@ class ExpressController {
 
       res.json(tudo1)
 
-      //console.log(tudo1)
+      ////console.log(tudo1)
     })
 
     this.expressAppWrapper.get('/tmazapespecialista/:especialista/:d1/:d2', async (req, res, next) => {
@@ -1447,8 +1490,8 @@ class ExpressController {
       let qry4 = `select avg(TIMESTAMPDIFF(SECOND, dataInicio, dataFim)) as media,max(TIMESTAMPDIFF(SECOND, dataInicio, dataFim))  as maxDuracao  from meso_finaliza  where idEspecialista = (select id from meso_usuariologin where usuario = '${especialista}' and idPlataforma = 2);`
       let res4 = await executaQry(qry4)
 
-      //console.log('qry1', qry1)
-      //console.log('qry2', qry2)
+      ////console.log('qry1', qry1)
+      ////console.log('qry2', qry2)
 
       let tudo = {
         whastzap: res1.dados[0], // Supondo que res1 retorne um array com um único objeto
@@ -1469,36 +1512,36 @@ class ExpressController {
 
       res.json(tudo1)
 
-      //console.log(tudo1)
+      ////console.log(tudo1)
     })
 
     this.expressAppWrapper.get('/detalhezap/:d1/:d2', async (req, res, next) => {
       let data1 = req.params.d1 + " 00:00:00"
       let data2 = req.params.d2 + " 23:59:59"
       let qry = `select u.usuario, m.credor,m.processo,o.estado,date_format(o.dataInicio,'%d-%m-%Y %H:%i:%S') as dataInicio,date_format(o.dataFim,'%d-%m-%Y %H:%i:%S') as dataFim,p.Platarforma from meso_usuariologin as u inner join meso_mealing as m on (u.id = m.idAgente) inner join meso_oportunidade as o on (o.idMealing = m.idMealing) inner join meso_plataforma as p on (p.idPlatarforma = o.idPlataforma) where o.dataInicio >= '${data1}' and o.dataFim <= '${data2}'`
-      //console.log(qry)
+      ////console.log(qry)
       let res1 = await executaQry(qry)
       res.json(res1)
-      //console.log(res1)
+      ////console.log(res1)
     })
 
     this.expressAppWrapper.get('/detalhezapespecialista/:d1/:d2', async (req, res, next) => {
       let data1 = req.params.d1 + " 00:00:00"
       let data2 = req.params.d2 + " 23:59:59"
       let qry = `select u.usuario, m.credor,m.processo,f.estado,date_format(f.dataInicio,'%d-%m-%Y %H:%i:%S') as dataInicio,date_format(f.dataFim,'%d-%m-%Y %H:%i:%S') as dataFim,p.Platarforma from meso_usuariologin as u inner join meso_finaliza as f on (u.id = f.idEspecialista) inner join meso_mealing as m on (m.idMealing = f.idMealing)  inner join meso_plataforma as p on (p.idPlatarforma = f.idPlataforma) where f.dataInicio >= '${data1}' and f.dataFim <= '${data2}'`
-      //console.log(qry)
+      ////console.log(qry)
       let res1 = await executaQry(qry)
       res.json(res1)
-      //console.log(res1)
+      ////console.log(res1)
     })
 
     this.expressAppWrapper.get('/buscarcsv', async (req, res, next) => {
       if (terminou) {
         let qry = `select * from meso_mealing`
-        //console.log(qry)
+        ////console.log(qry)
         let res1 = await executaQry(qry)
         res.json(res1)
-        //console.log('to aqui')
+        ////console.log('to aqui')
         terminou = false;
       }
     })
@@ -1514,11 +1557,11 @@ class ExpressController {
 
 
       let qry = `select * from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${fila}'  and connectedlinenum = '${ramal}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res99 = await executaQry(qry);
       res.json(res99);
-      //console.log(res99);
+      ////console.log(res99);
 
     });
 
@@ -1531,22 +1574,22 @@ class ExpressController {
 
 
       let qry = `select distinct connectedlinename as usuario from meso_agent_complete where fila = '${fila}'  and connectedlinenum = '${ramal}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res99 = await executaQry(qry);
       res.json(res99);
-      //console.log(res99);
+      ////console.log(res99);
 
     });
 
     this.expressAppWrapper.get("/nomeramalsainte/:ramal", async (req, res, next) => {
       let ramal = req.params.ramal;
       let qry = `select distinct cnam as usuario from cdr where cnum = '${ramal}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1);
+      ////console.log(res1);
 
     });
 
@@ -1557,22 +1600,22 @@ class ExpressController {
 
 
       let qry = `select distinct connectedlinenum as ramal from meso_agent_complete where fila = '${fila}'  and connectedlinenum = '${ramal}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res99 = await executaQry(qry);
       res.json(res99);
-      //console.log(res99);
+      ////console.log(res99);
 
     });
 
     this.expressAppWrapper.get("/ramaltmasainte/:ramal", async (req, res, next) => {
       let ramal = req.params.ramal;
       let qry = `select distinct cnum as ramal from cdr where cnum = '${ramal}'`
-      //console.log(qry);
+      ////console.log(qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1);
+      ////console.log(res1);
     })
 
 
@@ -1586,13 +1629,13 @@ class ExpressController {
         let res27 = await executaQry(qry);
         res.json(res27);
       } catch (e) {
-        //////console.log(e);
+        ////////console.log(e);
       }
     });
 
     this.expressAppWrapper.get("/contatotira/:id", async (req, res, next) => {
       let id = req.params.id;
-      //////console.log(id)
+      ////////console.log(id)
       try {
         let qry = `
               delete from meso_contatos where id = ${id}
@@ -1600,15 +1643,15 @@ class ExpressController {
         let res28 = await executaQry(qry);
         res.json(res28);
       } catch (e) {
-        //////console.log(e);
+        ////////console.log(e);
       }
     });
 
     this.expressAppWrapper.post("/contatoaltera", async (req, res, next) => {
-      console.log(req.body)
+      //console.log(req.body)
       let mostra = req.body;
       let { id, nome, telefone, campanha, id_agencia } = mostra;
-      //console.log(id,  senha, tipo);
+      ////console.log(id,  senha, tipo);
 
       try {
         let qry = `
@@ -1628,11 +1671,11 @@ class ExpressController {
       let ramal = req.params.ramal
       let qry = `select avg(talktime) as mediatma from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'
       and member like '%${ramal}%' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res39 = await executaQry(qry);
       res.json(res39);
-      //console.log(res39);
+      ////console.log(res39);
 
     });
 
@@ -1643,11 +1686,11 @@ class ExpressController {
       let ramal = req.params.ramal
       let qry = `select * from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'
       and connectedlinenum = '${ramal}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res40 = await executaQry(qry);
       res.json(res40);
-      //console.log(res40);
+      ////console.log(res40);
 
     });
 
@@ -1656,11 +1699,11 @@ class ExpressController {
       let data2 = req.params.d1 + ' 23:59:59'
       let ramal = req.params.ramal
       let qry = `select * from cdr where calldate >= '${data1}' and calldate <= '${data2}' and cnum = '${ramal}' and disposition = 'ANSWERED' and lastapp = 'Dial'`;
-      //console.log('xereco', qry);
+      ////console.log('xereco', qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      console.log(res1)
+      //console.log(res1)
     })
 
     this.expressAppWrapper.get("/totalduracaotma/:fila/:d1/:d2/:ramal", async (req, res, next) => {
@@ -1670,11 +1713,11 @@ class ExpressController {
       let ramal = req.params.ramal
       let qry = `select sum(talktime) as duracaototal from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'
       and connectedlinenum = '${ramal}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res41 = await executaQry(qry);
       res.json(res41);
-      //console.log(res41);
+      ////console.log(res41);
 
     });
 
@@ -1683,11 +1726,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
       let ramal = req.params.ramal
       let qry = `select sum(billsec) as duracaototal from cdr where calldate > '${data1}' and calldate < '${data2}' and cnum = '${ramal}'`
-      //console.log(qry)
+      ////console.log(qry)
 
       let res1 = await executaQry(qry)
       res.json(res1)
-      //console.log(res1)
+      ////console.log(res1)
     })
 
     this.expressAppWrapper.get("/maximaduracaotma/:fila/:d1/:d2/:ramal", async (req, res, next) => {
@@ -1697,11 +1740,11 @@ class ExpressController {
       let ramal = req.params.ramal
       let qry = `select max(talktime) as duracaomaxima from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'
       and connectedlinenum = '${ramal}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res42 = await executaQry(qry);
       res.json(res42);
-      //console.log(res42);
+      ////console.log(res42);
 
     });
 
@@ -1710,22 +1753,22 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
       let ramal = req.params.ramal
       let qry = `select max(billsec) as duracaomaxima from cdr where calldate  > '${data1}' and calldate < '${data2}' and cnum = '${ramal}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1)
+      ////console.log(res1)
     })
     //Iinicio conexões---------------------------------------------------------------------------------
     this.expressAppWrapper.get("/listnum/:agent", async (req, res, next) => {
 
       let agent = req.params.agent
       let qry = `select extension from users where name = '${agent}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry2(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1737,11 +1780,11 @@ class ExpressController {
       let fila = req.params.fila
       let qry = `select min(datahora) as mindata from meso_login_fila where membername= '${ramal}' and fila = '${fila}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1750,11 +1793,11 @@ class ExpressController {
 
       let ramal = req.params.ramal
       let qry = `select count(extension) as ramal from users where extension = '${ramal}' `;
-      console.log(qry);
+      //console.log(qry);
 
       let res38 = await executaQry2(qry);
       res.json(res38);
-      console.log(res38);
+      //console.log(res38);
 
     });
 
@@ -1766,11 +1809,11 @@ class ExpressController {
       let fila = req.params.fila
       let qry = `select min(datahora) as mindata from meso_login_fila where membername= '${ramal}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log('#ReginaldoCompraUmArCondicionadoParaGente', qry);
+      ////console.log('#ReginaldoCompraUmArCondicionadoParaGente', qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1782,11 +1825,11 @@ class ExpressController {
       let fila = req.params.fila
       let qry = `select max(datahora) as maxdata from meso_login_fila where membername= '${ramal}' and fila = '${fila}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1800,11 +1843,11 @@ class ExpressController {
       let fila = req.params.fila
       let qry = `select max(datahora) as maxdata from meso_login_fila where membername= '${ramal}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1816,11 +1859,11 @@ class ExpressController {
       let fila = req.params.fila
       let qry = `select count(evento) as numcon from meso_login_fila where membername= '${ramal}' and fila = '${fila}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1832,11 +1875,11 @@ class ExpressController {
       let fila = req.params.fila
       let qry = `select count(evento) as ligacoes from meso_agent_connect where connectedlinenum = '${ramal}' and uniqueid = '${fila}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1848,11 +1891,11 @@ class ExpressController {
       let fila = req.params.fila
       let qry = `select count(evento) as acalled from meso_agent_called where connectedlinenum = '${ramal}' and fila = '${fila}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1864,14 +1907,14 @@ class ExpressController {
       let qry = `select distinct SEC_TO_TIME(sum(time_to_sec(TIMEDIFF(despausado, datahora)))) as durpause from meso_pausa_fila where membername = '${ramal}' and datahora >= '${data1}' and datahora <= '${data2};
       '
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
 
 
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1884,11 +1927,11 @@ class ExpressController {
       let qry = `select distinct SEC_TO_TIME(sum(talktime)) as talktime from meso_agent_complete where connectedlinenum = '${ramal}' or calleridnum= '${ramal}' and fila = '${fila}' and datahora > '${data1}' and datahora < '${data2};
       '
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1898,11 +1941,11 @@ class ExpressController {
       let data1 = req.params.d1
       let data2 = req.params.d2
       let qry = `select sec_to_time(sum(time_to_sec(timediff(terminoligacao,inicioligacao)))) as talktime from meso_detalhe_sainte where solicitante = '${ramal}' `
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1914,12 +1957,12 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select sec_to_time(SUM(time_to_sec(TIMEDIFF(desloga, datahora)))) as durcon from meso_login_fila where membername = '${ramal}' and fila ='${fila}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1931,11 +1974,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select sec_to_time(SUM(time_to_sec(TIMEDIFF(desloga, datahora)))) as durcon from meso_login_fila where membername = '${ramal}' and datahora > '${data1}' and datahora < '${data2}'`;
-      //console.log('wof wof wof, só as cachorras', qry)
+      ////console.log('wof wof wof, só as cachorras', qry)
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1)
+      ////console.log(res1)
     })
 
     this.expressAppWrapper.get("/numpausa/:ramal/:fila/:d1/:d2", async (req, res, next) => {
@@ -1946,11 +1989,11 @@ class ExpressController {
       let fila = req.params.fila
       let qry = `select count(evento) as pausas from meso_pausa_fila where membername = '${ramal}' and fila = '${fila}' and datahora >= '${data1}' and datahora <= '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1968,12 +2011,12 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select SUM(time_to_sec(TIMEDIFF(desloga, datahora))) as durconsec from meso_login_fila where membername = '${ramal}' and fila ='${fila}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -1984,12 +2027,12 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select SUM(time_to_sec(TIMEDIFF(desloga, datahora))) as durconsec from meso_login_fila where membername = '${ramal}'  and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -2001,12 +2044,12 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select SUM(TIMEDIFF(desloga, datahora)) as verificadur from meso_login_fila where membername = '${ramal}' and fila ='${fila}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -2016,12 +2059,12 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select SUM(TIMEDIFF(desloga, datahora)) as verificadur from meso_login_fila where membername = '${ramal}' and datahora > '${data1}' and datahora < '${data2}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -2034,10 +2077,10 @@ class ExpressController {
       let qry = `select distinct sum(talktime) as talktimesec from meso_agent_complete where connectedlinenum = '${ramal}' or calleridnum= '${ramal}' and fila = '${fila}' and datahora > '${data1}' and datahora < '${data2};
       '
       `;
-      //console.log(qry);
+      ////console.log(qry);
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -2047,11 +2090,11 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select sum(time_to_sec(timediff(terminoligacao,inicioligacao))) as talktimesec from meso_detalhe_sainte where solicitante = '${ramal}' and datahora > '${data1}' and datahora < '${data2}'`;
-      //console.log('salve', qry);
+      ////console.log('salve', qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -2063,11 +2106,11 @@ class ExpressController {
       let fila = req.params.fila
       let qry = `select MAX(datahora) as maxlogoff from meso_desloga_fila where membername= '${ramal}' and fila = '${fila}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -2079,11 +2122,11 @@ class ExpressController {
 
       let qry = `select MAX(datahora) as maxlogoff from meso_desloga_fila where membername= '${ramal}' and datahora > '${data1}' and datahora < '${data2}'
       `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -2096,11 +2139,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select sum(holdtime) as somaespera from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res43 = await executaQry(qry);
       res.json(res43);
-      //console.log(res43);
+      ////console.log(res43);
 
     });
 
@@ -2110,11 +2153,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select sum(duration - billsec) as somasainte from cdr where calldate > '${data1}' and calldate < '${data2}' and cnum = '${ramal}'`;
-      //console.log('eu sou a melodia', qry);
+      ////console.log('eu sou a melodia', qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1);
+      ////console.log(res1);
     })
 
     this.expressAppWrapper.get("/mediaespera/:fila/:d1/:d2/", async (req, res, next) => {
@@ -2123,11 +2166,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select avg(holdtime) as mediaespera from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res44 = await executaQry(qry);
       res.json(res44);
-      //console.log(res44);
+      ////console.log(res44);
 
     });
 
@@ -2137,11 +2180,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select sum(duration - billsec) as duracao, count(*) as contduracao from cdr where calldate > '${data1}' and calldate < '${data2}' and cnum = '${ramal}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1);
+      ////console.log(res1);
     })
 
     this.expressAppWrapper.get("/minimoespera/:fila/:d1/:d2/", async (req, res, next) => {
@@ -2150,11 +2193,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select min(holdtime) as minimaespera from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res45 = await executaQry(qry);
       res.json(res45);
-      //console.log(res45);
+      ////console.log(res45);
 
     });
 
@@ -2164,11 +2207,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select min(billsec) as minimaesperasainte from cdr where calldate > '${data1}' and calldate < '${data2}' and cnum = '${ramal}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1);
+      ////console.log(res1);
     })
 
     this.expressAppWrapper.get("/maximoespera/:fila/:d1/:d2/", async (req, res, next) => {
@@ -2177,11 +2220,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select max(holdtime) as maximaespera from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res45 = await executaQry(qry);
       res.json(res45);
-      //console.log(res45);
+      ////console.log(res45);
 
     });
 
@@ -2191,11 +2234,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select max(billsec) as maximoesperasainte from cdr where calldate > '${data1}' and calldate < '${data2}' and cnum = '${ramal}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1);
+      ////console.log(res1);
     })
 
 
@@ -2205,11 +2248,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select * from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res46 = await executaQry(qry);
       res.json(res46);
-      //console.log(res46);
+      ////console.log(res46);
 
     });
 
@@ -2219,11 +2262,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select * from cdr where calldate > '${data1}' and calldate < '${data2}' and cnum = '${ramal}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1);
+      ////console.log(res1);
     })
 
     //FIM TME----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2233,11 +2276,11 @@ class ExpressController {
     this.expressAppWrapper.get("/listartronco", async (req, res, next) => {
 
       let qry = `select * from trunks `;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res38 = await executaQry2(qry);
       res.json(res38);
-      //console.log(res38);
+      ////console.log(res38);
 
     });
 
@@ -2246,12 +2289,12 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select count(*) as abandon from meso_abandon where datahora > '${data1}' and datahora < '${data2}' and channel like '%${tronco}%'`;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res33 = await executaQry(qry);
       res.json(res33);
-      //console.log(res33);
+      ////console.log(res33);
 
     });
 
@@ -2260,12 +2303,12 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select count(*) as entrada from meso_entrar where datahora > '${data1}' and datahora < '${data2}' and channel like '%${tronco}%'`;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res33 = await executaQry(qry);
       res.json(res33);
-      //console.log(res33);
+      ////console.log(res33);
 
     });
 
@@ -2274,12 +2317,12 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select count(*) as complete from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and channel like '%${tronco}%'`;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res33 = await executaQry(qry);
       res.json(res33);
-      //console.log(res33);
+      ////console.log(res33);
 
     });
 
@@ -2288,12 +2331,12 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select count(*) as entradart from meso_join_rt where datahora > '${data1}' and datahora < '${data2}' and channel like '%${tronco}%'`;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res33 = await executaQry(qry);
       res.json(res33);
-      //console.log(res33);
+      ////console.log(res33);
 
     });
 
@@ -2315,8 +2358,8 @@ class ExpressController {
       let ramal = 'PJSIP/' + req.params.ramal;
       let ramal2 = req.params.ramal;
 
-      //console.log('teoricamente eu sou o telefone', telefone)
-      //console.log('talvez eu seja o ramal', ramal)
+      ////console.log('teoricamente eu sou o telefone', telefone)
+      ////console.log('talvez eu seja o ramal', ramal)
 
 
 
@@ -2337,6 +2380,140 @@ class ExpressController {
       res.status(200).send('ok')
 
     })
+    this.expressAppWrapper.get('/logar/:ramal/:tipo/:usuario', async (req, res) => {
+      try {
+        // ────────────────────────────────────────────────────────────
+        // 1. Parâmetros
+        // ────────────────────────────────────────────────────────────
+        const numeroRamal = req.params.ramal;       // só o número
+        const tipo = req.params.tipo;
+        const usuario = req.params.usuario;
+
+        // ────────────────────────────────────────────────────────────
+        // 2. Busca a fila no banco (use bind params p/ evitar SQLi)
+        // ────────────────────────────────────────────────────────────
+        const qry = `SELECT fila FROM meso_usuariologin WHERE usuario = '${usuario}'`;
+        const getFilaArray = await executaQry(qry);
+
+        if (!getFilaArray.dados.length) {
+          return res.status(404).send('Fila não encontrada');
+        }
+
+        const fila = getFilaArray.dados[0].fila;
+
+        // ────────────────────────────────────────────────────────────
+        // 3. Conecta no AMI
+        // ────────────────────────────────────────────────────────────
+        const AmiClient = require('asterisk-manager');
+        const ami = new AmiClient(5038, '127.0.0.1', 'admin', 'Mtes0206', true);
+
+        // Encerra a conexão caso perca link
+        ami.keepConnected();
+
+        // Usa promise pra esperar resposta
+        const amiAction = (params) =>
+          new Promise((resolve, reject) => {
+            ami.action(params, (err, res) => (err ? reject(err) : resolve(res)));
+          });
+
+        // ────────────────────────────────────────────────────────────
+        // 4. Adiciona o agente
+        // ────────────────────────────────────────────────────────────
+        const response = await amiAction({
+          Action: 'QueueAdd',
+          Queue: fila,
+          Interface: `PJSIP/${numeroRamal}`,
+          Penalty: 0,
+          Paused: 'no',
+        });
+
+        //console.log('AMI ->', response);
+
+        // ────────────────────────────────────────────────────────────
+        // 5. Desconecta do AMI
+        // ────────────────────────────────────────────────────────────
+        ami.disconnect();
+
+        // ────────────────────────────────────────────────────────────
+        // 6. HTTP OK
+        // ────────────────────────────────────────────────────────────
+
+        let qry2 = `update users set estado = 'logado' where extension = '${numeroRamal}'`
+        await executaQry2(qry2)
+
+        res.status(200).send('Agente logado na fila com sucesso');
+      } catch (err) {
+        console.error('Erro ao logar agente:', err);
+        res.status(200).send('Falha ao logar agente');
+      }
+    });
+
+    this.expressAppWrapper.get('/deslogar/:ramal/:tipo/:usuario', async (req, res) => {
+      try {
+        // ────────────────────────────────────────────────────────────
+        // 1. Parâmetros
+        // ────────────────────────────────────────────────────────────
+        const numeroRamal = req.params.ramal;       // só o número
+        const tipo = req.params.tipo;
+        const usuario = req.params.usuario;
+
+        // ────────────────────────────────────────────────────────────
+        // 2. Busca a fila no banco (use bind params p/ evitar SQLi)
+        // ────────────────────────────────────────────────────────────
+        const qry = `SELECT fila FROM meso_usuariologin WHERE usuario = '${usuario}'`;
+        const getFilaArray = await executaQry(qry);
+
+        if (!getFilaArray.dados.length) {
+          return res.status(404).send('Fila não encontrada');
+        }
+
+        const fila = getFilaArray.dados[0].fila;
+
+        // ────────────────────────────────────────────────────────────
+        // 3. Conecta no AMI
+        // ────────────────────────────────────────────────────────────
+        const AmiClient = require('asterisk-manager');
+        const ami = new AmiClient(5038, '127.0.0.1', 'admin', 'Mtes0206', true);
+
+        // Encerra a conexão caso perca link
+        ami.keepConnected();
+
+        // Usa promise pra esperar resposta
+        const amiAction = (params) =>
+          new Promise((resolve, reject) => {
+            ami.action(params, (err, res) => (err ? reject(err) : resolve(res)));
+          });
+
+        // ────────────────────────────────────────────────────────────
+        // 4. Adiciona o agente
+        // ────────────────────────────────────────────────────────────
+        const response = await amiAction({
+          Action: 'QueueRemove',
+          Queue: fila,
+          Interface: `PJSIP/${numeroRamal}`,
+          Penalty: 0,
+          Paused: 'no',
+        });
+
+        //console.log('AMI ->', response);
+
+        // ────────────────────────────────────────────────────────────
+        // 5. Desconecta do AMI
+        // ────────────────────────────────────────────────────────────
+        ami.disconnect();
+
+        // ────────────────────────────────────────────────────────────
+        // 6. HTTP OK
+        // ────────────────────────────────────────────────────────────
+
+        let qry2 = `update users set estado = 'deslogado' where extension = '${numeroRamal}'`
+        await executaQry2(qry2)
+        res.status(200).send('Agente logado na fila com sucesso');
+      } catch (err) {
+        console.error('Erro ao logar agente:', err);
+        res.status(200).send('Falha ao logar agente');
+      }
+    });
 
 
 
@@ -2351,11 +2528,11 @@ class ExpressController {
       let telefone2 = req.params.telefone;
 
       let qry = ` update meso_estoque set situacao = 'Concluído' where ramalvendedor = '${telefone2}' and cliente = '${ramal}' `;
-      //console.log(qry);
-      //console.log(qry);
+      ////console.log(qry);
+      ////console.log(qry);
       let res132 = await executaQry(qry);
       res.json(res132);
-      //console.log(res132);
+      ////console.log(res132);
 
 
       var ami = new require('asterisk-manager')('5038', '127.0.0.1', 'admin', 'Mtes0206', true);
@@ -2386,14 +2563,14 @@ class ExpressController {
 
 
       let qry = `update meso_estoque set pedido = '${pedido}', situacao = '${situacao}' where ramalvendedor ='${ramal}' and cliente='${telefone}' and diaatual >= '${d1}' and diaatual <= '${d2}'`;
-      //console.log(qry);
+      ////console.log(qry);
 
 
-      //console.log(qry)
+      ////console.log(qry)
       let res99 = await executaQry(qry);
 
       res.json(res99);
-      //console.log(res99);
+      ////console.log(res99);
 
     });
 
@@ -2409,12 +2586,12 @@ class ExpressController {
       const usuario = req.body.usuario
       const tokenFunc = await funcToken(usuario);
 
-      console.log("token e usuario aqui", token, usuario);
+      //console.log("token e usuario aqui", token, usuario);
 
       if (token !== tokenFunc) {
         let qry = `update meso_usuariologin set token = '${token}' where usuario = '${usuario}'`;
         await executaQry(qry);
-        console.log("Token atualizado", qry);
+        //console.log("Token atualizado", qry);
       }
       res.status(200).send('Token registrado com sucesso!');
     });
@@ -2428,11 +2605,11 @@ class ExpressController {
       //let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `SELECT * FROM users ORDER BY FIELD(estado, 'em ligação', 'logado', 'pausado', 'deslogado');`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res36 = await executaQry2(qry);
       res.json(res36);
-      //console.log(res36);
+      ////console.log(res36);
 
     });
 
@@ -2442,11 +2619,11 @@ class ExpressController {
       //let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `update users set estado = 'deslogado' where fila = 0 and estado = 'logado';`;
-      //console.log(qry);
+      ////console.log(qry);
 
       let res36 = await executaQry2(qry);
       res.json(res36);
-      //console.log(res36);
+      ////console.log(res36);
 
 
 
@@ -2480,15 +2657,15 @@ class ExpressController {
                     insert into meso_logado(ramal ,pin, fila)
                     values ('${extensionsempin}','${extensionsempin}', '${fila}')
                   `;
-        //console.log(qry);
+        ////console.log(qry);
 
-        //console.log(qry)
+        ////console.log(qry)
         let res47 = await executaQry(qry);
         res.json(res47);
 
 
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2503,14 +2680,14 @@ class ExpressController {
         let qry = `
                           update users set estado = 'logado' where extension = '${extension}'
                         `;
-        //console.log(qry);
-        //console.log('MUDA ESTADO PARA LOGADO', qry)
+        ////console.log(qry);
+        ////console.log('MUDA ESTADO PARA LOGADO', qry)
         let res47 = await executaQry2(qry);
         res.json(res47);
 
 
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2526,14 +2703,14 @@ class ExpressController {
         let qry = `
                           update users set fila = '${fila}' where extension = '${extension}'
                         `;
-        //console.log(qry);
-        //console.log('MUDA ESTADO PARA LOGADO', qry)
+        ////console.log(qry);
+        ////console.log('MUDA ESTADO PARA LOGADO', qry)
         let res47 = await executaQry2(qry);
         res.json(res47);
 
 
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2549,11 +2726,11 @@ class ExpressController {
                                 insert into logs(user, ramal, fila, motivo, datahora)
                                 values ('${extension}','${extension}', '${fila}','login', now())
                               `;
-        //console.log(qry);
+        ////console.log(qry);
         let res47 = await executaQry(qry);
         res.json(res47);
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2571,11 +2748,11 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select * from logs where ramal like '%${ramal}%' and datahora >= '${data1}' and datahora <= '${data2}' order by '${data1}' `;
-      //console.log(`Les't go boys real opereador`, qry)
+      ////console.log(`Les't go boys real opereador`, qry)
 
       let res37 = await executaQry(qry);
       res.json(res37);
-      //////console.log(res37);
+      ////////console.log(res37);
 
     });
 
@@ -2605,15 +2782,15 @@ class ExpressController {
         let qry = `                      delete from meso_logado where pin = '${extensionsempin}'
     
                   `;
-        //console.log(qry);
+        ////console.log(qry);
 
-        //console.log(qry)
+        ////console.log(qry)
         let res47 = await executaQry(qry);
         res.json(res47);
 
 
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2628,14 +2805,14 @@ class ExpressController {
         let qry = `
                           update users set estado = 'deslogado' where extension = '${extension}'
                         `;
-        //console.log(qry);
-        //console.log('MUDA ESTADO PARA LOGADO', qry)
+        ////console.log(qry);
+        ////console.log('MUDA ESTADO PARA LOGADO', qry)
         let res47 = await executaQry2(qry);
         res.json(res47);
 
 
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2651,14 +2828,14 @@ class ExpressController {
         let qry = `
                           update users set fila = '0' where extension = '${extension}'
                         `;
-        //console.log(qry);
-        //console.log('MUDA ESTADO PARA LOGADO', qry)
+        ////console.log(qry);
+        ////console.log('MUDA ESTADO PARA LOGADO', qry)
         let res47 = await executaQry2(qry);
         res.json(res47);
 
 
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2674,11 +2851,11 @@ class ExpressController {
                                 insert into logs(user, ramal, fila, motivo, datahora)
                                 values ('${extension}','${extension}', '${fila}','logout', now())
                               `;
-        //console.log(qry);
+        ////console.log(qry);
         let res47 = await executaQry(qry);
         res.json(res47);
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2713,15 +2890,15 @@ class ExpressController {
         insert into meso_pausado(ramal ,pin, fila)
         values ('${extensionsempin}','${extensionsempin}', '${fila}')
                   `;
-        //console.log(qry);
+        ////console.log(qry);
 
-        //console.log(qry)
+        ////console.log(qry)
         let res47 = await executaQry(qry);
         res.json(res47);
 
 
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2736,14 +2913,14 @@ class ExpressController {
         let qry = `
                           update users set estado = 'pausado' where extension = '${extension}'
                         `;
-        //console.log(qry);
-        //console.log('MUDA ESTADO PARA LOGADO', qry)
+        ////console.log(qry);
+        ////console.log('MUDA ESTADO PARA LOGADO', qry)
         let res47 = await executaQry2(qry);
         res.json(res47);
 
 
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2760,11 +2937,11 @@ class ExpressController {
                                 insert into logs(user, ramal, fila, motivo, datahora)
                                 values ('${extension}','${extension}', '${fila}','pausain', now())
                               `;
-        //console.log(qry);
+        ////console.log(qry);
         let res47 = await executaQry(qry);
         res.json(res47);
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2800,15 +2977,15 @@ class ExpressController {
         delete from meso_pausado where pin =
         '${extensionsempin}'
                   `;
-        //console.log(qry);
+        ////console.log(qry);
 
-        //console.log(qry)
+        ////console.log(qry)
         let res47 = await executaQry(qry);
         res.json(res47);
 
 
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2827,11 +3004,11 @@ class ExpressController {
                                 insert into logs(user, ramal, fila, motivo, datahora)
                                 values ('${extension}','${extension}', '${fila}','pausaout', now())
                               `;
-        //console.log(qry);
+        ////console.log(qry);
         let res47 = await executaQry(qry);
         res.json(res47);
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
 
     });
@@ -2851,7 +3028,7 @@ class ExpressController {
         let res27 = await executaQry(qry);
         res.json(res27);
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
     });
 
@@ -2864,7 +3041,7 @@ class ExpressController {
         let res27 = await executaQry(qry);
         res.json(res27);
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
     });
 
@@ -2881,14 +3058,14 @@ class ExpressController {
         let res26 = await executaQry(qry);
         res.json(res26);
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
     });
 
 
     this.expressAppWrapper.get("/usuariotira/:id", async (req, res, next) => {
       let id = req.params.id;
-      //console.log(id)
+      ////console.log(id)
       try {
         let qry = `
               delete from meso_usuariologin where id = ${id}
@@ -2896,16 +3073,16 @@ class ExpressController {
         let res28 = await executaQry(qry);
         res.json(res28);
       } catch (e) {
-        //console.log(e);
+        ////console.log(e);
       }
     });
 
 
     this.expressAppWrapper.post("/usuarioaltera", async (req, res, next) => {
-      //console.log(req.body)
+      ////console.log(req.body)
       let mostra = req.body;
       let { id, usuario, senha, tipo } = mostra;
-      //console.log(id, usuario, senha, tipo);
+      ////console.log(id, usuario, senha, tipo);
 
       try {
         let qry = `
@@ -2913,6 +3090,32 @@ class ExpressController {
             `;
         let res14 = await executaQry(qry);
         res.json(res14);
+      } catch (e) {
+        res.json({ message: e.message })
+      }
+    });
+
+    this.expressAppWrapper.post("/alterar-usuario", async (req, res, next) => {
+      ////console.log(req.body)
+      try {
+        let usuario = req.body.usuario;
+        let usuarioSemPlug;
+        if (usuario.includes('-PlugPhone')) {
+          usuarioSemPlug = usuario.replace('-PlugPhone', '');
+          console.log("Caiu aquii será?")
+        }
+        let senha = req.body.senha;
+        let tipo = req.body.tipo;
+        let id = await executaQry(`select id from meso_usuariologin where usuario like "%${usuarioSemPlug}%"`)
+        console.log(`select id from meso_usuariologin where usuario like "%${usuarioSemPlug}%"`)
+        console.log("me mostre o id ", id.dados[0].id)
+
+
+
+
+        let updateUsuario = await executaQry(`update meso_usuariologin set usuario='${usuario}', senha =MD5('${senha}'), tipo='${tipo}' where id = ${id.dados[0].id} `);
+        console.log(`update meso_usuariologin set usuario='${usuario}', senha =MD5('${senha}'), tipo='${tipo}' where id = ${id.dados[0].id} `)
+        res.json("Atualizado");
       } catch (e) {
         res.json({ message: e.message })
       }
@@ -2926,12 +3129,12 @@ class ExpressController {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let qry = `select * from meso_detalhe where datahora > '${data1}' and datahora < '${data2}' `;
-      //console.log(qry);
+      ////console.log(qry);
 
 
       let res1 = await executaQry(qry);
       res.json(res1);
-      //console.log(res1);
+      ////console.log(res1);
 
     });
 
@@ -2941,7 +3144,7 @@ class ExpressController {
       let msg = req.body.message
 
       let resposta = await sendGpt(msg)
-      console.log('será que eu peguei a resposta? PLIN PLIN PLON?', resposta)
+      //console.log('será que eu peguei a resposta? PLIN PLIN PLON?', resposta)
       res.json(resposta);
 
 
@@ -2950,7 +3153,7 @@ class ExpressController {
     this.expressAppWrapper.get("/verificaPalavrao", async (req, res, next) => {
 
       let msg = await verificaPalavrao('whore')
-      console.log(msg)
+      //console.log(msg)
 
 
     })
@@ -2961,8 +3164,38 @@ class ExpressController {
       let to = req.body.to
       let body = req.body.body
       let nome = req.body.nome
+      //////console.log('dificil heim kkkkkkk', to, body, nome)
+      let palavrao = await verificaPalavrao(body)
+      //////console.log('palavrão nãokkkkkkk', palavrao)
+      if (palavrao) {
+        let qry = `insert into meso_mensagens_banidas (nome, mensagem) VALUES ('${nome}', '${body}')`
+        await executaQry(qry)
+        res.json({ "dados": "mensagem não tolerada" });
+      } else {
+        //////console.log('passei mesmo kkkkk')
+        send(to, body, nome, res)
+        let qry = `update meso_contatos set ultimamsg = '${body}' where telefone = ${to}`
+        //console.log('eu sou a ultimamsg', qry)
+        await executaQry(qry)
+        //console.log('chorava em vão')
+        buscarMensagem(to);
 
-      send(to, body, nome, res)
+        res.json({ "dados": "mensagem enviada" });
+      }
+
+    })
+
+    this.expressAppWrapper.post("/atualizausuario", async (req, res) => {
+      let nome = req.body.nome
+      let telefone = req.body.telefone;
+      let empresa = req.body.empresa;
+      let email = req.body.email;
+      let setor = req.body.setor;
+
+      let qry = `update meso_contatos set nome = '${nome}', telefone = '${telefone}', empresa = '${empresa}', email = '${email}', setor = '${setor}' where telefone = '${telefone}'`
+      await executaQry(qry)
+      res.json("Cliente atualizado com sucesso");
+      //console.log("simple jardineiro", qry);
     })
 
     this.expressAppWrapper.post("/sendimage", async (req, res) => {
@@ -2973,8 +3206,8 @@ class ExpressController {
       let id = req.body.id
       let usuario = req.body.usuario
 
-      //console.log(to, id, link, res)
-      //console.log('oque vem sem link', link)
+      ////console.log(to, id, link, res)
+      ////console.log('oque vem sem link', link)
       sendImage(to, id, usuario, res)
     })
 
@@ -3025,7 +3258,7 @@ class ExpressController {
       let mensagem = req.body.msg
       let tel = req.body.tel
       let qry = `UPDATE meso_contatos SET ultimamsg = '${mensagem}', datahora = NOW() WHERE telefone = '${tel}'`
-      console.log('Something in the way', qry)
+      //console.log('Something in the way', qry)
       executaQry(qry)
       res.send('Atualizado')
     })
@@ -3034,13 +3267,13 @@ class ExpressController {
     this.expressAppWrapper.get('/buscarmealing/:telefone', async (req, res, next) => {
       let telefone = req.params.telefone
       let qry = `select * from meso_contatos where telefone = '${telefone}'`
-      console.log('sou qry mealing', qry)
+      //console.log('sou qry mealing', qry)
       let res1 = await executaQry(qry)
       res.json(res1)
     })
 
     this.expressAppWrapper.get("/estadoMealing/:processo/:atendeu/:reagendar/:interesse/:negociar/:observacao", async (req, res, next) => {
-      //console.log('entrei aqui')
+      ////console.log('entrei aqui')
       let processo = req.params.processo
       let atendeu = req.params.atendeu
       let reagendar = req.params.reagendar
@@ -3074,23 +3307,23 @@ class ExpressController {
         observacao = ''
       }
 
-      //console.log(processo, atendeu, reagendar, interesse, negociar)
+      ////console.log(processo, atendeu, reagendar, interesse, negociar)
       if (atendeu == 'sim') {
 
         if (interesse == 'sim' || negociar == 'sim') {
           let qry = `update meso_oportunidade set estado = 'aprovado', atendeu ='${intatendeu}', reagenda='${intreagendar}', interesse='${intinteresse}', negociar = '${intnegociar}', observacao = '${observacao}',dataFim = now() where idMealing= (select idMealing from meso_mealing where processo ="${processo}" order by idMealing limit 1 )`
-          //console.log('query', qry)
+          ////console.log('query', qry)
           let res1 = await executaQry(qry)
           res.json(res1)
         } else {
           let qry = `update meso_oportunidade set estado = 'reprovado',dataFim = now(), observacao = '${observacao}' where idMealing= (select idMealing from meso_mealing where processo ="${processo}") `
-          //console.log('query', qry)
+          ////console.log('query', qry)
           let res1 = await executaQry(qry)
           res.json(res1)
         }
       } else if (reagendar == 'sim') {
         let qry = `update meso_oportunidade set estado = 'reagendar', atendeu ='${intatendeu}', reagenda='${intreagendar}', interesse='${intinteresse}', negociar = '${intnegociar}', observacao = '${observacao}',dataFim = now() where idMealing= (select idMealing from meso_mealing where processo ="${processo}" order by idMealing limit 1 )`
-        //console.log('query', qry)
+        ////console.log('query', qry)
 
         let res1 = await executaQry(qry)
         res.json(res1)

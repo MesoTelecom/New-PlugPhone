@@ -2,9 +2,9 @@ const mysql = require("mysql2/promise");
 require("dotenv").config()
 
 const pool = mysql.createPool({
-  host: "tel.sicoob.plugphone.cloud",
+  host: "localhost",
   user: "root",
-  database: "asteriskcdrdb",
+  database: "asterisk",
   password: "Mtes0206",
   dateStrings: true,
   waitForConnections: true,
@@ -17,7 +17,7 @@ async function executaQryServer(qry) {
   let connection = await pool.getConnection();
   try {
     // let [rows, fields] = await connection.execute(qry);
-    let [rows, fields] = await connection.execute(qry);
+    let [rows, fields] = await connection.query(qry);
     // console.log('rrr',rows);
 
     resposta = { dados: rows, msg: "" };

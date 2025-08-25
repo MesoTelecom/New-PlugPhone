@@ -8,7 +8,7 @@
         <v-row>
 
           <router-link to="/dashboard">
-            <v-icon @click="a = true" id="seta" class="imageIcon" style="margin-bottom: -25%;left: 100%;">
+            <v-icon @click="deslogar()" id="seta" class="imageIcon" style="margin-bottom: -25%;left: 100%;">
               mdi-arrow-left
             </v-icon>
           </router-link>
@@ -76,7 +76,7 @@
               Cliente</v-btn>
             <v-btn @click="buscarContato(estadoContatoFiltro = 'Aguardando Atendimento')" class="botaoEstado">Aguard...
               Atendimento</v-btn>
-            <v-btn @click="buscarContato(estadoContatoFiltro = 'Concluido')" class="botaoEstado">Concluido</v-btn>
+            <v-btn @click="buscarContato(estadoContatoFiltro = 'Finalizado')" class="botaoEstado">Concluido</v-btn>
           </v-row>
 
           <v-row style="margin-right: 25%;">
@@ -447,22 +447,24 @@ import 'emoji-picker-element'
 
 
 
+
 // Certifique-se de incluir o script libmp3lame.js no seu projeto e carregá-lo corretamente.
 
 export default {
   mounted() {
-    this.verificaEstado();
 
   },
   async beforeMount() {
     this.buscaCidadao();
+
     this.funcTokenFirebase();
     let usuario = JSON.parse(localStorage.getItem('usu'));
     this.tipo = usuario.tipo;
     this.usuario = usuario.usuario + "-PlugPhone"
+    this.ramal = usuario.ramal
     //this.idsetinterval = setInterval(() => this.buscarContato(), 5000);
     this.buscarContato("Todos");
-
+    this.logar();
 
   },
 
@@ -510,6 +512,7 @@ export default {
 
       ],
       messages: [],
+      rama: "",
       setor: ['Técnico', 'Comercial', 'Financeiro', 'Admin'],
       setorSelect: "",
       novoNome: "",
@@ -575,8 +578,9 @@ export default {
 
 
     this.socket.on('chat message', async (nome, msg, telefone) => {
+      this.contact = []
       this.verificaMensagem(telefone, this.tipo, this.usuario)
-      this.buscarContato(this.estadoContatoAtual)
+
       if (telefone == this.wppnum) {
 
         this.messages.push({ text: msg, sender: nome });
@@ -586,11 +590,16 @@ export default {
         let a = await api.get(`/lidamsg/${this.wppnum}`);
         console.log(a);
         this.scrollToBottom(); // 🔥 Rola para baixo ao receber mensagem
+        this.buscarContato(this.estadoContatoAtual)
+
       } else {
-        // this.playSound();
+        //  this.playSound();
         console.log('foi aqui não my badkkkkkkkkk');
         this.mudaEstado(telefone);
+        this.buscarContato(this.estadoContatoAtual)
+
       }
+
     });
 
 
@@ -715,24 +724,50 @@ export default {
 
     async addContato() {
 
-      let add = {
-        nome: this.novoNome,
-        telefone: this.novoNum,
-        setor: this.setorSelect,
-        email: this.novoEmail,
-        empresa: this.novoEmpresa
+      if (this.novoNum.length > 12) {
+        alert(
+          "O número informado possui mais de 12 dígitos.\nVerifique se não incluiu o dígito 9 após o DDD."
+        )
+      } else if (this.novoNum.length < 12) {
+        alert(
+          "O número informado possui menos de 12 dígitos.\nVerifique se adicionou o código do país (55)."
+        )
+      } else {
+        let add = {
+          nome: this.novoNome,
+          telefone: this.novoNum,
+          setor: this.setorSelect,
+          email: this.novoEmail,
+          empresa: this.novoEmpresa
 
+        }
+        console.log('eu sou add', add)
+        let addContatoArray = await api.post(`/cadastrarcontato`, add)
+
+        console.log('eu sou o addContatoArray', addContatoArray)
+
+        this.buscarContato(this.estadoContatoAtual)
+
+        this.openDialogContato = false
       }
-      console.log('eu sou add', add)
-      let addContatoArray = await api.post(`/cadastrarcontato`, add)
+    },
+    async logar() {
+      console.log('this.ramal', this.ramal, this.tipo)
 
-      console.log('eu sou o addContatoArray', addContatoArray)
+      let login = await api.get(`logar/${this.ramal}/${this.tipo}/${this.usuario}`)
 
-      this.buscarContato(this.estadoContatoAtual)
+      console.log(login)
 
-      this.openDialogContato = false
     },
 
+    async deslogar() {
+      console.log('this.ramal', this.ramal, this.tipo)
+
+      let login = await api.get(`deslogar/${this.ramal}/${this.tipo}/${this.usuario}`)
+
+      console.log(login)
+
+    },
     async ramalDigitado() {
       if (this.ramal == "" || this.ramal == undefined) {
         alert('Seu ramal não pode ser Nulo')
@@ -779,8 +814,9 @@ export default {
 
       let a = await api.get(`/transferirchamado/${area}/${this.wppnum}/${usuario}`);
       console.log(a)
+      this.openDialogForm = false
       this.buscarContato(this.estadoContatoAtual)
-
+      location.reload()
 
     },
     async finalizar(finaliza) {
@@ -1042,38 +1078,29 @@ export default {
       });
     },
     async uploadAudio() {
+      const MPEGMode = 'stereo'; // ou 'mono', dependendo do seu caso
+      console.log(MPEGMode)
       if (!this.audioBlob) {
         console.error("Nenhum áudio selecionado");
         return;
-      } else {
-        console.log('Tipo do áudio:', this.audioBlob.type);
       }
 
-      // Cria um AudioContext para pegar a taxa de amostragem do arquivo WAV
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const audioBuffer = await audioContext.decodeAudioData(await this.audioBlob.arrayBuffer());
-
-      const sampleRate = audioBuffer.sampleRate; // Pega a taxa de amostragem do arquivo
+      const sampleRate = audioBuffer.sampleRate;
       console.log('Taxa de amostragem do áudio:', sampleRate);
 
-      // Pega os dados do canal de áudio, assume que é estéreo (2 canais), se não for, ajuste conforme necessário
-      const audioData = audioBuffer.getChannelData(0); // Usa o primeiro canal
+      const audioData = audioBuffer.getChannelData(0);  // Pega o primeiro canal
       const audioDataInt16 = new Int16Array(audioData.length);
 
-      // Converte Float32Array para Int16Array
       for (let i = 0; i < audioData.length; i++) {
-        audioDataInt16[i] = Math.max(-1, Math.min(1, audioData[i])) < 0 ?
-          audioData[i] * 0x8000 :
-          audioData[i] * 0x7FFF;
+        audioDataInt16[i] = Math.max(-1, Math.min(1, audioData[i])) < 0 ? audioData[i] * 0x8000 : audioData[i] * 0x7FFF;
       }
 
-      // Cria uma instância do codificador MP3 com a mesma taxa de amostragem
-      const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, 128); // 1 canal, sampleRate dinâmico, 128 kbps
-
+      const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, 128); // 1 canal, 44.1kHz, 128 kbps
       const mp3Data = [];
-      const samplesPerFrame = 1152; // Tamanho do frame
+      const samplesPerFrame = 1152;
 
-      // Codifica em frames
       for (let i = 0; i < audioDataInt16.length; i += samplesPerFrame) {
         const chunk = audioDataInt16.subarray(i, i + samplesPerFrame);
         const mp3Chunk = mp3Encoder.encodeBuffer(chunk);
@@ -1082,14 +1109,12 @@ export default {
         }
       }
 
-      const mp3End = mp3Encoder.flush(); // Finaliza a codificação
+      const mp3End = mp3Encoder.flush();
       if (mp3End.length > 0) {
         mp3Data.push(new Uint8Array(mp3End));
       }
 
-      // Cria um novo Blob em formato MP3
       const mp3Blob = new Blob(mp3Data, { type: 'audio/mpeg' });
-
       const formData = new FormData();
       formData.append('audio', mp3Blob, 'recording.mp3');
 
@@ -1108,13 +1133,11 @@ export default {
         };
         await api.post("sendAudio", enviaAudio);
 
-        // Criar URL do Blob do áudio
         const audioUrl = URL.createObjectURL(mp3Blob);
 
-        // Adicionar a mensagem de áudio ao array de mensagens
         this.messages.push({
           text: audioUrl,
-          datetime: new Date().toISOString(), // Adicione a data e hora atuais
+          datetime: new Date().toISOString(),
           sender: this.usuario,
           isAudio: true
         });
@@ -1163,10 +1186,13 @@ export default {
           console.log('palavrão não kkkkkkkkkkk')
           alert('Palavras de baixo calão não serão toleradas!')
         }
+
         this.newMessage = "";
         this.$nextTick(() => {
           this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
         });
+        this.buscarContato(this.estadoContatoAtual)
+
       }
     },
 
@@ -1290,7 +1316,7 @@ export default {
         // Envio para o WhatsApp
         let enviaDoc = {
           to: this.wppnum,
-          id: `${this.apiWPurl}/midia/${caminhoLimpo}`,
+          id: `${caminhoLimpo}`,
           nomeArquivo: this.selectedFile.name,
           usuario: this.usuario
         };
@@ -1339,20 +1365,18 @@ export default {
       //this.playSound()
 
 
-      if ((setorV == setor || setor == 'admin') && (usuarioV == usuario || usuarioV == null)) {
-        this.playSound()
+      if ((setorV == setor || setor == 'admin') && (usuarioV == usuario || usuarioV == null || usuarioV == "" || usuarioV == "null" || typeof usuarioV === "undefined")) {
+        this.playSound();
       } else {
-        console.log('não passei pelo if')
-
+        console.log('não passei pelo if');
       }
-
     },
 
     async buscarContato(estadoContato) {
-
-      this.estadoContatoAtual = estadoContato
       this.contacts = [];
-      let contatos = await api.get(`/buscarcontatos1/${this.tipo}/${this.usuario}/${estadoContato}`);
+      this.estadoContatoAtual = estadoContato
+
+      let contatos = await api.get(`/buscarcontatos2/${this.tipo}/${this.usuario}/${estadoContato}`);
       let contatosArray = contatos.data.dados;
       console.log("Esse é o contato array", contatosArray);
 

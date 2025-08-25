@@ -11,7 +11,7 @@ Notification.requestPermission()
   .then((permission) => {
     if (permission === 'granted') {
       console.log('Permissão concedida');
-      return getToken(messaging, { vapidKey: "BMJb6V3UmgAtIJe_dhTf7RP7jR-8Z4bjRp1eyV3f3CwY7a85xvq7ZIhDH4INKUz2hKHdKNd7-4avPAPjw4IoUK4" });
+      return getToken(messaging, { vapidKey: "BHUHIxXM1SJWjDOOlQS1C3fO4t4My_CFbCFqJ-uDIUTkDeYHg-iW4PvoKgOtidjgqssxgHSQlPJ6s9KyEC1YkUY"});
     } else {
       console.error('Permissão para notificações não concedida');
     }

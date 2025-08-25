@@ -1,0 +1,1718 @@
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk5Mjg1NTczFQIAERgSMTQ3NjNCOTZCQkFCNEMwQzJBAA==",
+                "status": "sent",
+                "timestamp": "1743687458",
+                "recipient_id": "553199285573",
+                "conversation": {
+                  "id": "7b9ee1295875b559eb92d8ffe27b84a9",
+                  "expiration_timestamp": "1743701400",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgNNTUyODk5OTg4MDgzNxUCABEYEjY0MDgzNzUzNzU0NkM2QUFDQgA=",
+                "status": "sent",
+                "timestamp": "1743771665",
+                "recipient_id": "5528999880837",
+                "conversation": {
+                  "id": "8f9928002f2d8bcabab29bf0193fcf37",
+                  "expiration_timestamp": "1743797760",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgNNTUyODk5OTg4MDgzNxUCABEYEjY0MDgzNzUzNzU0NkM2QUFDQgA=",
+                "status": "sent",
+                "timestamp": "1743771665",
+                "recipient_id": "5528999880837",
+                "conversation": {
+                  "id": "8f9928002f2d8bcabab29bf0193fcf37",
+                  "expiration_timestamp": "1743797760",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "118701541326382",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "551131646301",
+              "phone_number_id": "116793154851650"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTU0Mzk2NjE5OTkxFQIAERgSNkE4OTdDRDM3ODRERTdGQUFDAA==",
+                "status": "sent",
+                "timestamp": "1743390377",
+                "recipient_id": "554396619991",
+                "conversation": {
+                  "id": "a033d640ffff3c61e41ec0289348bd93",
+                  "expiration_timestamp": "1743476820",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTg5NzM4NDA5FQIAERgSQzgzRDJEMTYzM0VFNDJDMzNFAA==",
+                "status": "delivered",
+                "timestamp": "1743604020",
+                "recipient_id": "553189738409",
+                "conversation": {
+                  "id": "5931371c26273e2b9cc047cddba47a46",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "118701541326382",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "551131646301",
+              "phone_number_id": "116793154851650"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgNNTUyMTk5MjE4ODY0NBUCABEYEkVERDc2Q0Y3OTk5MTdEQkMwRQA=",
+                "status": "sent",
+                "timestamp": "1743534913",
+                "recipient_id": "5521992188644",
+                "conversation": {
+                  "id": "6c144c2d7a507f474e893dfc432d6e29",
+                  "expiration_timestamp": "1743621360",
+                  "origin": {
+                    "type": "utility"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "utility"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgNNTUyODk5OTg4MDgzNxUCABEYEjY0MDgzNzUzNzU0NkM2QUFDQgA=",
+                "status": "sent",
+                "timestamp": "1743771665",
+                "recipient_id": "5528999880837",
+                "conversation": {
+                  "id": "8f9928002f2d8bcabab29bf0193fcf37",
+                  "expiration_timestamp": "1743797760",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "contacts": [
+              {
+                "profile": {
+                  "name": "Matheus"
+                },
+                "wa_id": "553196472282"
+              }
+            ],
+            "messages": [
+              {
+                "from": "553196472282",
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAEhggRUQ2MjZCNTRGN0NBOTY3OTUzQzkwN0QyOUIyRTZBNkUA",
+                "timestamp": "1743792618",
+                "text": {
+                  "body": "Oi"
+                },
+                "type": "text"
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+qry 1 select estado from meso_mensagens_solicitante where type = 'protocolo' and telefone = '553196472282'  order by id desc  limit 1
+estado { dados: [
+    { estado: 'aberto'
+    }
+  ], msg: ''
+}
+2 e o outro aberto
+chuchu blz JY2HEC
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk5Mjg1NTczFQIAERgSMzUxRkUxN0VGOUM2NUIzRDU2AA==",
+                "status": "delivered",
+                "timestamp": "1743686903",
+                "recipient_id": "553199285573",
+                "conversation": {
+                  "id": "7b9ee1295875b559eb92d8ffe27b84a9",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+{
+  telefone: '553196472282',
+  nome: 'Matheus',
+  agente: '',
+  mensagem: 'Oi',
+  type: 'text'
+}
+Mensagem enviada: Matheus Oi 553196472282
+buraco profundo {
+  telefone: '553196472282',
+  nome: 'Matheus',
+  agente: '',
+  mensagem: 'Oi',
+  type: 'text'
+}
+Incorrect arguments to mysqld_stmt_execute
+chegou aqui update meso_contatos set ultimamsg = 'Oi', datahora = now() where telefone = '553196472282'
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSNTg1Mzk0OUY4RDUwMzM1QTIzAA==",
+                "status": "delivered",
+                "timestamp": "1743624780",
+                "recipient_id": "553191810047",
+                "conversation": {
+                  "id": "24a36dc70e987c7d251574b72064d11e",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSNTE3NjA4NjkyNDk2MkYzMDU0AA==",
+                "status": "delivered",
+                "timestamp": "1743613632",
+                "recipient_id": "553191810047",
+                "conversation": {
+                  "id": "24a36dc70e987c7d251574b72064d11e",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk5Mjg1NTczFQIAERgSM0E1OUIyMkQ0MzMyQTZCRDVDAA==",
+                "status": "read",
+                "timestamp": "1743616197",
+                "recipient_id": "553199285573"
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Usuário conectado _jT7tA-Wz_s4tR_ZAAAB
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "118701541326382",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "551131646301",
+              "phone_number_id": "116793154851650"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTkzMTcxOTE1FQIAERgSNTMxMTJDNzA2NzEwRDUxRkNBAA==",
+                "status": "failed",
+                "timestamp": "1743510671",
+                "recipient_id": "553193171915",
+                "errors": [
+                  {
+                    "code": 131049,
+                    "title": "This message was not delivered to maintain healthy ecosystem engagement.",
+                    "message": "This message was not delivered to maintain healthy ecosystem engagement.",
+                    "error_data": {
+                      "details": "In order to maintain a healthy ecosystem engagement, the message failed to be delivered."
+                    },
+                    "href": "https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes/"
+                  }
+                ]
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSNUNGRjM1MkZDRjVEMkUyM0JEAA==",
+                "status": "sent",
+                "timestamp": "1743682969",
+                "recipient_id": "553191810047",
+                "conversation": {
+                  "id": "24a36dc70e987c7d251574b72064d11e",
+                  "expiration_timestamp": "1743700020",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "118701541326382",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "551131646301",
+              "phone_number_id": "116793154851650"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSQUM3MkIyMEU0NENFMkZDOTRGAA==",
+                "status": "sent",
+                "timestamp": "1743530932",
+                "recipient_id": "553191810047",
+                "conversation": {
+                  "id": "7f24530b1dfba8bb4199402566925e74",
+                  "expiration_timestamp": "1743601860",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSNUNGRjM1MkZDRjVEMkUyM0JEAA==",
+                "status": "sent",
+                "timestamp": "1743682969",
+                "recipient_id": "553191810047",
+                "conversation": {
+                  "id": "24a36dc70e987c7d251574b72064d11e",
+                  "expiration_timestamp": "1743700020",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSREEzQzcxQ0JFNUY5RjJCRDUyAA==",
+                "status": "read",
+                "timestamp": "1743778208",
+                "recipient_id": "553196472282"
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSNUNGRjM1MkZDRjVEMkUyM0JEAA==",
+                "status": "sent",
+                "timestamp": "1743682969",
+                "recipient_id": "553191810047",
+                "conversation": {
+                  "id": "24a36dc70e987c7d251574b72064d11e",
+                  "expiration_timestamp": "1743700020",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+buraco profundo {
+  telefone: '553196472282',
+  nome: 'Matheus',
+  agente: 'Matheus-PlugPhone',
+  mensagem: 'ZAP',
+  type: 'text'
+}
+Incorrect arguments to mysqld_stmt_execute
+Meus dados 553196472282 Matheus undefined 551131646301 ZAP text
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "118701541326382",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "551131646301",
+              "phone_number_id": "116793154851650"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUxMTQ3NTU5MTYzFQIAERgSOUZDQTU3NDMzM0VGODc5OUQyAA==",
+                "status": "sent",
+                "timestamp": "1743426406",
+                "recipient_id": "551147559163",
+                "conversation": {
+                  "id": "9d8af72caf7e9a072ef47e579cf4e028",
+                  "expiration_timestamp": "1743512820",
+                  "origin": {
+                    "type": "utility"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "utility"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+buraco profundo {
+  telefone: '553196472282',
+  nome: 'Matheus',
+  agente: 'Matheus-PlugPhone',
+  mensagem: 'ZAP',
+  type: 'text'
+}
+Incorrect arguments to mysqld_stmt_execute
+Meus dados 553196472282 Matheus undefined 551131646301 ZAP text
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "118701541326382",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "551131646301",
+              "phone_number_id": "116793154851650"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUxMTQ3NTU5MTYzFQIAERgSOUZDQTU3NDMzM0VGODc5OUQyAA==",
+                "status": "sent",
+                "timestamp": "1743426406",
+                "recipient_id": "551147559163",
+                "conversation": {
+                  "id": "9d8af72caf7e9a072ef47e579cf4e028",
+                  "expiration_timestamp": "1743512820",
+                  "origin": {
+                    "type": "utility"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "utility"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTg5NzM4NDA5FQIAERgSRTMxMUNDRjQ2NDA4RDE0OTMwAA==",
+                "status": "delivered",
+                "timestamp": "1743705519",
+                "recipient_id": "553189738409",
+                "conversation": {
+                  "id": "e1d81f11e14c66454a4b9b26cf151164",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+buraco profundo {
+  telefone: '553196472282',
+  nome: 'Matheus',
+  agente: 'Matheus-PlugPhone',
+  mensagem: 'ZAP',
+  type: 'text'
+}
+Incorrect arguments to mysqld_stmt_execute
+Meus dados 553196472282 Matheus undefined 551131646301 ZAP text
+buraco profundo {
+  telefone: '553196472282',
+  nome: 'Matheus',
+  agente: 'Matheus-PlugPhone',
+  mensagem: 'ZAP',
+  type: 'text'
+}
+Incorrect arguments to mysqld_stmt_execute
+Meus dados 553196472282 Matheus undefined 551131646301 ZAP text
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSOEFDN0ZERjQyMEM3RTJFODcwAA==",
+                "status": "sent",
+                "timestamp": "1743792630",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "expiration_timestamp": "1743850620",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+buraco profundo {
+  telefone: '553196472282',
+  nome: 'Matheus',
+  agente: 'Matheus-PlugPhone',
+  mensagem: 'ZAP',
+  type: 'text'
+}
+Incorrect arguments to mysqld_stmt_execute
+Meus dados 553196472282 Matheus undefined 551131646301 ZAP text
+buraco profundo {
+  telefone: '553196472282',
+  nome: 'Matheus',
+  agente: 'Matheus-PlugPhone',
+  mensagem: 'ZAP',
+  type: 'text'
+}
+Incorrect arguments to mysqld_stmt_execute
+Meus dados 553196472282 Matheus undefined 551131646301 ZAP text
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSOEFDN0ZERjQyMEM3RTJFODcwAA==",
+                "status": "read",
+                "timestamp": "1743792630",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSNkQ2MkZCQjBDNEFDQkMyQTM5AA==",
+                "status": "sent",
+                "timestamp": "1743792630",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "expiration_timestamp": "1743850620",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "118701541326382",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "551131646301",
+              "phone_number_id": "116793154851650"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUxMTQ3NTU5MTYzFQIAERgSOUZDQTU3NDMzM0VGODc5OUQyAA==",
+                "status": "sent",
+                "timestamp": "1743426406",
+                "recipient_id": "551147559163",
+                "conversation": {
+                  "id": "9d8af72caf7e9a072ef47e579cf4e028",
+                  "expiration_timestamp": "1743512820",
+                  "origin": {
+                    "type": "utility"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "utility"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSNkQ2MkZCQjBDNEFDQkMyQTM5AA==",
+                "status": "read",
+                "timestamp": "1743792630",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "118701541326382",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "551131646301",
+              "phone_number_id": "116793154851650"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSRDNFRTFDMUUyMkMyOTJEOEJBAA==",
+                "status": "sent",
+                "timestamp": "1743525268",
+                "recipient_id": "553191810047",
+                "conversation": {
+                  "id": "7f24530b1dfba8bb4199402566925e74",
+                  "expiration_timestamp": "1743601860",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSNUE0MDY2OEJGQjQ3RkE5NDg4AA==",
+                "status": "sent",
+                "timestamp": "1743792632",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "expiration_timestamp": "1743850620",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "118701541326382",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "551131646301",
+              "phone_number_id": "116793154851650"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTgzMTY2MDQwFQIAERgSMjEwMUM3QTk1RTJBOUJDQjVDAA==",
+                "status": "delivered",
+                "timestamp": "1743429376",
+                "recipient_id": "553183166040",
+                "conversation": {
+                  "id": "b5e4539a6bc616e3eeed0731f4d8bbbe",
+                  "origin": {
+                    "type": "utility"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "utility"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSNUE0MDY2OEJGQjQ3RkE5NDg4AA==",
+                "status": "read",
+                "timestamp": "1743792632",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSQzY0NEEzREUxRUJEOUE1NTMxAA==",
+                "status": "sent",
+                "timestamp": "1743792632",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "expiration_timestamp": "1743850620",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSQzY0NEEzREUxRUJEOUE1NTMxAA==",
+                "status": "read",
+                "timestamp": "1743792632",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSNkNCMkM2RDBENzcyQzlERkQ4AA==",
+                "status": "sent",
+                "timestamp": "1743792633",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "expiration_timestamp": "1743850620",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSRURGMzJCMUExN0JGMzQ2NDE4AA==",
+                "status": "sent",
+                "timestamp": "1743792633",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "expiration_timestamp": "1743850620",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSNkNCMkM2RDBENzcyQzlERkQ4AA==",
+                "status": "read",
+                "timestamp": "1743792633",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSRURGMzJCMUExN0JGMzQ2NDE4AA==",
+                "status": "read",
+                "timestamp": "1743792634",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSNkNCMkM2RDBENzcyQzlERkQ4AA==",
+                "status": "read",
+                "timestamp": "1743792633",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSNkNCMkM2RDBENzcyQzlERkQ4AA==",
+                "status": "read",
+                "timestamp": "1743792633",
+                "recipient_id": "553196472282",
+                "conversation": {
+                  "id": "bbcd64cc64d154e458981e404d07dee5",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "464844583368500",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "553130580254",
+              "phone_number_id": "421167414412878"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTg5NzM4NDA5FQIAERgSNTgyNzkzMkE5RDRGMDExMDFGAA==",
+                "status": "delivered",
+                "timestamp": "1743701612",
+                "recipient_id": "553189738409",
+                "conversation": {
+                  "id": "e1d81f11e14c66454a4b9b26cf151164",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.
+Webhook recebido!
+Negocio aqui {
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "118701541326382",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "551131646301",
+              "phone_number_id": "116793154851650"
+            },
+            "statuses": [
+              {
+                "id": "wamid.HBgMNTUzMTkxODEwMDQ3FQIAERgSMDkyMUFFNzMzQTA2QzAxNTQ5AA==",
+                "status": "sent",
+                "timestamp": "1743527559",
+                "recipient_id": "553191810047",
+                "conversation": {
+                  "id": "7f24530b1dfba8bb4199402566925e74",
+                  "expiration_timestamp": "1743601860",
+                  "origin": {
+                    "type": "marketing"
+                  }
+                },
+                "pricing": {
+                  "billable": true,
+                  "pricing_model": "CBP",
+                  "category": "marketing"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}
+O número de WhatsApp não foi encontrado.

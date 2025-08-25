@@ -23,7 +23,7 @@
     "file-saver": "^2.0.5",
     "firebase": "^10.14.1",
     "html2canvas": "^1.4.1",
-    "lamejs": "^1.2.0",
+    "lamejs": "zhuker/lamejs",
     "moment": "^2.29.4",
     "recordrtc": "^5.6.2",
     "socket.io-client": "^4.7.5",

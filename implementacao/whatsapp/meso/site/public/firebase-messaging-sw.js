@@ -37,6 +37,6 @@ messaging.onBackgroundMessage((payload) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('https://mesotelecom.com.br') // Altere para o URL que você deseja abrir
+    clients.openWindow('https://your-url.com') // Altere para o URL que você deseja abrir
   );
 });

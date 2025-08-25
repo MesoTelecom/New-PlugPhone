@@ -1,4 +1,4 @@
-var ami = new require('asterisk-manager')('5038', 'localhost', 'admin', 'Mtes0206', true);
+var ami = new require('asterisk-manager')('5038', '127.0.0.1', 'admin', 'Mtes0206', true);
 console.log("PlugPhone API")
 // In case of any connectiviy problems we got you coverd.
 ami.keepConnected();
