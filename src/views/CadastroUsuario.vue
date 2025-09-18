@@ -28,15 +28,16 @@
                 <v-container>
                   <v-row>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.usuario" label="Nome do Usuário"></v-text-field>
+                      <v-text-field style="width: 100% !important;" v-model="editedItem.usuario"
+                        label="Nome do Usuário"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.senha" label="Digite a nova senha"
-                        type="password"></v-text-field>
+                      <v-text-field style="width: 100% !important;" v-model="editedItem.senha"
+                        label="Digite a nova senha" type="password"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
-                      <v-select label="Select" :items="['Técnico', 'Comercial', 'Financeiro', 'admin']"
-                        v-model="editedItem.tipo"></v-select>
+                      <v-select style="width: 100% !important;" label="Select"
+                        :items="['Técnico', 'Comercial', 'Financeiro', 'admin']" v-model="editedItem.tipo"></v-select>
                     </v-col>
                   </v-row>
                 </v-container>

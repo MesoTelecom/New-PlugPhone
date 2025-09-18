@@ -27,6 +27,9 @@
         <v-list dense>
           <br>
           <v-list-item-group v-model="selectedContact">
+
+            <h1 style="    text-align: center;">{{ estadoContatoFiltro }}</h1>
+
             <v-list-item v-for="(contact, index) in contacts" :key="index">
               <v-list-item-content>
                 <v-list-item-title class="sidebar" @click="selectContact(contact.telefone)">
@@ -144,10 +147,11 @@
     width: 21%;
     right: 1%;
     border-style: inset;
+
     border-width: thin;
     height: 90%;" hide-default-footer class="responsive-table" item-class="custom-row">
           <template v-slot:item="{ item }">
-            <div class="table-row">
+            <div class="table-row" style=" display: inline-grid;">
               <div v-for="(header, index) in informacao" :key="index">
                 <br> <strong>{{ header.text }}:<br></strong> {{ item[header.value] }}
               </div>
@@ -436,7 +440,7 @@
 <script>
 import { api } from "@/conf/api";
 import lamejs from 'lamejs';
-//import { apiWP } from "@/conf/apiWP";
+import { apiWP } from "@/conf/apiWP";
 import RecordRTC from 'recordrtc';
 import io from 'socket.io-client';
 import Navbar from "../components/Navbar.vue";
@@ -508,7 +512,10 @@ export default {
           value: 'nome',
         },
         { text: 'Telefone', value: 'telefone' },
+        { text: 'Setor', value: 'setor' },
         { text: 'Agente associado', value: 'usuario' },
+        { text: 'Email', value: 'email' },
+        { text: 'Empresa', value: 'empresa' },
 
       ],
       messages: [],
@@ -540,6 +547,8 @@ export default {
       selectedFile: null,
       whatsapp: "whatsapp",
       usuarioSelect: "",
+      novoEmpresa: "",
+      novoEmail: "",
       telefone: "telefone",
       processo: [],
       socket: "",
@@ -578,9 +587,11 @@ export default {
 
 
     this.socket.on('chat message', async (nome, msg, telefone) => {
+      console.log('recebi no socket', nome, msg, telefone)
       this.contact = []
       this.verificaMensagem(telefone, this.tipo, this.usuario)
 
+      console.log('sou o telefone e o wppnum', telefone, this.wppnum)
       if (telefone == this.wppnum) {
 
         this.messages.push({ text: msg, sender: nome });
@@ -714,7 +725,14 @@ export default {
         console.log('nome da fila:', nome);
         // this.listafila = [nomefila];
         //this.items = nomefila;
-        this.items.push([nome]);
+        this.items.push({
+          text: `${d.usuario}`,
+          token: `${d.token}`,
+          tokenM: `${d.tokenMobile}`,       // o que aparece no select
+          value: d.nome // o valor que será capturado no v-model
+
+          //          value: d.id_agencia // o valor que será capturado no v-model
+        });
       });
 
       //Listando os agentes para o filtro
@@ -764,9 +782,9 @@ export default {
       console.log('this.ramal', this.ramal, this.tipo)
 
       let login = await api.get(`deslogar/${this.ramal}/${this.tipo}/${this.usuario}`)
-
+      let restaToken = this.restaTokenFirebase();
       console.log(login)
-
+      console.log(restaToken);
     },
     async ramalDigitado() {
       if (this.ramal == "" || this.ramal == undefined) {
@@ -808,7 +826,7 @@ export default {
 
 
     async transferir() {
-      let usuario = this.usuarioSelect[0]
+      let usuario = this.usuarioSelect
       let area = this.setorSelect
       console.log('teste de select', area, usuario, this.wppnum)
 
@@ -1159,40 +1177,73 @@ export default {
       }
       console.log(token)
       console.log('que gemido foi esse?', this.token)
-      let a = await api.post(
+      let a = await apiWP.post(
         `/registrar-token`, token
       );
       console.log(a)
     },
 
+    async restaTokenFirebase() {
 
-
+      let token = {
+        "usuario": this.usuario
+      }
+      console.log(token)
+      console.log('que gemido foi esse?', this.token)
+      let a = await api.post(
+        `/resetaToken`, token
+      );
+      console.log(a)
+    },
 
     async sendMessage() {
       this.usuario = this.usuario.charAt(0).toUpperCase() + this.usuario.slice(1);
       console.log('teste usuario aqui', this.usuario)
+      console.log('eu aqui né vei kkkk', this.newMessage)
       if (this.newMessage.trim() !== "") {
         let msg = {
           to: this.wppnum,
           body: `${this.usuario} \n${this.newMessage}`,
           nome: this.usuario
         };
+        let contaMsg = await api.get(`/contaMsg/${this.wppnum}`)
 
-        console.log('me de o CUBO', msg)
-        this.messages.push({ text: this.newMessage, sender: this.usuario });
-        let resposta = await api.post("/whatsapp/send", msg);
-        console.log('verifica resposta da API', resposta.data.dados)
-        if (resposta.data.dados == "mensagem não tolerada") {
-          console.log('palavrão não kkkkkkkkkkk')
-          alert('Palavras de baixo calão não serão toleradas!')
+        console.log('aaaaah', contaMsg)
+
+        let numMsg = contaMsg.data.dados[0].mensagens
+        console.log('BBBBBBBBBB', numMsg)
+
+        if (numMsg === 0) {
+          alert('Esta é sua primeira mensagem para o contato hoje.\nPor favor, envie um template antes de continuar.');
+        } else {
+          let usuario = this.usuario
+          let umaMensagem = this.newMessage
+          let numero = this.wppnum
+          console.log('me de o CUBO', msg)
+          //this.messages.push({ text: this.newMessage, sender: this.usuario });
+          console.log('eu sou oque vai ser enviado pelo socket', usuario, umaMensagem, numero)
+          this.socket.emit('send Message', { usuario, umaMensagem, numero });
+          console.log('passei do socket')
+          let resposta = await api.post("/whatsapp/send", msg);
+          console.log('passei do resposta')
+
+          this.newMessage = "";
+          console.log("limpou?", this.newMessage);
+          console.log('verifica resposta da API', resposta.data.dados)
+
+          if (resposta.data.dados == "mensagem não tolerada") {
+            console.log('palavrão não kkkkkkkkkkk')
+            alert('Palavras de baixo calão não serão toleradas!')
+          }
+          // deve imprimir string vazia
+
+          this.$nextTick(() => {
+            this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+          });
+          this.buscarContato(this.estadoContatoAtual)
+
+
         }
-
-        this.newMessage = "";
-        this.$nextTick(() => {
-          this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
-        });
-        this.buscarContato(this.estadoContatoAtual)
-
       }
     },
 
