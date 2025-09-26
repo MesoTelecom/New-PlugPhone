@@ -37,9 +37,9 @@
                   <b style="font-size: 14px;"> {{ contact.nome }}</b>
                   <br>
 
-                  <texto style="    margin-left: 21%;
+                  <a style="    margin-left: 21%;
     font-size: 12px;
-    color: #494949;">{{ contact.ultimamsg }}</texto>
+    color: #494949;">{{ contact.ultimamsg }}</a>
                   <v-icon v-if="contact.estadomsg === 'novamsg'" color="#25D366"
                     style="font-size: 15px; left: 3%;">mdi-checkbox-blank-circle
                   </v-icon>
@@ -54,7 +54,7 @@
                     {{ contact.estado }}
                   </v-icon>
                   <br>
-                  <datahora style="margin-left: 21%; color: #8f8f8f !important;">{{ contact.datahora }}</datahora>
+                  <a style="margin-left: 21%; color: #8f8f8f !important;">{{ contact.datahora }}</a>
                   <hr>
 
                 </v-list-item-title>
@@ -79,7 +79,7 @@
               Cliente</v-btn>
             <v-btn @click="buscarContato(estadoContatoFiltro = 'Aguardando Atendimento')" class="botaoEstado">Aguard...
               Atendimento</v-btn>
-            <v-btn @click="buscarContato(estadoContatoFiltro = 'Finalizado')" class="botaoEstado">Concluido</v-btn>
+            <v-btn @click="buscarContato(estadoContatoFiltro = 'Concluído')" class="botaoEstado">Concluido</v-btn>
           </v-row>
 
           <v-row style="margin-right: 25%;">
@@ -152,6 +152,11 @@
     height: 90%;" hide-default-footer class="responsive-table" item-class="custom-row">
           <template v-slot:item="{ item }">
             <div class="table-row" style=" display: inline-grid;">
+              <v-icon class="edit" style="font-size: 35px;
+    border-radius: 100%;
+    width: 25%;
+    right: 3%;
+    " @click="openDialogEdita = true">mdi-account-edit</v-icon>
               <div v-for="(header, index) in informacao" :key="index">
                 <br> <strong>{{ header.text }}:<br></strong> {{ item[header.value] }}
               </div>
@@ -259,6 +264,46 @@
             </v-card-actions>
             <v-card-actions>
               <v-btn color="primary" @click="openDialogContato = false">Fechar</v-btn>
+            </v-card-actions>
+          </v-row>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="openDialogEdita" max-width="500px" persistent>
+        <v-card>
+          <v-card-title>Editar Contatos</v-card-title>
+          <v-card-text>
+            <v-text-field v-model="editaNome" label="Digite o nome do seu contato"></v-text-field>
+          </v-card-text>
+
+          <v-card-text>
+
+            <v-text-field v-model="editaNum" label="Número com DDD"
+              hint="Ex: 553187654321 (sem o 9 após o DDD)"></v-text-field>
+          </v-card-text>
+          <v-card-text>
+
+            <v-select :items="setor" label="Setor" v-model="setorSelect" @update:modelValue="listar(setorSelect)">
+            </v-select>
+          </v-card-text>
+          <v-card-text>
+
+            <v-text-field v-model="editaEmail" label="Digite o email do seu contato"></v-text-field>
+          </v-card-text>
+
+          <v-card-text>
+
+
+            <v-text-field v-model="editaEmpresa" label="Digite a empresa do seu contato"></v-text-field>
+
+
+          </v-card-text>
+          <v-row class="linhaBtn">
+            <v-card-actions>
+              <v-btn color="primary" @click="editaContato()">Enviar</v-btn>
+            </v-card-actions>
+            <v-card-actions>
+              <v-btn color="primary" @click="openDialogEdita = false">Fechar</v-btn>
             </v-card-actions>
           </v-row>
         </v-card>
@@ -523,11 +568,16 @@ export default {
       setor: ['Técnico', 'Comercial', 'Financeiro', 'Admin'],
       setorSelect: "",
       novoNome: "",
+      editaNome: "",
+      editaNum: "",
+      editaEmpresa: "",
+      editaEmail: "",
       novoNum: "",
       agents: [],
       showEmojiPicker: false,
       observacao: "",
       openDialogLigacao: false,
+      openDialogEdita: false,
       openDialogContato: false,
       openDialogConcluir: false,
       idsetinterval: null,
@@ -769,6 +819,37 @@ export default {
         this.openDialogContato = false
       }
     },
+
+    async editaContato() {
+      console.log('preciso ouvir, preciso ouvir, que quer viver')
+      if (this.editaNum.length > 12) {
+        alert(
+          "O número informado possui mais de 12 dígitos.\nVerifique se não incluiu o dígito 9 após o DDD."
+        )
+      } else if (this.editaNum.length < 12) {
+        alert(
+          "O número informado possui menos de 12 dígitos.\nVerifique se adicionou o código do país (55)."
+        )
+      } else {
+        let edit = {
+          nome: this.editaNome,
+          telefone: this.editaNum,
+          setor: this.setorSelect,
+          email: this.editaEmail,
+          empresa: this.editaEmpresa
+
+        }
+        console.log('eu sou edit', edit)
+        let editContatoArray = await api.post(`/editarcontato`, edit)
+
+        console.log('eu sou o editContatoArray', editContatoArray)
+
+        this.buscarContato(this.estadoContatoAtual)
+
+        this.openDialogEdita = false
+      }
+    },
+
     async logar() {
       console.log('this.ramal', this.ramal, this.tipo)
 
@@ -1051,10 +1132,13 @@ export default {
     },
     selectContact(contact) {
       //this.openDialog2 = true
+      console.log('oque é você rapazinho', contact)
       console.log('eu sou o contact XURASTAY OU XURAIGO', this.contact)
       this.messages = [];
       this.selectedContact = contact;
       //      let a =  api.get(`/insereusuario/${}`)
+
+      console.log('eu sou o selected contact do selectContact', this.estadoContatoAtual);
 
       this.wppnum = this.selectedContact;
       api.get(`/lidamsg/${this.wppnum}`);
@@ -1262,6 +1346,12 @@ export default {
       let a = await api.get(`/buscarmealing/${this.wppnum}`);
       console.log('Vira lata Caramelo', a)
       this.dados = a.data.dados;
+      console.log('eu sou os dados do cliente', this.dados)
+      this.editaNome = this.dados[0].nome
+      this.editaNum = this.dados[0].telefone
+      this.setorSelect = this.dados[0].setor
+      this.editaEmail = this.dados[0].email
+      this.editaEmpresa = this.dados[0].empresa
     },
 
     async ligar() {
@@ -1444,7 +1534,7 @@ export default {
           datahora: dataFormatada
         });
 
-        console.log("Eu sou os contatos :D", this.contacts);
+        //console.log("Eu sou os contatos :D", this.contacts);
       });
     }
     ,
@@ -1581,6 +1671,13 @@ export default {
 .imageIcon:hover {
   background-color: #b0b0b0;
   border-radius: 25%;
+}
+
+.edit:hover {
+
+  background-color: #b0b0b0;
+
+
 }
 
 .micIcon:hover {

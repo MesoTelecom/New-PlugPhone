@@ -70,17 +70,26 @@ class ExpressController {
     };
 
     this.expressAppWrapper.post('/cadastrarcontato', async (req, res) => {
-      let nome = req.body.nome
-      let telefone = req.body.telefone
-      let setor = req.body.setor
-      let email = req.body.email
-      let empresa = req.body.empresa
+      const { nome, telefone, setor, email, empresa } = req.body;
 
-      let qry = `insert into meso_contatos (nome,telefone,estado,datahora,setor, email, empresa) values ('${nome}','${telefone}','Novo',now(),'${setor}', '${email}','${empresa}')`
-      //console.log('bumbum profundo', qry)
-      await executaQry(qry)
-      res.json("Usuário Cadastrado");
-    })
+      const qry = `
+    INSERT INTO meso_contatos 
+      (nome, telefone, estado, datahora, setor, email, empresa)
+    VALUES 
+      ('${nome}', '${telefone}', 'Novo', NOW(), '${setor}', '${email}', '${empresa}')
+  `;
+
+      console.log('bumbum profundo', qry);
+
+      try {
+        await executaQry(qry);
+        res.json({ sucesso: true, mensagem: "Usuário cadastrado com sucesso" });
+      } catch (error) {
+        console.error("Erro ao cadastrar contato:", error);
+        res.status(500).json({ sucesso: false, mensagem: "Erro ao cadastrar usuário", erro: error.message });
+      }
+    });
+
 
     // Filtro para arquivos de áudio
     const audioFilter = (req, file, cb) => {
@@ -222,16 +231,16 @@ class ExpressController {
         return res.status(400).send('Nenhum documento recebido.');
       }
       let caminho = req.file.path;
-      //////console.log(caminho);
+      ////console.log(caminho);
 
       let idDocumento = await getDocument(caminho)
-      //////console.log('id documento', idDocumento)
+      ////console.log('id documento', idDocumento)
 
       // Aqui você pode processar o documento ou salvar as informações no banco
 
 
       res.json({ id: idDocumento });
-    });
+    });;
 
     this.expressAppWrapper.post('/upload-document', async (req, res) => {
       //////console.log('oi')
@@ -349,7 +358,7 @@ class ExpressController {
       let setor = req.params.setor;
       let telefone = req.params.telefone;
       let usuario = req.params.usuario
-      let qry = `UPDATE meso_contatos SET setor = '${setor}', usuario = ${usuario === 'undefined' ? 'NULL' : `'${usuario}'`} WHERE telefone = ${telefone}`;
+      let qry = `UPDATE meso_contatos SET setor = '${setor}', usuario = ${usuario === 'undefined' ? 'NULL' : `'${usuario}'`} WHERE telefone = '${telefone}'`;
 
       await executaQry(qry);
       res.send("Tranferido Com Sucesso")
@@ -523,9 +532,9 @@ class ExpressController {
 
       //console.log("Olha que bonito", usuario, telefone)
 
-      qry = `update meso_contatos set usuario = '${usuario}' where telefone = ${telefone}`
+      qry = `update meso_contatos set usuario = '${usuario}' where telefone = '${telefone}'`
 
-      //console.log('contato', qry)
+      console.log('contato', qry)
       let res20 = await executaQry(qry)
       res.json(res20)
       ////console.log('contatos resposta', res20)
@@ -577,7 +586,7 @@ class ExpressController {
     })
 
 
-    this.expressAppWrapper.get("/buscarcontatos1/:tipo/:usuario/:estado", async (req, res, next) => {
+    this.expressAppWrapper.get("/buscarcontatos2/:tipo/:usuario/:estado", async (req, res, next) => {
       let qry
 
       let tipo = req.params.tipo
@@ -607,6 +616,93 @@ class ExpressController {
             ORDER BY datahora DESC`;
         }
       }
+      //console.log('contato', qry)
+      ////console.log('contatos resposta', res20)
+
+      let res20 = await executaQry(qry)
+      res.json(res20)
+
+    })
+
+
+    this.expressAppWrapper.get("/buscarcontatos1/:tipo/:usuario/:estado", async (req, res, next) => {
+      let qry
+
+      let tipo = req.params.tipo
+      let usuario = req.params.usuario
+      let estado = req.params.estado
+      if (tipo === 'admin') {
+        if (estado === 'Todos') {
+          qry = `
+      SELECT 
+        c.*,
+        IFNULL(m.ultima_data, c.datahora) AS datahora
+      FROM meso_contatos c
+      LEFT JOIN (
+        SELECT telefone, mensagem, MAX(datetime) AS ultima_data
+        FROM meso_mensagens_solicitante
+        GROUP BY telefone, mensagem
+      ) m
+        ON m.telefone = c.telefone
+       AND m.mensagem = c.ultimamsg
+      ORDER BY datahora DESC
+    `;
+        } else {
+          qry = `
+      SELECT 
+        c.*,
+        IFNULL(m.ultima_data, c.datahora) AS datahora
+      FROM meso_contatos c
+      LEFT JOIN (
+        SELECT telefone, mensagem, MAX(datetime) AS ultima_data
+        FROM meso_mensagens_solicitante
+        GROUP BY telefone, mensagem
+      ) m
+        ON m.telefone = c.telefone
+       AND m.mensagem = c.ultimamsg
+      WHERE c.estado = '${estado}'
+      ORDER BY datahora DESC
+    `;
+        }
+      } else {
+        if (estado === 'Todos') {
+          qry = `
+      SELECT 
+        c.*,
+        IFNULL(m.ultima_data, c.datahora) AS datahora
+      FROM meso_contatos c
+      LEFT JOIN (
+        SELECT telefone, mensagem, MAX(datetime) AS ultima_data
+        FROM meso_mensagens_solicitante
+        GROUP BY telefone, mensagem
+      ) m
+        ON m.telefone = c.telefone
+       AND m.mensagem = c.ultimamsg
+      WHERE (c.usuario = '${usuario}' OR c.usuario IS NULL)
+        AND c.setor = '${tipo}'
+      ORDER BY datahora DESC
+    `;
+        } else {
+          qry = `
+      SELECT 
+        c.*,
+        IFNULL(m.ultima_data, c.datahora) AS datahora
+      FROM meso_contatos c
+      LEFT JOIN (
+        SELECT telefone, mensagem, MAX(datetime) AS ultima_data
+        FROM meso_mensagens_solicitante
+        GROUP BY telefone, mensagem
+      ) m
+        ON m.telefone = c.telefone
+       AND m.mensagem = c.ultimamsg
+      WHERE (c.usuario = '${usuario}' OR c.usuario IS NULL)
+        AND c.setor = '${tipo}'
+        AND c.estado = '${estado}'
+      ORDER BY datahora DESC
+    `;
+        }
+      }
+
       //console.log('contato', qry)
       ////console.log('contatos resposta', res20)
 
@@ -806,7 +902,7 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
       let qry = `select time_format(sec_to_time(avg(billsec)), '%H:%i:%s') as mediaTma from cdr where calldate >= '${data1}' and calldate <= '${data2}' and cnum = '${ramal}' and disposition = 'ANSWERED' and lastapp = 'Dial'`;
-      ////console.log(qry)
+      console.log(qry)
 
       let res1 = await executaQry(qry);
       res.json(res1)
@@ -978,12 +1074,18 @@ class ExpressController {
       if (nome.includes('-PlugPhone')) {
         nomeSemPlug = nome.replace('-PlugPhone', '');
         console.log("Caiu aquii será?")
+      } else {
+        nomeSemPlug = nome
       }
 
       let res20 = await executaQry(`select usuario,senha,tipo from meso_usuariologin where usuario like '%${nomeSemPlug}%'`);
-      console.log(`select usuario,senha,tipo from meso_usuariologin where usuario like '%${nomeSemPlug}%'`);
+      console.log(`oi tô aqui`, res20.dados[0]);
 
-      res.json(res20)
+      if (res20.dados[0]) {
+        res.json(res20.dados[0])
+      } else {
+        res.json("Usuário não encontrado")
+      }
 
       // //console.log("neve cobre o chão",qry)
       //console.log("res20 dados", res21)
@@ -1556,7 +1658,7 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
 
 
-      let qry = `select * from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${fila}'  and connectedlinenum = '${ramal}'`;
+      let qry = `select * from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${fila}'  and membername like '%${ramal}%'`;
       ////console.log(qry);
 
       let res99 = await executaQry(qry);
@@ -1573,7 +1675,7 @@ class ExpressController {
 
 
 
-      let qry = `select distinct connectedlinename as usuario from meso_agent_complete where fila = '${fila}'  and connectedlinenum = '${ramal}'`;
+      let qry = `select distinct membername as usuario from meso_agent_complete where fila = '${fila}'  and membername like '%${ramal}%'`;
       ////console.log(qry);
 
       let res99 = await executaQry(qry);
@@ -1599,7 +1701,7 @@ class ExpressController {
 
 
 
-      let qry = `select distinct connectedlinenum as ramal from meso_agent_complete where fila = '${fila}'  and connectedlinenum = '${ramal}'`;
+      let qry = `select distinct membername as ramal from meso_agent_complete where fila = '${fila}'  and membername like '%${ramal}%'`;
       ////console.log(qry);
 
       let res99 = await executaQry(qry);
@@ -1664,14 +1766,17 @@ class ExpressController {
       }
     });
 
+
+
+
     this.expressAppWrapper.get("/mediatma/:fila/:d1/:d2/:ramal", async (req, res, next) => {
       let filacompleta = req.params.fila;
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let ramal = req.params.ramal
-      let qry = `select avg(talktime) as mediatma from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'
-      and member like '%${ramal}%' `;
-      ////console.log(qry);
+      let qry = `select avg(talktime) as mediatma from meso_agent_complete where dataHora > '${data1}' and dataHora < '${data2}' and fila = '${filacompleta}'
+      and membername like '%${ramal}%' `;
+      console.log(qry);
 
       let res39 = await executaQry(qry);
       res.json(res39);
@@ -1685,7 +1790,7 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
       let ramal = req.params.ramal
       let qry = `select * from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'
-      and connectedlinenum = '${ramal}' `;
+      and membername like '%${ramal}%' `;
       ////console.log(qry);
 
       let res40 = await executaQry(qry);
@@ -1712,7 +1817,7 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
       let ramal = req.params.ramal
       let qry = `select sum(talktime) as duracaototal from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'
-      and connectedlinenum = '${ramal}' `;
+      and membername like '%${ramal}%' `;
       ////console.log(qry);
 
       let res41 = await executaQry(qry);
@@ -1739,7 +1844,7 @@ class ExpressController {
       let data2 = req.params.d2 + ' 23:59:59'
       let ramal = req.params.ramal
       let qry = `select max(talktime) as duracaomaxima from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'
-      and connectedlinenum = '${ramal}' `;
+      and membername like '%${ramal}%' `;
       ////console.log(qry);
 
       let res42 = await executaQry(qry);
@@ -1924,7 +2029,7 @@ class ExpressController {
       let fila = req.params.fila
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
-      let qry = `select distinct SEC_TO_TIME(sum(talktime)) as talktime from meso_agent_complete where connectedlinenum = '${ramal}' or calleridnum= '${ramal}' and fila = '${fila}' and datahora > '${data1}' and datahora < '${data2};
+      let qry = `select distinct SEC_TO_TIME(sum(talktime)) as talktime from meso_agent_complete where membername like '%${ramal}%' or calleridnum= '${ramal}' and fila = '${fila}' and datahora > '${data1}' and datahora < '${data2};
       '
       `;
       ////console.log(qry);
@@ -2074,7 +2179,7 @@ class ExpressController {
       let fila = req.params.fila
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
-      let qry = `select distinct sum(talktime) as talktimesec from meso_agent_complete where connectedlinenum = '${ramal}' or calleridnum= '${ramal}' and fila = '${fila}' and datahora > '${data1}' and datahora < '${data2};
+      let qry = `select distinct sum(talktime) as talktimesec from meso_agent_complete where membername = '${ramal}' and fila = '${fila}' and datahora > '${data1}' and datahora < '${data2};
       '
       `;
       ////console.log(qry);
@@ -2344,7 +2449,8 @@ class ExpressController {
     this.expressAppWrapper.get('/concluido/:telefone', async (req, res, next) => {
       let telefone = req.params.telefone
 
-      let qry = `update meso_contatos set estado = 'Concluido' where telefone like '%${telefone}%' `
+      let qry = `update meso_contatos set estado = 'Finalizado' where telefone like '%${telefone}%' `
+      console.log('som de milhões? hmmmmm', qry)
       let res2 = await executaQry(qry)
       res.json(res2)
     })
@@ -3045,20 +3151,35 @@ class ExpressController {
       }
     });
 
-
     this.expressAppWrapper.post("/insereusuario", async (req, res, next) => {
-      let usuario = req.body.usuario + '-PlugPhone';
+      let usuario = req.body.usuario + "-PlugPhone";
       let senha = req.body.senha;
       let tipo = req.body.tipo;
+
       try {
         let qry = `
-              insert into meso_usuariologin(usuario, senha, tipo)
-              values ('${usuario}', MD5('${senha}'), '${tipo}')
-            `;
-        let res26 = await executaQry(qry);
-        res.json(res26);
+      INSERT INTO meso_usuariologin(usuario, senha, tipo)
+      VALUES ('${usuario}', MD5('${senha}'), '${tipo}')
+    `;
+
+        let resultado = await executaQry(qry);
+        console.log('caveira na sala da faculdade', resultado);
+
+        if (resultado?.dados?.affectedRows > 0) {
+          res.json({
+            sucesso: true,
+            mensagem: "Usuário cadastrado com sucesso.",
+            insertId: resultado.dados.insertId,
+          });
+        } else {
+          res.status(400).json({
+            sucesso: false,
+            mensagem: "Não foi possível cadastrar o usuário.",
+          });
+        }
       } catch (e) {
-        ////console.log(e);
+        console.error(e);
+        res.status(500).json({ sucesso: false, mensagem: "Erro ao cadastrar usuário.", erro: e.message });
       }
     });
 
@@ -3096,28 +3217,42 @@ class ExpressController {
     });
 
     this.expressAppWrapper.post("/alterar-usuario", async (req, res, next) => {
-      ////console.log(req.body)
+      console.log("fazendo o som")
       try {
         let usuario = req.body.usuario;
-        let usuarioSemPlug;
+        let usuarioSemPlug = usuario;
         if (usuario.includes('-PlugPhone')) {
           usuarioSemPlug = usuario.replace('-PlugPhone', '');
-          console.log("Caiu aquii será?")
+          console.log("Caiu aquii será?");
         }
+
         let senha = req.body.senha;
         let tipo = req.body.tipo;
-        let id = await executaQry(`select id from meso_usuariologin where usuario like "%${usuarioSemPlug}%"`)
-        console.log(`select id from meso_usuariologin where usuario like "%${usuarioSemPlug}%"`)
-        console.log("me mostre o id ", id.dados[0].id)
 
+        let id = await executaQry(`SELECT id FROM meso_usuariologin WHERE usuario LIKE "%${usuarioSemPlug}%"`);
+        if (!id.dados || id.dados.length === 0) {
+          console.log("mostra o usuario", usuario)
+          return res.status(404).json({ message: "Usuário não encontrado." });
+        }
 
+        let userId = id.dados[0].id;
 
+        let updateUsuario = await executaQry(`
+      UPDATE meso_usuariologin
+      SET usuario='${usuario}', senha=MD5('${senha}'), tipo='${tipo}'
+      WHERE id=${userId}
+    `);
 
-        let updateUsuario = await executaQry(`update meso_usuariologin set usuario='${usuario}', senha =MD5('${senha}'), tipo='${tipo}' where id = ${id.dados[0].id} `);
-        console.log(`update meso_usuariologin set usuario='${usuario}', senha =MD5('${senha}'), tipo='${tipo}' where id = ${id.dados[0].id} `)
-        res.json("Atualizado");
+        // Aqui depende de como o executaQry retorna — geralmente:
+        // updateUsuario.affectedRows OU updateUsuario.dados.affectedRows
+        if (updateUsuario.affectedRows > 0 || updateUsuario.dados?.affectedRows > 0) {
+          return res.json({ message: "Usuário atualizado com sucesso!" });
+        } else {
+          return res.status(200).json({ message: "Nenhuma alteração foi feita (dados já estavam iguais)." });
+        }
       } catch (e) {
-        res.json({ message: e.message })
+        console.error("Erro ao atualizar usuário:", e);
+        return res.status(500).json({ message: "Erro interno: " + e.message });
       }
     });
 
@@ -3186,17 +3321,36 @@ class ExpressController {
     })
 
     this.expressAppWrapper.post("/atualizausuario", async (req, res) => {
-      let nome = req.body.nome
+      let nome = req.body.nome;
       let telefone = req.body.telefone;
       let empresa = req.body.empresa;
       let email = req.body.email;
       let setor = req.body.setor;
+      let idCliente = req.body.idCliente
 
-      let qry = `update meso_contatos set nome = '${nome}', telefone = '${telefone}', empresa = '${empresa}', email = '${email}', setor = '${setor}' where telefone = '${telefone}'`
-      await executaQry(qry)
-      res.json("Cliente atualizado com sucesso");
-      //console.log("simple jardineiro", qry);
-    })
+      let qry = `
+    UPDATE meso_contatos 
+    SET nome = '${nome}', telefone = '${telefone}', empresa = '${empresa}', email = '${email}', setor = '${setor}'
+    WHERE id = '${idCliente}'
+  `;
+
+      console.log("simple jardineiro", qry);
+
+      try {
+        let resultado = await executaQry(qry);
+
+        if (resultado.affectedRows > 0) {
+          res.json({ success: true, message: "Cliente atualizado com sucesso!" });
+        } else {
+          res.json({ success: false, message: "Nenhum cliente encontrado para atualizar." });
+        }
+
+      } catch (error) {
+        console.error("Erro ao atualizar cliente:", error);
+        res.status(500).json({ success: false, message: "Erro ao atualizar cliente!", error: error.message });
+      }
+    });
+
 
     this.expressAppWrapper.post("/sendimage", async (req, res) => {
 
@@ -3244,13 +3398,28 @@ class ExpressController {
     this.expressAppWrapper.post("/senddocument", async (req, res) => {
 
       let to = req.body.to
-      let id = req.body.id
+      let id = req.body.id.replace(/\D/g, "")
       let usuario = req.body.usuario
       let filename = req.body.nomeArquivo
+
+      console.log(`teste do send document, \nto${to},\n id:${id},\n nomeArquivo ${filename},\nusuario ${usuario}`)
 
 
       sendDocument(to, id, filename, usuario, res)
     })
+
+
+    this.expressAppWrapper.get('/contaMsg/:num', async (req, res, next) => {
+      let num = req.params.num
+      try {
+        let qry5 = `select count(*) as mensagens from meso_mensagens_solicitante where telefone = '${num}' and DATE(datetime) = CURDATE();`
+        let res1 = await executaQry(qry5)
+
+        res.json(res1)
+      } catch (error) {
+        ////////console.log(e)
+      }
+    });
 
 
 
