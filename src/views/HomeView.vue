@@ -64,8 +64,6 @@
 
 <script>
 import { api } from "@/conf/api";
-import { messaging } from '../firebase'; // Importa a instância de messaging
-import { getToken } from 'firebase/messaging';
 
 
 export default {
@@ -80,8 +78,6 @@ export default {
     async login() {
       try {
         //localStorage.removeItem( "jwt");
-        let token = await getToken(messaging, { vapidKey: "BHUHIxXM1SJWjDOOlQS1C3fO4t4My_CFbCFqJ-uDIUTkDeYHg-iW4PvoKgOtidjgqssxgHSQlPJ6s9KyEC1YkUY" });
-        console.log('eeh xereco aqui', token)
         this.error = false;
         let res = await api.post("loginconfere/", {
           login: this.usuario + "-PlugPhone",
@@ -93,16 +89,13 @@ export default {
           this.$store.state.token = res.data.token;
           this.$store.state.logado = res.data.tipo;
           this.$store.state.adm = res.data.tipo == "admin";
-          this.$store.state.tokenFirebase = token;
+
           this.$store.state.ramal = res.data.ramal;
           let usu = {
             usuario: this.usuario,
             pin: res.data.token,
             tipo: res.data.tipo,
-            tokenFirebase: token,
             ramal: res.data.ramal,
-
-
           };
 
           console.log('usuario de java credo', usu)

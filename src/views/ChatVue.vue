@@ -1256,7 +1256,7 @@ export default {
       let usuario = JSON.parse(localStorage.getItem('usu'))
       this.token = usuario.tokenFirebase
       let token = {
-        token: this.token,
+        token: "abc",
         "usuario": this.usuario
       }
       console.log(token)
