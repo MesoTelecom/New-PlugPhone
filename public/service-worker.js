@@ -2,11 +2,11 @@
 console.log("✅ Service Worker carregado");
 
 self.addEventListener("install", (event) => {
-  console.log("SW instalado!");
+  console.log("SW instalado!",event);
 });
 
 self.addEventListener("activate", (event) => {
-  console.log("SW ativado!");
+  console.log("SW ativado!",event);
 });
 
 console.log("🛠️ Service Worker ativado");

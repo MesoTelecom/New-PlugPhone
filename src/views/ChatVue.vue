@@ -365,7 +365,7 @@
           <v-card-text>
             <v-row class="linhaContato">
 
-              <v-btn @click="populaOportunidade(whatsapp), sendTemplate(), openDialog2 = false" class="btnAudio">
+              <v-btn @click=" sendTemplate(), openDialog2 = false" class="btnAudio">
                 Whatsapp <v-icon>mdi-whatsapp</v-icon>
               </v-btn>
               <v-btn @click="openDialogLigacao = true, openDialog2 = false" class="btnCall">
@@ -485,7 +485,6 @@
 <script>
 import { api } from "@/conf/api";
 import lamejs from 'lamejs';
-import { apiWP } from "@/conf/apiWP";
 import RecordRTC from 'recordrtc';
 import io from 'socket.io-client';
 import Navbar from "../components/Navbar.vue";
@@ -505,8 +504,6 @@ export default {
   },
   async beforeMount() {
     this.buscaCidadao();
-
-    this.funcTokenFirebase();
     let usuario = JSON.parse(localStorage.getItem('usu'));
     this.tipo = usuario.tipo;
     this.usuario = usuario.usuario + "-PlugPhone"
@@ -863,9 +860,7 @@ export default {
       console.log('this.ramal', this.ramal, this.tipo)
 
       let login = await api.get(`deslogar/${this.ramal}/${this.tipo}/${this.usuario}`)
-      let restaToken = this.restaTokenFirebase();
-      console.log(login)
-      console.log(restaToken);
+      console.log(login)      
     },
     async ramalDigitado() {
       if (this.ramal == "" || this.ramal == undefined) {
@@ -974,7 +969,7 @@ export default {
         console.log(template)
 
       } else {
-        response = await api.get(`/oportunidadeespecialista/${processo}/${this.plataforma}/${this.usuario}`);
+        //response = await api.get(`/oportunidadeespecialista/${processo}/${this.plataforma}/${this.usuario}`);
         let msg = {
           name: this.name,
           to: this.wppnum,
@@ -1249,35 +1244,6 @@ export default {
         console.error('Erro ao enviar áudio:', error);
         this.openDialog1 = false;
       }
-    },
-
-
-    async funcTokenFirebase() {
-      let usuario = JSON.parse(localStorage.getItem('usu'))
-      this.token = usuario.tokenFirebase
-      let token = {
-        token: "abc",
-        "usuario": this.usuario
-      }
-      console.log(token)
-      console.log('que gemido foi esse?', this.token)
-      let a = await apiWP.post(
-        `/registrar-token`, token
-      );
-      console.log(a)
-    },
-
-    async restaTokenFirebase() {
-
-      let token = {
-        "usuario": this.usuario
-      }
-      console.log(token)
-      console.log('que gemido foi esse?', this.token)
-      let a = await api.post(
-        `/resetaToken`, token
-      );
-      console.log(a)
     },
 
     async sendMessage() {
