@@ -64,7 +64,7 @@
 
 <script>
 import { api } from "@/conf/api";
-
+import { askPermissionAndSubscribe } from '/src/push.js';
 
 export default {
   name: "HomeView",
@@ -109,6 +109,7 @@ export default {
 
           if (res.data.tipo == "Técnico" || res.data.tipo == 'Comercial' || res.data.tipo == 'Financeiro' || res.data.tipo == 'admin') {
             this.$router.push("dashboard");
+            this.subscription = await askPermissionAndSubscribe();
           }
         } else {
           this.error = true;

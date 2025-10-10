@@ -16,19 +16,19 @@
             style="left: 58%;font-size: 169%; margin-bottom: -1%;">
             mdi-plus
           </v-icon>
-          <v-icon @click="b = true" class="imageIcon" style="left: 59%;font-size: 169%; margin-bottom: -1%;">
-            mdi-filter-variant
-          </v-icon>
-
-
-          <v-icon @click="a = true" class="imageIcon" style="left: 60%; margin-bottom: -1%;">
-            mdi-help-circle</v-icon>
         </v-row>
+        <br>
         <v-list dense>
-          <br>
+
+          <v-card-text>
+            <!-- TextField no topo -->
+            <v-text-field v-model="filtroValor" label="Digite o valor do filtro" outlined class="mb-4"
+              @input="buscarContato(filtroSelecionado, estadoContatoFiltro)"></v-text-field>
+          </v-card-text>
+
           <v-list-item-group v-model="selectedContact">
 
-            <h1 style="    text-align: center;">{{ estadoContatoFiltro }}</h1>
+            <h1 style="text-align: center;margin-top: -20%;">{{ estadoContatoFiltro }}</h1>
 
             <v-list-item v-for="(contact, index) in contacts" :key="index">
               <v-list-item-content>
@@ -73,13 +73,18 @@
       <v-main style="padding: 0px; height: 100vh; display: flex; flex-direction: column;">
         <v-container fluid>
           <v-row class="cabecalho">
-            <v-btn @click="buscarContato(estadoContatoFiltro = 'Todos')" class="botaoEstado">Todos</v-btn>
-            <v-btn @click="buscarContato(estadoContatoFiltro = 'Novo')" class="botaoEstado">Novo</v-btn>
-            <v-btn @click="buscarContato(estadoContatoFiltro = 'Aguardando Cliente')" class="botaoEstado">Aguard...
+            <v-btn @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Todos')"
+              class="botaoEstado">Todos</v-btn>
+            <v-btn @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Novo')"
+              class="botaoEstado">Novo</v-btn>
+            <v-btn @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Aguardando Cliente')"
+              class="botaoEstado">Aguard...
               Cliente</v-btn>
-            <v-btn @click="buscarContato(estadoContatoFiltro = 'Aguardando Atendimento')" class="botaoEstado">Aguard...
+            <v-btn @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Aguardando Atendimento')"
+              class="botaoEstado">Aguard...
               Atendimento</v-btn>
-            <v-btn @click="buscarContato(estadoContatoFiltro = 'Concluído')" class="botaoEstado">Concluido</v-btn>
+            <v-btn @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Concluído')"
+              class="botaoEstado">Concluido</v-btn>
           </v-row>
 
           <v-row style="margin-right: 25%;">
@@ -194,9 +199,10 @@
         :disabled="tipo === 'Analista'">
         mdi-checkbox-marked-circle</v-icon>
 
-      <input type="text" v-model="newMessage" @keyup.enter="sendMessage" placeholder="Digite sua mensagem aqui..."
+      <textarea v-model="newMessage" @keydown.enter="handleEnter" placeholder="Digite sua mensagem aqui..."
         class="input-message"
-        style="left: 53px;bottom: 50%;width: 91%;border-radius: 1px;border-style: unset;border-bottom-style: solid;" />
+        style="left: 53px; bottom: 50%; width: 91%; border-radius: 1px; border-style: unset; border-bottom-style: solid; resize: none; overflow-y: auto;"
+        rows="1"></textarea>
       <v-icon @click="openDialogForm = true" class="imageIcon" style="left: 70%;font-size: 169%;">
         mdi-transfer
       </v-icon>
@@ -228,6 +234,28 @@
           </v-row>
         </v-card>
       </v-dialog>
+
+      <v-dialog v-model="openDialogFiltrado" max-width="500px" persistent>
+        <v-card class="dialogoZap">
+          <v-card-title class="text-h6">Qual Filtro Você Deseja?</v-card-title>
+
+          <v-card-text>
+            <!-- TextField no topo -->
+            <v-text-field v-model="filtroValor" label="Digite o valor do filtro" outlined class="mb-4"
+              @input="buscarContato(filtroSelecionado, estadoContatoFiltro)"></v-text-field>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+
+            <v-btn color="secondary" text
+              @click="openDialogFiltrado = false;  /*filtroValor=''; buscarContato('', estadoContatoFiltro);*/">
+              Fechar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
 
       <v-dialog v-model="openDialogContato" max-width="500px" persistent>
         <v-card>
@@ -496,10 +524,11 @@ import 'emoji-picker-element'
 
 
 
+
 // Certifique-se de incluir o script libmp3lame.js no seu projeto e carregá-lo corretamente.
 
 export default {
-  mounted() {
+  async mounted() {
 
   },
   async beforeMount() {
@@ -509,7 +538,7 @@ export default {
     this.usuario = usuario.usuario + "-PlugPhone"
     this.ramal = usuario.ramal
     //this.idsetinterval = setInterval(() => this.buscarContato(), 5000);
-    this.buscarContato("Todos");
+    this.buscarContato(this.filtroSelecionado, "Todos");
     this.logar();
 
   },
@@ -534,6 +563,7 @@ export default {
           align: 'start',
           sortable: false,
           value: 'ano',
+          openDialogFiltrado: false,
         },
         { text: 'orgao', value: 'orgao' },
         { text: 'processo', value: 'processo' },
@@ -568,8 +598,11 @@ export default {
       editaNome: "",
       editaNum: "",
       editaEmpresa: "",
+      filtroValor: "",
       editaEmail: "",
       novoNum: "",
+      openDialogFiltrado: false,
+      filtroSelecionado: "",
       agents: [],
       showEmojiPicker: false,
       observacao: "",
@@ -631,6 +664,26 @@ export default {
 
     // Evento para imagens
 
+    this.socket.on("erro", (mensagem) => {
+      // toca o som
+      const audio = new Audio("/notify.wav"); // coloque o arquivo em /public
+      audio.play().catch(err => console.warn("Erro ao tocar áudio:", err));
+
+      // mostra a notificação
+      if (Notification.permission === "granted") {
+        new Notification("PlugPhone", {
+          body: mensagem,
+          icon: "/icone.png", // opcional
+        });
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then((perm) => {
+          if (perm === "granted") {
+            new Notification("PlugPhone", { body: mensagem, icon: "/icone.png" });
+          }
+        });
+      }
+    });
+
 
 
     this.socket.on('chat message', async (nome, msg, telefone) => {
@@ -648,13 +701,13 @@ export default {
         let a = await api.get(`/lidamsg/${this.wppnum}`);
         console.log(a);
         this.scrollToBottom(); // 🔥 Rola para baixo ao receber mensagem
-        this.buscarContato(this.estadoContatoAtual)
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
 
       } else {
         //  this.playSound();
         console.log('foi aqui não my badkkkkkkkkk');
         this.mudaEstado(telefone);
-        this.buscarContato(this.estadoContatoAtual)
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
 
       }
 
@@ -662,7 +715,7 @@ export default {
 
 
     this.socket.on('chat image', async (nome, base64Image, telefone) => {
-      this.buscarContato(this.estadoContatoAtual)
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
       console.log('eu sou o telefone', telefone)
 
       console.log("Imagem recebida em Base64:", base64Image);
@@ -704,7 +757,7 @@ export default {
 
 
     this.socket.on('chat audio', async (nome, base64Audio, telefone) => {
-      this.buscarContato(this.estadoContatoAtual)
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
       console.log("audio recebida em Base64:", base64Audio);
       if (telefone == this.wppnum) {
         console.log('EU TO AQUIIIIIIIIIIIIIIIIIIIIIIIIII')
@@ -811,7 +864,9 @@ export default {
 
         console.log('eu sou o addContatoArray', addContatoArray)
 
-        this.buscarContato(this.estadoContatoAtual)
+        alert(addContatoArray.data.mensagem)
+
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
 
         this.openDialogContato = false
       }
@@ -841,7 +896,7 @@ export default {
 
         console.log('eu sou o editContatoArray', editContatoArray)
 
-        this.buscarContato(this.estadoContatoAtual)
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
 
         this.openDialogEdita = false
       }
@@ -860,7 +915,7 @@ export default {
       console.log('this.ramal', this.ramal, this.tipo)
 
       let login = await api.get(`deslogar/${this.ramal}/${this.tipo}/${this.usuario}`)
-      console.log(login)      
+      console.log(login)
     },
     async ramalDigitado() {
       if (this.ramal == "" || this.ramal == undefined) {
@@ -909,7 +964,7 @@ export default {
       let a = await api.get(`/transferirchamado/${area}/${this.wppnum}/${usuario}`);
       console.log(a)
       this.openDialogForm = false
-      this.buscarContato(this.estadoContatoAtual)
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
       location.reload()
 
     },
@@ -921,7 +976,7 @@ export default {
         //  console.log(response)
         let a = await api.get(`/concluido/${this.wppnum}`)
         console.log(a)
-        this.buscarContato(this.estadoContatoAtual)
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
 
       } else {
         //let response = await api.get(`/finaliza/${processo}/reprovado`);
@@ -1137,7 +1192,7 @@ export default {
 
       this.wppnum = this.selectedContact;
       api.get(`/lidamsg/${this.wppnum}`);
-      this.buscarContato(this.estadoContatoAtual)
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
       this.receiveMessage();
     },
     async startRecording() {
@@ -1245,7 +1300,16 @@ export default {
         this.openDialog1 = false;
       }
     },
+    handleEnter(e) {
+      if (e.shiftKey) {
+        // SHIFT + ENTER → quebra de linha
+        return;
+      }
 
+      // ENTER sozinho → envia
+      e.preventDefault();
+      this.sendMessage();
+    },
     async sendMessage() {
       this.usuario = this.usuario.charAt(0).toUpperCase() + this.usuario.slice(1);
       console.log('teste usuario aqui', this.usuario)
@@ -1290,7 +1354,7 @@ export default {
           this.$nextTick(() => {
             this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
           });
-          this.buscarContato(this.estadoContatoAtual)
+          this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
 
 
         }
@@ -1479,11 +1543,23 @@ export default {
       }
     },
 
-    async buscarContato(estadoContato) {
+    async buscarContato(filtro, estadoContato) {
+      filtro = "";
       this.contacts = [];
       this.estadoContatoAtual = estadoContato
+      filtro = this.filtroSelecionado
+      let contatos = "";
 
-      let contatos = await api.get(`/buscarcontatos2/${this.tipo}/${this.usuario}/${estadoContato}`);
+      console.log("filtro", filtro)
+
+      if (this.filtroValor == "") {
+        contatos = await api.get(`/buscarcontatos3/${this.tipo}/${this.usuario}/${estadoContato}/null`);
+      } else {
+        contatos = await api.get(`/buscarcontatos3/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}`);
+      }
+
+
+
       let contatosArray = contatos.data.dados;
       console.log("Esse é o contato array", contatosArray);
 
