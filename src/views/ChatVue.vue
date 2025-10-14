@@ -13,19 +13,19 @@
             </v-icon>
           </router-link>
           <v-icon @click="openDialogContato = true" class="imageIcon"
-            style="left: 58%;font-size: 169%; margin-bottom: -1%;">
+            style="    left: 75%;font-size: 169%; margin-bottom: -1%;">
             mdi-plus
           </v-icon>
         </v-row>
-        <br>
+
         <v-list dense>
 
           <v-card-text>
             <!-- TextField no topo -->
-            <v-text-field v-model="filtroValor" label="Digite o valor do filtro" outlined class="mb-4"
+            <v-text-field v-model="filtroValor" label="Digite o valor do filtro" class="mb-4"
               @input="buscarContato(filtroSelecionado, estadoContatoFiltro)"></v-text-field>
           </v-card-text>
-
+          <br>
           <v-list-item-group v-model="selectedContact">
 
             <h1 style="text-align: center;margin-top: -20%;">{{ estadoContatoFiltro }}</h1>
@@ -1008,6 +1008,7 @@ export default {
       let processo = this.processo[this.selectedContact].processo
       this.plataforma = plataforma
       console.log('eu sou plataforma', plataforma, processo)
+      console.log('eu sou o homem de ferro', this.dados[0])
 
       if (this.tipo == 'Analista') {
         console.log('OLA O PROCESSO AQUIIIII', processo)
@@ -1017,6 +1018,7 @@ export default {
         let msg = {
           to: this.wppnum,
           name: this.name,
+
           usuario: this.usuario
         };
         let template = await api.post("/sendtemplate", msg);
@@ -1121,11 +1123,13 @@ export default {
 
     async sendTemplate() {
 
+      console.log('eu sou o homem de ferro', this.dados[0].nome)
+
       let msg = {
         to: this.wppnum,
         name: this.name,
-        usuario: this.usuario
-
+        usuario: this.usuario,
+        text: this.dados[0].nome
 
       };
       let template = await api.post("/sendtemplate", msg);
@@ -1861,7 +1865,7 @@ export default {
 
 .avatar {
   width: 60%;
-  left: 15%;
+  left: 24%;
   top: 3%;
 }
 

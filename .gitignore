@@ -134,3 +134,17 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+*.jpeg
+*.pdf
+*.mp3
+*.png
+*.jpg
+*.pem
+*.pem
+*.key
+*.pem
+implementacao/whatsapp/teste-do-zero2/security/fullchain.pem
+*.docx
+*.csv
+*.sql
+implementacao/whatsapp/meso/site/bilhetes/tabelas Relatorios.sql
