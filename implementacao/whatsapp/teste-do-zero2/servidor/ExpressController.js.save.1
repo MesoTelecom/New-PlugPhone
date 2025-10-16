@@ -102,35 +102,28 @@ class ExpressController {
     this.expressAppWrapper.post('/cadastrarcontato', async (req, res) => {
       const { nome, telefone, setor, email, empresa } = req.body;
 
-      let existe = await executaQry(`select exists (select 1 from meso_contatos where telefone = '${telefone}') as existe;`)
-
-      if (existe.dados[0].existe == 0) {
-        const qry = `
+      const qry = `
     INSERT INTO meso_contatos 
       (nome, telefone, estado, datahora, setor, email, empresa)
     VALUES 
       ('${nome}', '${telefone}', 'Novo', NOW(), '${setor}', '${email}', '${empresa}')
   `;
 
-        console.log('bumbum profundo', qry);
+      console.log('bumbum profundo', qry);
 
-        let resultado = await executaQry(qry);
-        console.log('só pra debug', resultado)
-        try {
-          if (resultado?.dados.affectedRows > 0) {
-            console.log('chegou aqui no insert');
-            res.json({ success: true, mensagem: 'Usuário cadastrado com sucesso!' });
-          } else {
-            console.log('não chegou aqui no insert');
-            res.json({ success: false, mensagem: 'Não foi possível cadastrar usuário!' });
-          }
-        } catch (error) {
-          console.error("Erro ao cadastrar contato:", error);
-          res.status(500).json({ sucesso: false, mensagem: "Erro ao cadastrar usuário", erro: error.message });
+      let resultado = await executaQry(qry);
+      console.log('só pra debug', resultado)
+      try {
+        if (resultado?.dados.affectedRows > 0) {
+          console.log('chegou aqui no insert');
+          res.json({ success: true, mensagem: 'Usuário cadastrado com sucesso!' });
+        } else {
+          console.log('não chegou aqui no insert');
+          res.json({ success: false, mensagem: 'Não foi possível cadastrar usuário!' });
         }
-      } else {
-        res.json({ success: true, mensagem: 'Este usuário já foi cadastrado' });
-        console.log("Esse usuário já foi cadastrado")
+      } catch (error) {
+        console.error("Erro ao cadastrar contato:", error);
+        res.status(500).json({ sucesso: false, mensagem: "Erro ao cadastrar usuário", erro: error.message });
       }
     });
 
@@ -498,8 +491,7 @@ class ExpressController {
       } catch (error) {
         console.error("Erro ao baixar a mídia:", error.response ? error.response.data : error.message);
         res.status(500).send("Erro ao baixar a mídia.");
-      }
-    });
+      }    });
 
     this.expressAppWrapper.post("/geraAudio", async (req, res, next) => {
       let url = req.body.url;
@@ -682,15 +674,12 @@ class ExpressController {
       let tipo = req.params.tipo
       let usuario = req.params.usuario
       let estado = req.params.estado
-
-
-
       if (tipo === 'admin') {
         // Admin com filtro de estado
         if (estado === 'Todos') {
-          qry = `SELECT * FROM meso_contatos order by datahora DESC`
+          qry = `SELECT * FROM meso_contatos ORDER BY datahora DESC`;
         } else {
-          qry = `SELECT * FROM meso_contatos WHERE estado = '${estado}'  order by datahora DESC`
+          qry = `SELECT * FROM meso_contatos WHERE estado = '${estado}' ORDER BY datahora DESC`;
         }
       } else {
         // Usuário comum
@@ -709,109 +698,7 @@ class ExpressController {
             ORDER BY datahora DESC`;
         }
       }
-      console.log('oq retornou aqui no contato', qry)
-      ////console.log('contatos resposta', res20)
-
-      let res20 = await executaQry(qry)
-      res.json(res20)
-
-    })
-
-    this.expressAppWrapper.get("/buscarcontatos3/:tipo/:usuario/:estado/:filtro", async (req, res, next) => {
-      let qry
-
-      let tipo = req.params.tipo
-      let usuario = req.params.usuario
-      let estado = req.params.estado
-      let filtro = req.params.filtro
-
-      console.log("Olha meu filtro no buscar contato", filtro)
-
-      if (tipo === 'admin') {
-        // Admin com filtro de estado
-        if (estado === 'Todos') {
-          qry = `SELECT * FROM meso_contatos ${filtro != 'null' ? `where nome like '%${filtro}%' or telefone like '%${filtro}%' or email like '%${filtro}%' ORDER BY datahora DESC` : "ORDER BY datahora DESC"}`;
-        } else {
-          qry = `SELECT * FROM meso_contatos WHERE estado = '${estado}' ${filtro != 'null' ? `AND (nome LIKE '%${filtro}%' OR telefone LIKE '%${filtro}%' OR email LIKE '%${filtro}%')` : "ORDER BY datahora DESC"}`;
-        }
-      } else {
-        // Usuário comum
-        if (estado === 'Todos') {
-          qry = `
-              SELECT * FROM meso_contatos
-              WHERE (usuario like '%${usuario}%' OR usuario IS NULL)
-              AND setor = '${tipo}'
-              ${filtro != 'null'
-              ? `AND (nome LIKE '%${filtro}%' OR telefone LIKE '%${filtro}%' OR email LIKE '%${filtro}%')`
-              : "ORDER BY datahora DESC"}`;
-        } else {
-          qry = `
-              SELECT * FROM meso_contatos
-              WHERE (usuario like '%${usuario}%' OR usuario IS NULL)
-              AND setor = '${tipo}'
-              AND estado = '${estado}'
-              ${filtro != 'null'
-              ? `AND (nome LIKE '%${filtro}%' OR telefone LIKE '%${filtro}%' OR email LIKE '%${filtro}%')`
-              : "ORDER BY datahora DESC"}`;
-        }
-
-      }
-      console.log('oq retornou aqui no contato', qry)
-      ////console.log('contatos resposta', res20)
-
-      let res20 = await executaQry(qry)
-      res.json(res20)
-
-    })
-
-
-    this.expressAppWrapper.get("/buscarcontatos4/:tipo/:usuario/:estado/:filtro/:offset", async (req, res, next) => {
-      let qry
-
-      let tipo = req.params.tipo
-      let usuario = req.params.usuario
-      let estado = req.params.estado
-      let filtro = req.params.filtro
-      let offset = req.params.offset
-
-      console.log('OFFSET RAPAAAA', offset)
-      if (offset == 'undefined') {
-        offset = 0
-        console.log(offset)
-      }
-
-      console.log("Olha meu filtro no buscar contato", filtro)
-
-      if (tipo === 'admin') {
-        // Admin com filtro de estado
-        if (estado === 'Todos') {
-          qry = `SELECT * FROM meso_contatos ${filtro != 'null' ? `where nome like '%${filtro}%' or telefone like '%${filtro}%' or email like '%${filtro}%' ORDER BY datahora DESC` : "ORDER BY datahora DESC"}  LIMIT 100 OFFSET ${offset}`;
-        } else {
-          qry = `SELECT * FROM meso_contatos WHERE estado = '${estado}' ${filtro != 'null' ? `AND (nome LIKE '%${filtro}%' OR telefone LIKE '%${filtro}%' OR email LIKE '%${filtro}%')` : "ORDER BY datahora DESC"}  LIMIT 100 OFFSET ${offset}`;
-        }
-      } else {
-        // Usuário comum
-        if (estado === 'Todos') {
-          qry = `
-              SELECT * FROM meso_contatos
-              WHERE (usuario like '%${usuario}%' OR usuario IS NULL)
-              AND setor = '${tipo}'
-              ${filtro != 'null'
-              ? `AND (nome LIKE '%${filtro}%' OR telefone LIKE '%${filtro}%' OR email LIKE '%${filtro}%')`
-              : "ORDER BY datahora DESC"}  LIMIT 100 OFFSET ${offset}`;
-        } else {
-          qry = `
-              SELECT * FROM meso_contatos
-              WHERE (usuario like '%${usuario}%' OR usuario IS NULL)
-              AND setor = '${tipo}'
-              AND estado = '${estado}'
-              ${filtro != 'null'
-              ? `AND (nome LIKE '%${filtro}%' OR telefone LIKE '%${filtro}%' OR email LIKE '%${filtro}%')`
-              : "ORDER BY datahora DESC"}  LIMIT 100 OFFSET ${offset}`;
-        }
-
-      }
-      console.log('oq retornou aqui no contato', qry)
+      //console.log('contato', qry)
       ////console.log('contatos resposta', res20)
 
       let res20 = await executaQry(qry)
@@ -2000,17 +1887,6 @@ class ExpressController {
       let ramal = req.params.ramal
       let qry = `select * from cdr where calldate >= '${data1}' and calldate <= '${data2}' and cnum = '${ramal}' and disposition = 'ANSWERED' and lastapp = 'Dial'`;
       ////console.log('xereco', qry);
-
-      let res1 = await executaQry(qry);
-      res.json(res1);
-      //console.log(res1)
-    })
-
-    this.expressAppWrapper.get("/cdr/:d1/:d2/", async (req, res, next) => {
-      let data1 = req.params.d1 + ' 00:00:00'
-      let data2 = req.params.d1 + ' 23:59:59'
-      let qry = `select * from cdr where calldate >= '${data1}' and calldate <= '${data2}'`;
-      console.log('ja to de voltakkkkkkkkkkk', qry);
 
       let res1 = await executaQry(qry);
       res.json(res1);
@@ -3584,25 +3460,22 @@ class ExpressController {
       let to = req.body.to
       let name = req.body.name
       let usuario = req.body.usuario
-      let text = req.body.text
 
-      sendTemplate(to, name, usuario, text, res)
-
+      sendTemplate(to, name, usuario, res)
     })
 
     this.expressAppWrapper.post("/senddocument", async (req, res) => {
 
       let to = req.body.to
       let id = req.body.id.replace(/\D/g, "")
-      let newID = req.body.id
       let usuario = req.body.usuario
       let filename = req.body.nomeArquivo
       let extensao = req.body.extensao
 
-      console.log(`teste do send document, \nto${to},\n id:${id}, \n newID:${newID},\n nomeArquivo ${filename},\nusuario ${usuario}\n extensao ${extensao}`)
+      console.log(`teste do send document, \nto${to},\n id:${id},\n nomeArquivo ${filename},\nusuario ${usuario}\n extensao ${extensao}`)
 
 
-      sendDocument(to, newID, filename, usuario, extensao, res)
+      sendDocument(to, id, filename, usuario, extensao, res)
     })
 
 

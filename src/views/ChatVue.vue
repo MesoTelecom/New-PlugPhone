@@ -19,16 +19,29 @@
         </v-row>
 
         <v-list dense>
+          <h1 style="    text-align: center;">{{ estadoContatoFiltro }}</h1>
+          <v-row>
+            <v-icon
+              @click="buscarContato(filtroSelecionado, estadoContatoFiltro, offset -= 100), contador > 1 ? contador-- : contador = 1"
+              class="imageIcon" style="left: 25%;
+    margin-bottom: -1%;
+">
+              mdi-arrow-left</v-icon>
+            <h1 style="        position: relative;
+    left: 40%;">{{ contador }}</h1>
+            <v-icon @click="buscarContato(filtroSelecionado, estadoContatoFiltro, offset += 100), contador++"
+              class="imageIcon" style="    left: 55%;
+    margin-bottom: -1%;">
+              mdi-arrow-right</v-icon>
+          </v-row>
 
-          <v-card-text>
+          <v-card-text style="    margin-bottom: -10%;">
             <!-- TextField no topo -->
             <v-text-field v-model="filtroValor" label="Digite o valor do filtro" class="mb-4"
-              @input="buscarContato(filtroSelecionado, estadoContatoFiltro)"></v-text-field>
+              @input="buscarContato(filtroSelecionado, estadoContatoFiltro, 0)"></v-text-field>
           </v-card-text>
-          <br>
           <v-list-item-group v-model="selectedContact">
 
-            <h1 style="text-align: center;margin-top: -20%;">{{ estadoContatoFiltro }}</h1>
 
             <v-list-item v-for="(contact, index) in contacts" :key="index">
               <v-list-item-content>
@@ -89,7 +102,8 @@
 
           <v-row style="margin-right: 25%;">
             <v-col cols="12" md="12" style="padding: 0%;">
-              <div class="messages" ref="messages" style="margin-left: 3%; max-height: 80vh; overflow-y: auto;">
+              <div class="messages" ref="messages"
+                style="margin-left: 4%;margin-right: 2%;max-height: 80vh;overflow-y: auto;">
                 <div v-for="(message, index) in messages" :key="'server-' + index" :class="{
                   'message-requester': !message.sender.includes('-PlugPhone'),
                   'message-agent': message.sender.includes('-PlugPhone'),
@@ -145,16 +159,15 @@
         <v-btn class="infoBtn">Informações <v-icon @click="openDialogForm = true" style="left: 3%;">
             mdi-information
           </v-icon></v-btn>
-        <v-data-table :items="dados" :items-per-page="1" style="        background: rgb(221, 221, 221);
-    border-radius: 3%;
+        <v-data-table :items="dados" :items-per-page="1" style="background: rgb(221, 221, 221);
+    border-radius: 0%;
     position: fixed;
-    bottom: 1%;
-    width: 21%;
-    right: 1%;
+    bottom: 0%;
+    width: 22%;
+    right: 0%;
     border-style: inset;
-
     border-width: thin;
-    height: 90%;" hide-default-footer class="responsive-table" item-class="custom-row">
+    height: 95%;" hide-default-footer class="responsive-table" item-class="custom-row">
           <template v-slot:item="{ item }">
             <div class="table-row" style=" display: inline-grid;">
               <v-icon class="edit" style="font-size: 35px;
@@ -176,11 +189,14 @@
 
 
 
-    <div class="bottom-bar" style="width: 73%;padding-top: 5%;position: absolute;bottom: 0%;">
+    <div class="bottom-bar" style="    width: 100%;
+    padding-top: 5%;
+    position: absolute;
+    bottom: 0px;">
       <img src="../assets/plugcinza.png" @click="openDialog2 = true" class="imageIcon" style="
-    margin-left: 5%;
-    width: 4%;
-    margin-bottom: -2%;" />
+   margin-left: 5%;
+    width: 35px;
+    margin-bottom: -17px;" />
 
       <v-icon @click="openDialogAnexo = true" class="imageIcon" style="left: 0%;font-size: 169%;">
         mdi-paperclip
@@ -201,9 +217,9 @@
 
       <textarea v-model="newMessage" @keydown.enter="handleEnter" placeholder="Digite sua mensagem aqui..."
         class="input-message"
-        style="left: 53px; bottom: 50%; width: 91%; border-radius: 1px; border-style: unset; border-bottom-style: solid; resize: none; overflow-y: auto;"
+        style="left: 53px; bottom: 50%; width: 65%; border-radius: 1px; border-style: unset; border-bottom-style: solid; resize: none; overflow-y: auto;"
         rows="1"></textarea>
-      <v-icon @click="openDialogForm = true" class="imageIcon" style="left: 70%;font-size: 169%;">
+      <v-icon @click="openDialogForm = true" class="imageIcon" style="left: 45%;font-size: 169%;">
         mdi-transfer
       </v-icon>
 
@@ -220,7 +236,7 @@
 
       <v-dialog v-model="openDialog" max-width="500px" persistent>
         <v-card class="dialogo">
-          <v-card-title>Seu Diálogo</v-card-title>
+          <v-card-title>Enviar Imagem</v-card-title>
           <v-card-text>
             <v-file-input v-model="selectedFile" label="Escolha uma imagem"></v-file-input>
           </v-card-text>
@@ -242,7 +258,7 @@
           <v-card-text>
             <!-- TextField no topo -->
             <v-text-field v-model="filtroValor" label="Digite o valor do filtro" outlined class="mb-4"
-              @input="buscarContato(filtroSelecionado, estadoContatoFiltro)"></v-text-field>
+              @input="buscarContato(filtroSelecionado, estadoContatoFiltro, 0)"></v-text-field>
           </v-card-text>
 
           <v-card-actions>
@@ -366,9 +382,9 @@
 
       <v-dialog v-model="openDialogAnexo" max-width="500px" persistent>
         <v-card class="dialogo">
-          <v-card-title>Seu Diálogo</v-card-title>
+          <v-card-title>Enviar Documento</v-card-title>
           <v-card-text>
-            <v-file-input v-model="selectedFile" label="Escolha uma imagem"></v-file-input>
+            <v-file-input v-model="selectedFile" label="Escolha um documento"></v-file-input>
           </v-card-text>
           <v-row class="linhaBtn">
             <v-card-actions>
@@ -385,11 +401,6 @@
       <v-dialog v-model="openDialog2" max-width="700px">
         <v-card class="dialogoZap">
           <v-card-title>Qual a forma que deseja entrar em contato</v-card-title>
-          <br>
-          <v-data-table :headers="headers" :items="dados" :items-per-page="1" class="elevation-1"
-            hide-default-footer></v-data-table>
-
-
           <v-card-text>
             <v-row class="linhaContato">
 
@@ -506,6 +517,21 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+
+      <v-dialog v-model="openDialogEnviando" max-width="500px" persistent>
+        <v-card>
+          <v-card-title>Enviando, por favor aguarde</v-card-title>
+          <br>
+          <v-row class="loading">
+            <v-progress-circular indeterminate color="primary"></v-progress-circular>
+
+          </v-row>
+          <br>
+          <br>
+          <br>
+        </v-card>
+      </v-dialog>
     </div>
   </div>
 </template>
@@ -591,6 +617,8 @@ export default {
 
       ],
       messages: [],
+      offset: 0,
+
       rama: "",
       setor: ['Técnico', 'Comercial', 'Financeiro', 'Admin'],
       setorSelect: "",
@@ -599,6 +627,7 @@ export default {
       editaNum: "",
       editaEmpresa: "",
       filtroValor: "",
+      openDialogEnviando: false,
       editaEmail: "",
       novoNum: "",
       openDialogFiltrado: false,
@@ -619,6 +648,8 @@ export default {
       openDialogRamal: false,
       plataforma: "",
       openDialog: false,
+      contador: 1,
+
       openDialogAnexo: false,
       openDialog1: false,
       openDialog2: false,
@@ -701,13 +732,13 @@ export default {
         let a = await api.get(`/lidamsg/${this.wppnum}`);
         console.log(a);
         this.scrollToBottom(); // 🔥 Rola para baixo ao receber mensagem
-        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
 
       } else {
         //  this.playSound();
         console.log('foi aqui não my badkkkkkkkkk');
         this.mudaEstado(telefone);
-        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
 
       }
 
@@ -715,7 +746,7 @@ export default {
 
 
     this.socket.on('chat image', async (nome, base64Image, telefone) => {
-      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
       console.log('eu sou o telefone', telefone)
 
       console.log("Imagem recebida em Base64:", base64Image);
@@ -757,7 +788,7 @@ export default {
 
 
     this.socket.on('chat audio', async (nome, base64Audio, telefone) => {
-      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
       console.log("audio recebida em Base64:", base64Audio);
       if (telefone == this.wppnum) {
         console.log('EU TO AQUIIIIIIIIIIIIIIIIIIIIIIIIII')
@@ -866,7 +897,7 @@ export default {
 
         alert(addContatoArray.data.mensagem)
 
-        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
 
         this.openDialogContato = false
       }
@@ -896,7 +927,7 @@ export default {
 
         console.log('eu sou o editContatoArray', editContatoArray)
 
-        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
 
         this.openDialogEdita = false
       }
@@ -949,6 +980,7 @@ export default {
     },
 
     scrollToBottom() {
+      console.log('JESUS CRISTO AMEEEEEEEEEEM')
       const el = this.$refs.messages;
       if (el) {
         el.scrollTop = el.scrollHeight;
@@ -964,7 +996,7 @@ export default {
       let a = await api.get(`/transferirchamado/${area}/${this.wppnum}/${usuario}`);
       console.log(a)
       this.openDialogForm = false
-      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
       location.reload()
 
     },
@@ -976,7 +1008,7 @@ export default {
         //  console.log(response)
         let a = await api.get(`/concluido/${this.wppnum}`)
         console.log(a)
-        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
 
       } else {
         //let response = await api.get(`/finaliza/${processo}/reprovado`);
@@ -1109,6 +1141,10 @@ export default {
 
       // Adiciona todas as mensagens ao estado de uma só vez
       this.messages.push(...allMessages);
+
+      this.scrollToBottom();
+
+
     }
     ,
 
@@ -1135,6 +1171,7 @@ export default {
       let template = await api.post("/sendtemplate", msg);
 
       console.log(template)
+      this.messages.push({ text: "boas_vindas_plugphone", sender: this.usuario });
     },
     async enviarMealing() {
       this.openDialogLigacao = false
@@ -1196,7 +1233,7 @@ export default {
 
       this.wppnum = this.selectedContact;
       api.get(`/lidamsg/${this.wppnum}`);
-      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
       this.receiveMessage();
     },
     async startRecording() {
@@ -1235,9 +1272,12 @@ export default {
     },
     async uploadAudio() {
       const MPEGMode = 'stereo'; // ou 'mono', dependendo do seu caso
+      this.openDialogEnviando = true
       console.log(MPEGMode)
       if (!this.audioBlob) {
         console.error("Nenhum áudio selecionado");
+        this.openDialogEnviando = false
+
         return;
       }
 
@@ -1297,10 +1337,12 @@ export default {
           sender: this.usuario,
           isAudio: true
         });
+        this.openDialogEnviando = false
 
         this.openDialog1 = false;
       } catch (error) {
         console.error('Erro ao enviar áudio:', error);
+        this.openDialogEnviando = false
         this.openDialog1 = false;
       }
     },
@@ -1358,7 +1400,7 @@ export default {
           this.$nextTick(() => {
             this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
           });
-          this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual)
+          this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
 
 
         }
@@ -1396,14 +1438,21 @@ export default {
     },
 
     async uploadImage() {
+      this.openDialogEnviando = true
+
       if (!this.selectedFile) {
         console.error("Nenhuma imagem selecionada.");
+        this.openDialogEnviando = false
+
         return;
       }
 
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
       if (!allowedTypes.includes(this.selectedFile.type)) {
         console.error("O arquivo selecionado não é uma imagem.");
+        this.openDialogEnviando = false
+        alert('O arquivo selecionado não é uma imagem.');
+
         return;
       }
 
@@ -1439,15 +1488,23 @@ export default {
         console.log('eu sou a imagem', image);
 
         this.openDialog = false;
+        this.openDialogEnviando = false
+
       } catch (error) {
         console.error("Erro ao enviar imagem:", error);
         this.messages.push({ text: "Erro ao enviar imagem.", sender: this.usuario });
         this.openDialog = false;
+        this.openDialogEnviando = false
+
       }
     },
     async uploadDocumento() {
+      this.openDialogEnviando = true
+
       if (!this.selectedFile) {
         console.error("Nenhum documento selecionado.");
+        this.openDialogEnviando = false
+
         return;
       }
 
@@ -1462,6 +1519,9 @@ export default {
 
       if (!allowedTypes.includes(this.selectedFile.type)) {
         console.error("O arquivo selecionado não é um documento válido.");
+        this.openDialogEnviando = false
+        alert('O arquivo selecionado não é um documento válido.')
+
         return;
       }
 
@@ -1510,10 +1570,14 @@ export default {
 
         this.selectedFile = null
         this.openDialogAnexo = false;
+        this.openDialogEnviando = false
+
       } catch (error) {
         console.error("Erro ao enviar documento:", error);
         this.messages.push({ text: "Erro ao enviar documento.", sender: this.usuario });
         this.openDialogAnexo = false;
+        this.openDialogEnviando = false
+
       }
     },
 
@@ -1547,7 +1611,19 @@ export default {
       }
     },
 
-    async buscarContato(filtro, estadoContato) {
+    async buscarContato(filtro, estadoContato, offset) {
+      console.log('pode n', offset)
+      console.log("Me mostre ele", estadoContato)
+      console.log('contador', this.contador)
+
+
+      if (offset < 0) {
+        console.log('já está ná pagina inicial')
+        this.offset = 0
+        offset = 0
+        this.contador = 1
+
+      }
       filtro = "";
       this.contacts = [];
       this.estadoContatoAtual = estadoContato
@@ -1557,9 +1633,9 @@ export default {
       console.log("filtro", filtro)
 
       if (this.filtroValor == "") {
-        contatos = await api.get(`/buscarcontatos3/${this.tipo}/${this.usuario}/${estadoContato}/null`);
+        contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/null/${offset}`);
       } else {
-        contatos = await api.get(`/buscarcontatos3/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}`);
+        contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}/${offset}`);
       }
 
 
@@ -1582,6 +1658,42 @@ export default {
 
         //console.log("Eu sou os contatos :D", this.contacts);
       });
+      if (this.contacts.length == 0) {
+        console.log('ja passou do limite')
+        console.log(this.offset)
+        this.offset = 0
+        this.contador = 1
+        offset = 0
+        console.log("filtro", filtro)
+
+        if (this.filtroValor == "") {
+          contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/null/${offset}`);
+        } else {
+          contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}/${offset}`);
+        }
+
+
+
+        let contatosArray = contatos.data.dados;
+        console.log("Esse é o contato array", contatosArray);
+
+        contatosArray.forEach(e => {
+          // Converte a data para o formato brasileiro e remove a vírgula
+          let dataFormatada = new Date(e.datahora).toLocaleString("pt-BR").replace(",", "");
+
+          this.contacts.push({
+            nome: e.nome,
+            telefone: e.telefone,
+            estado: e.estado,
+            estadomsg: e.estadomsg,
+            ultimamsg: e.ultimamsg,
+            datahora: dataFormatada
+          });
+
+          //console.log("Eu sou os contatos :D", this.contacts);
+        });
+
+      }
     }
     ,
 
@@ -1643,7 +1755,7 @@ export default {
 .sidebar {
   color: rgb(0, 0, 0);
   left: -6px;
-  border-radius: 2%;
+
   width: 300px !important;
 
 
@@ -1664,8 +1776,9 @@ export default {
   margin-top: 64px;
   width: 100%;
   padding: 10px;
-  background-color: #f0f0f0;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  background-color: #d9d9d987;
+  /*  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+*/
 }
 
 .button {
@@ -1809,18 +1922,14 @@ export default {
 }
 
 .info {
-  background-color: #ffffff !important;
-  border-color: #ffffff !important;
+
   width: 22%;
   position: fixed;
   right: 1%;
 
 }
 
-.v-application {
-  background-color: #ffffff !important;
-  border-color: #ffffff !important;
-}
+.v-application {}
 
 @media (max-width: 768px) {
   .info {
@@ -1851,11 +1960,11 @@ export default {
 }
 
 .infoBtn {
-  width: 21%;
+  width: 22%;
   background-color: #dddddd;
   position: fixed;
-  right: 1%;
-  top: 1%;
+  right: 0%;
+  top: 3px;
 }
 
 .plug {
@@ -1906,6 +2015,50 @@ export default {
 }
 
 .botaoEstado {
+  height: 25px !important;
   margin-left: 10px !important;
+}
+
+.loading {
+  width: 5%;
+  margin-top: 11%;
+  margin-left: 48%;
+  margin-bottom: 11%;
+
+}
+
+/* Alvo o container do drawer - ajuste o seletor se o seu for outro */
+.v-navigation-drawer__content,
+.navbar,
+/* opcional, se tiver outro seletor */
+.sidebar {
+  /* Firefox */
+  scrollbar-width: thin;
+  /* "auto" | "thin" | "none" */
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+  /* thumb color + track color */
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+.v-navigation-drawer__content::-webkit-scrollbar {
+  width: 8px;
+  /* largura da barra */
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.20);
+  /* cor do "polegar" */
+  border-radius: 8px;
+  border: 2px solid transparent;
+  /* dá espaço ao redor pra ficar mais clean */
+  background-clip: padding-box;
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.35);
 }
 </style>

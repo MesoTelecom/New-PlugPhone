@@ -1,0 +1,1283 @@
+const express = require("express");
+const router = express.Router();
+const { executaQry } = require("../banco/bd");
+const { executaQry2 } = require("../banco/db2");
+const { geraToken } = require("./jwt/jwt");
+const { send, sendImage, sendVideo, sendAudio, sendDocument, sendTemplate, download, test, getImage, getAudio, getDocument, reciveMediaLink, geraMedia, sendGpt, verificaPalavrao } = require('/meso/whatsapp/webhook/methods.js');
+const axios = require("axios");
+const { executaQryServer } = require('../banco/dbServer');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const e = require("express");
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+var proxy = require('express-http-proxy');
+const { exec } = require("child_process");
+const zlib = require('zlib');
+const { buscarMensagem } = require("../../webhook/SocketConnection");
+const upload = multer({ dest: 'uploads/' });
+class ExpressController {
+  constructor(expressAppWrapper, porta) {
+    this.expressAppWrapper = expressAppWrapper;
+    this.porta = porta;
+  }
+
+  initializeRoutes() {
+    this.expressAppWrapper.use(require('cors')());
+    this.expressAppWrapper.use(require('helmet')());
+    this.expressAppWrapper.use(require('express').json());
+    this.expressAppWrapper.use(require('express').urlencoded({ extended: true }));
+
+    // Verifica se o servidor está funcionando
+    this.expressAppWrapper.get('/', (req, res) => {
+      res.send('Servidor rodando!');
+    });
+
+    this.expressAppWrapper.app.use('/whatsapp', proxy('https://meso.plugphone.cloud:3333/'));
+    this.expressAppWrapper.app.use('/midia', express.static(path.join(__dirname, 'uploads')));
+
+
+    // Rota de dados
+    this.expressAppWrapper.get('/api/data', (req, res) => {
+      res.son({ message: 'This is some data' });
+    });
+
+    this.expressAppWrapper.post('/api/data', (req, res) => {
+      res.status(201).json({ message: 'Data saved' });
+    });
+
+    const storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+        const uploadPath = path.join(__dirname, 'uploads');
+        if (!fs.existsSync(uploadPath)) {
+          fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+      },
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname)); // Voltar a usar data e números aleatórios
+      }
+    });
+    // Filtro para arquivos de imagem
+    const imageFilter = (req, file, cb) => {
+      const allowedTypes = /jpeg|jpg|png|gif/;
+      if (allowedTypes.test(path.extname(file.originalname).toLowerCase())) {
+        cb(null, true);
+      } else {
+        cb(new Error('Arquivo de imagem inválido. Apenas JPG, JPEG, PNG e GIF são permitidos.'), false);
+      }
+    };
+
+    this.expressAppWrapper.post('/resetaToken', async (req, res, next) => {
+      let usuario = req.body.usuario
+
+      let qry1 = `update meso_usuariologin set token = null, logadoWeb = 0 where usuario = '${usuario}'  `
+      let resultado = await executaQry(qry1)
+
+      if (resultado?.dados.affectedRows > 0) {
+        console.log('chegou aqui no insert');
+        res.json({ success: true, mensagem: 'Token Atualizado Com Sucesso!' });
+      } else {
+        console.log('não chegou aqui no insert');
+        res.json({ success: false, mensagem: 'Não foi possível atualizar o token!' });
+      }
+    })
+
+    this.expressAppWrapper.post('/resetaTokenMobile', async (req, res, next) => {
+      let usuario = req.body.usuario
+      let qry1 = `update meso_usuariologin set tokenMobile = null, logadoMobile = 0 where usuario = '${usuario}'  `
+      console.log("query aleatória", qry1)
+      let resultado = await executaQry(qry1)
+
+      if (resultado?.dados.affectedRows > 0) {
+        console.log('chegou aqui no insert');
+        res.json({ success: true, mensagem: 'Token Atualizado Com Sucesso!' });
+      } else {
+        console.log('não chegou aqui no insert');
+        res.json({ success: false, mensagem: 'Não foi possível atualizar o token!' });
+      }
+    })
+
+    this.expressAppWrapper.post('/cadastrarcontato', async (req, res) => {
+      const { nome, telefone, setor, email, empresa } = req.body;
+
+      const qry = `
+    INSERT INTO meso_contatos 
+      (nome, telefone, estado, datahora, setor, email, empresa)
+    VALUES 
+      ('${nome}', '${telefone}', 'Novo', NOW(), '${setor}', '${email}', '${empresa}')
+  `;
+
+      console.log('bumbum profundo', qry);
+
+      let resultado = await executaQry(qry);
+      console.log('só pra debug', resultado)
+      try {
+        if (resultado?.dados.affectedRows > 0) {
+          console.log('chegou aqui no insert');
+          res.json({ success: true, mensagem: 'Usuário cadastrado com sucesso!' });
+        } else {
+          console.log('não chegou aqui no insert');
+          res.json({ success: false, mensagem: 'Não foi possível cadastrar usuário!' });
+        }
+      } catch (error) {
+        console.error("Erro ao cadastrar contato:", error);
+        res.status(500).json({ sucesso: false, mensagem: "Erro ao cadastrar usuário", erro: error.message });
+      }
+    });
+
+    this.expressAppWrapper.post('/editarcontato', async (req, res) => {
+      const { id, nome, telefone, setor, email, empresa } = req.body;
+
+      const qry = `
+    UPDATE meso_contatos 
+    SET 
+      nome = '${nome}', 
+      telefone = '${telefone}', 
+      setor = '${setor}', 
+      email = '${email}', 
+      empresa = '${empresa}', 
+      datahora = NOW()
+    WHERE telefone ='${telefone}'
+  `;
+
+      console.log('bumbum profundo', qry);
+
+      let resultado = await executaQry(qry);
+      console.log('só pra debug', resultado);
+
+      try {
+        if (resultado?.dados.affectedRows > 0) {
+          console.log('chegou aqui no update');
+          res.json({ success: true, mensagem: 'Usuário atualizado com sucesso!' });
+        } else {
+          console.log('não chegou aqui no update');
+          res.json({ success: false, mensagem: 'Não foi possível atualizar o usuário!' });
+        }
+      } catch (error) {
+        console.error("Erro ao editar contato:", error);
+        res.status(500).json({ sucesso: false, mensagem: "Erro ao editar usuário", erro: error.message });
+      }
+    });
+
+
+
+    // Filtro para arquivos de áudio
+    const audioFilter = (req, file, cb) => {
+      //console.log('Nome do arquivo recebido:', file.originalname); // Log para verificar o nome do arquivo
+      //console.log('MIME type recebido:', file.mimetype);
+      const allowedTypes = /audio\/mpeg|audio\/wav/;
+      if (allowedTypes.test(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Arquivo de áudio inválido. Apenas MP3 e WAV são permitidos.'), false);
+      }
+    };
+
+    const documentFilter = (req, file, cb) => {
+      const allowedTypes = /pdf|msword|vnd.openxmlformats-officedocument.wordprocessingml.document/;
+      if (allowedTypes.test(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Tipo de documento inválido. Apenas PDF, DOC e DOCX são permitidos.'), false);
+      }
+    };
+
+    const uploadDocument = multer({
+      storage,
+      limits: { fileSize: 10 * 1024 * 1024 }, // Limite de 10MB por arquivo
+      fileFilter: documentFilter
+    });
+    // Middleware de upload para imagens
+    const uploadImage = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: imageFilter });
+
+    // Middleware de upload para áudios
+    const uploadAudio = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: audioFilter });
+
+    // Rota para upload de imagem
+    this.expressAppWrapper.post('/upload-image', uploadImage.single('image'), async (req, res) => {
+      if (!req.file) {
+        return res.status(400).send('Nenhuma imagem recebida.');
+      }
+      res.json(`Imagem recebida: ${req.file.filename}`);
+    });
+
+    this.expressAppWrapper.post('/upload-image', async (req, res) => {
+
+      //console.log('Requisição recebida na rota /upload'); // Log para verificar se a rota é acessada
+      //console.log('Body da requisição:', req.body); // Log do corpo da requisição
+      //console.log('Arquivo recebido:', req.file); // Log do arquivo recebido
+
+      if (!req.file) {
+        return res.status(400).send('Nenhuma imagem recebida.');
+      }
+      //console.log('Arquivo salvo com sucesso:', req.file);
+      let caminho = req.file.path
+      let idImage = await getImage(caminho)
+      ////console.log(id)
+      res.json({ id: idImage });
+
+    });
+
+    this.expressAppWrapper.get('/lidamsg/:num', async (req, res, next) => {
+      let num = req.params.num
+
+      let qry1 = `update meso_contatos set estadomsg = NULL where telefone = '${num}'`
+      //console.log(qry1)
+      let res1 = await executaQry(qry1)
+      //console.log(qry1)
+
+      res.json(res1)
+    })
+
+    this.expressAppWrapper.get('/inserircontato/:nome/:telefone/:setor/:usuario', async (req, res, next) => {
+      let nome = req.params.nome
+      let telefone = req.params.telefone
+      let setor = req.params.setor;
+      let usuario = req.params.usuario
+
+      let qry = `insert into meso_contatos (nome,telefone,setor,usuario) values ('${nome}','${telefone}','${setor}','${usuario}')`
+      await executaQry(qry)
+      res.send("Inserido Com Sucesso")
+    })
+
+
+
+    this.expressAppWrapper.get('/mudamsg/:num', async (req, res, next) => {
+      let num = req.params.num
+
+      let qry1 = `update meso_contatos set estadomsg ='novamsg' where telefone = '${num}'`
+      let res1 = await executaQry(qry1)
+      //console.log(qry1)
+
+      res.json(res1)
+    })
+
+    this.expressAppWrapper.get('/get-image/:id', async (req, res) => {
+      let id = req.params.id;
+
+      if (!id) {
+        return res.status(400).send('ID da imagem não fornecido.');
+      }
+
+      const imagePath = path.join(__dirname, 'uploads', id); // Caminho para a pasta uploads
+
+      try {
+        // Verifica se a imagem existe de forma assíncrona
+        await fs.promises.access(imagePath, fs.constants.F_OK);
+
+        // Retorna a imagem
+        res.sendFile(imagePath);
+      } catch (err) {
+        // Caso a imagem não seja encontrada
+        return res.status(404).send('Imagem não encontrada.');
+      }
+    });
+
+    this.expressAppWrapper.get('/get-audio/:id', async (req, res) => {
+      let id = req.params.id;
+
+      if (!id) {
+        return res.status(400).send('ID da imagem não fornecido.');
+      }
+
+      const imagePath = path.join(__dirname, 'uploads', id); // Caminho para a pasta uploads
+
+      try {
+        // Verifica se a Audio existe de forma assíncrona
+        await fs.promises.access(imagePath, fs.constants.F_OK);
+
+        // Retorna a Audio
+        res.sendFile(imagePath);
+      } catch (err) {
+        // Caso a Audio não seja encontrada
+        return res.status(404).send('Audio não encontrada.');
+      }
+    });
+
+
+
+    this.expressAppWrapper.post('/upload-document', uploadDocument.single('file'), async (req, res) => {
+      if (!req.file) {
+        return res.status(400).send('Nenhum documento recebido.');
+      }
+      let caminho = req.file.path;
+      ////console.log(caminho);
+
+      let idDocumento = await getDocument(caminho)
+      ////console.log('id documento', idDocumento)
+
+      // Aqui você pode processar o documento ou salvar as informações no banco
+
+
+      res.json({ id: idDocumento });
+    });;
+
+    this.expressAppWrapper.post('/upload-document', async (req, res) => {
+      //////console.log('oi')
+
+      if (!req.file) {
+        return res.status(400).send('Nenhum áudio recebido.');
+      }
+
+      //////console.log('eu sou o req.file', req.file.path);
+
+      let caminho = req.file.path;
+      let idocument = await getDocument(caminho);  // Esse é o ID que você quer usar para renomear
+      const ext = path.extname(caminho);      // Pega a extensão do arquivo, por exemplo, .mp3 ou .wav
+      const novoCaminho = path.join(path.dirname(caminho), idocument + ext);  // Novo nome do arquivo com o idocument
+
+      // Renomeia o arquivo
+      fs.rename(caminho, novoCaminho, (err) => {
+        if (err) {
+          //console.error('Erro ao renomear o arquivo:', err);
+          return res.status(500).send('Erro ao processar o arquivo.');
+        }
+
+        // Divide o caminho para retornar apenas a parte final, se necessário
+        const parts = novoCaminho.split('/');
+        const caminhoFinal = parts.slice(5).join('/');  // Adapte isso para seu cenário
+
+        //////console.log('ID do áudio:', idocument);
+        //////console.log('Caminho final do arquivo:', caminhoFinal);
+
+        res.json({ id: idocument, caminhoFinal: caminhoFinal });
+      });
+
+    });
+
+
+    // Rota para upload de áudio
+    this.expressAppWrapper.post('/upload-audio', uploadAudio.single('audio'), async (req, res) => {
+      if (!req.file) {
+        return res.status(400).send('Nenhum áudio recebido.');
+      }
+      let caminho = req.file.path
+      console.log(caminho)
+      let idaudio = await getAudio(caminho)
+      console.log(id)
+      res.json({ id: idaudio });
+    });
+
+
+    this.expressAppWrapper.post('/upload-audio', async (req, res) => {
+      //console.log('entrei aqui');
+
+      if (!req.file) {
+        return res.status(400).send('Nenhum áudio recebido.');
+      }
+
+      console.log('eu sou o req.file', req.file.path);
+
+      let caminho = req.file.path;
+      let idaudio = await getAudio(caminho);  // Esse é o ID que você quer usar para renomear
+      const ext = path.extname(caminho);      // Pega a extensão do arquivo, por exemplo, .mp3 ou .wav
+      const novoCaminho = path.join(path.dirname(caminho), idaudio + ext);  // Novo nome do arquivo com o idaudio
+
+      // Renomeia o arquivo
+      fs.rename(caminho, novoCaminho, (err) => {
+        if (err) {
+          console.error('Erro ao renomear o arquivo:', err);
+          return res.status(500).send('Erro ao processar o arquivo.');
+        }
+
+        // Divide o caminho para retornar apenas a parte final, se necessário
+        const parts = novoCaminho.split('/');
+        const caminhoFinal = parts.slice(5).join('/');  // Adapte isso para seu cenário
+
+        //console.log('ID do áudio:', idaudio);
+        //console.log('Caminho final do arquivo:', caminhoFinal);
+
+        res.json({ id: idaudio, caminhoFinal: caminhoFinal });
+      });
+    });
+
+
+
+
+
+
+    this.expressAppWrapper.post('/idimagem', async (req, res) => {
+
+      let nome = req.body.nome
+
+      ////console.log('Nome certo', nome)
+      res.json('certo', nome);
+
+    });
+
+
+    // Middleware para tratamento de erros
+    this.expressAppWrapper.use((err, req, res, next) => {
+      console.error(err.stack);
+      res.status(500).send('Algo deu errado!');
+    });
+
+    this.expressAppWrapper.get("/pegaURL/:id", async (req, res, next) => {
+      let id = req.params.id;
+
+
+      ////console.log(qry);
+      let res2 = await reciveMediaLink(id, res)
+      res.json(res2);
+      //console.log("Jesus Cristo eu estou aqui")
+      ////console.log(res2);
+
+    });
+
+    this.expressAppWrapper.get("/transferirchamado/:setor/:telefone/:usuario", async (req, res, next) => {
+      let setor = req.params.setor;
+      let telefone = req.params.telefone;
+      let usuario = req.params.usuario
+      let qry = `UPDATE meso_contatos SET setor = '${setor}', usuario = ${usuario === 'undefined' ? 'NULL' : `'${usuario}'`} WHERE telefone = '${telefone}'`;
+      console.log("transferindo contato", qry)
+      let resultado = await executaQry(qry);
+      if (resultado?.dados?.affectedRows > 0) {
+        res.json({
+          sucesso: true,
+          mensagem: "Contato transferido com sucesso.",
+          insertId: resultado.dados.insertId,
+        });
+      } else {
+        res.status(400).json({
+          sucesso: false,
+          mensagem: "Não foi possível transferir o contato.",
+        });
+      }
+    })
+
+    this.expressAppWrapper.post("/geraImage/", async (req, res, next) => {
+      let url = req.body.url;
+      let id = req.body.id
+
+      try {
+        const response = await axios({
+          method: 'get',
+          url: url,
+          responseType: 'stream',
+          headers: {
+            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
+          }
+        });
+
+        // Log para verificar o cabeçalho
+        //console.log("Content-Encoding:", response.headers['content-encoding']);
+
+        let stream = response.data;
+        const contentEncoding = response.headers['content-encoding'];
+
+        if (contentEncoding && contentEncoding.includes('br')) {
+          stream = stream.pipe(zlib.createBrotliDecompress());
+        } else if (contentEncoding && contentEncoding.includes('gzip')) {
+          stream = stream.pipe(zlib.createGunzip());
+        }
+
+        const uploadPath = path.join(__dirname, 'uploads', `${id}.jpeg`);
+
+        const writer = fs.createWriteStream(uploadPath);
+        stream.pipe(writer);
+
+        writer.on('finish', () => {
+          //console.log('Mídia salva com sucesso:', uploadPath);
+          res.status(200).send({ message: 'Mídia salva com sucesso!', path: uploadPath });
+        });
+
+        writer.on('error', (err) => {
+          console.error("Erro ao salvar a mídia:", err.message);
+          res.status(500).send("Erro ao salvar a mídia.");
+        });
+
+      } catch (error) {
+        console.error("Erro ao baixar a mídia:", error.response ? error.response.data : error.message);
+        res.status(500).send("Erro ao baixar a mídia.");
+      }    });
+
+    this.expressAppWrapper.post("/geraAudio", async (req, res, next) => {
+      let url = req.body.url;
+      let id = req.body.id;
+
+      try {
+        const response = await axios({
+          method: 'get',
+          url: url,
+          responseType: 'stream',
+          headers: {
+            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
+          }
+        });
+
+        //console.log("Content-Encoding:", response.headers['content-encoding']);
+
+        let stream = response.data;
+        const contentEncoding = response.headers['content-encoding'];
+
+        // Somente descomprime se o encoding for "br" ou "gzip"
+        if (contentEncoding && contentEncoding.includes('br')) {
+          //console.log("Descompressão Brotli");
+          stream = stream.pipe(zlib.createBrotliDecompress());
+        } else if (contentEncoding && contentEncoding.includes('gzip')) {
+          //console.log("Descompressão Gzip");
+          stream = stream.pipe(zlib.createGunzip());
+        }
+
+        const uploadPath = path.join(__dirname, 'uploads', `${id}.mp3`);
+        const writer = fs.createWriteStream(uploadPath);
+
+        stream.pipe(writer);
+
+        writer.on('finish', () => {
+          //console.log('Mídia salva com sucesso:', uploadPath);
+          res.status(200).send({ message: 'Mídia salva com sucesso!', path: uploadPath });
+        });
+
+        writer.on('error', (err) => {
+          console.error("Erro ao salvar a mídia:", err.message);
+          res.status(500).send("Erro ao salvar a mídia.");
+        });
+
+      } catch (error) {
+        console.error("Erro ao baixar a mídia:", error.response ? error.response.data : error.message);
+        res.status(500).send("Erro ao baixar a mídia.");
+      }
+    });
+
+
+
+    this.expressAppWrapper.post("/geraDocument", async (req, res, next) => {
+      let url = req.body.url;
+      let id = req.body.id;
+      let extensao = req.body.extensao
+
+      try {
+        const response = await axios({
+          method: 'get',
+          url: url,
+          responseType: 'stream',
+          headers: {
+            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
+          }
+        });
+
+        ////console.log("Content-Encoding:", response.headers['content-encoding']);
+
+        let stream = response.data;
+        const contentEncoding = response.headers['content-encoding'];
+
+        // Somente descomprime se o encoding for "br" ou "gzip"
+        if (contentEncoding && contentEncoding.includes('br')) {
+          ////console.log("Descompressão Brotli");
+          stream = stream.pipe(zlib.createBrotliDecompress());
+        } else if (contentEncoding && contentEncoding.includes('gzip')) {
+          ////console.log("Descompressão Gzip");
+          stream = stream.pipe(zlib.createGunzip());
+        }
+
+        const uploadPath = path.join(__dirname, 'uploads', `${id}.${extensao}`);
+        const writer = fs.createWriteStream(uploadPath);
+
+        stream.pipe(writer);
+
+        writer.on('finish', () => {
+          ////console.log('Mídia salva com sucesso:', uploadPath);
+          res.status(200).send({ message: 'Mídia salva com sucesso!', path: uploadPath });
+        });
+
+        writer.on('error', (err) => {
+          //console.error("Erro ao salvar a mídia:", err.message);
+          res.status(500).send("Erro ao salvar a mídia.");
+        });
+
+      } catch (error) {
+        //console.error("Erro ao baixar a mídia:", error.response ? error.response.data : error.message);
+        res.status(500).send("Erro ao baixar a mídia.");
+      }
+    });
+
+
+    //Pesquisa de satisfação
+
+    this.expressAppWrapper.get("/pesquisa/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let qry = `select * from meso_pesquisa where datahora > '${data1}' and datahora < '${data2}' `;
+      ////console.log(qry);
+
+      let res1 = await executaQry(qry);
+      res.json(res1);
+      ////console.log(res1);
+
+    });
+
+    this.expressAppWrapper.get("/atualizausuario/:usuario/:telefone", async (req, res, next) => {
+      let qry
+
+      let usuario = req.params.usuario
+      let telefone = req.params.telefone
+
+      //console.log("Olha que bonito", usuario, telefone)
+
+      qry = `update meso_contatos set usuario = '${usuario}' where telefone = '${telefone}'`
+
+      console.log('contato', qry)
+      let res20 = await executaQry(qry)
+      res.json(res20)
+      ////console.log('contatos resposta', res20)
+
+    })
+
+    this.expressAppWrapper.get("/verificamensagem/:telefone/", async (req, res, next) => {
+      let qry
+
+      let telefone = req.params.telefone
+
+      qry = `select telefone, setor, usuario from meso_contatos where telefone = '${telefone}'`
+
+      //console.log('contato', qry)
+      let res20 = await executaQry(qry)
+      res.json(res20)
+      ////console.log('contatos resposta', res20)
+
+    })
+
+    this.expressAppWrapper.get("/buscarcontatostel/:telefone", async (req, res, next) => {
+      let telefone = req.params.telefone
+      let qry = `select * from meso_contatos where telefone = '${telefone}'`
+      let res20 = await executaQry(qry)
+      //console.log("pesadão fala lobin", res20.dados[0])
+      res.json(res20.dados[0])
+    })
+
+    this.expressAppWrapper.get("/buscarcontatos/:tipo/:usuario", async (req, res, next) => {
+      let qry
+
+      let tipo = req.params.tipo
+      let usuario = req.params.usuario
+
+      if (tipo == 'admin') {
+        qry = `select * from meso_contatos order by datahora desc`
+      } else if (tipo == 'Técnico Externo') {
+        qry = `select * from meso_contatos where eAris = 'sim';`
+      } else {
+        qry = `select * from meso_contatos where usuario = '${usuario}' or usuario is NULL and setor = '${tipo}' order by datahora desc`
+      }
+
+      let res20 = await executaQry(qry)
+      res.json(res20)
+
+    })
+
+
+    this.expressAppWrapper.get("/buscarcontatos2/:tipo/:usuario/:estado", async (req, res, next) => {
+      let qry
+
+      let tipo = req.params.tipo
+      let usuario = req.params.usuario
+      let estado = req.params.estado
+      if (tipo === 'admin') {
+        // Admin com filtro de estado
+        if (estado === 'Todos') {
+          qry = `SELECT * FROM meso_contatos ORDER BY datahora DESC`;
+        } else {
+          qry = `SELECT * FROM meso_contatos WHERE estado = '${estado}' ORDER BY datahora DESC`;
+        }
+      } else {
+        // Usuário comum
+        if (estado === 'Todos') {
+          qry = `
+            SELECT * FROM meso_contatos
+            WHERE (usuario = '${usuario}' OR usuario IS NULL)
+            AND setor = '${tipo}'
+            ORDER BY datahora DESC`;
+        } else {
+          qry = `
+            SELECT * FROM meso_contatos
+            WHERE (usuario = '${usuario}' OR usuario IS NULL)
+            AND setor = '${tipo}'
+            AND estado = '${estado}'
+            ORDER BY datahora DESC`;
+        }
+      }
+      //console.log('contato', qry)
+      ////console.log('contatos resposta', res20)
+
+      let res20 = await executaQry(qry)
+      res.json(res20)
+
+    })
+
+
+    this.expressAppWrapper.get("/buscarcontatos1/:tipo/:usuario/:estado", async (req, res, next) => {
+      let qry
+
+      let tipo = req.params.tipo
+      let usuario = req.params.usuario
+      let estado = req.params.estado
+      if (tipo === 'admin') {
+        if (estado === 'Todos') {
+          qry = `
+      SELECT 
+        c.*,
+        IFNULL(m.ultima_data, c.datahora) AS datahora
+      FROM meso_contatos c
+      LEFT JOIN (
+        SELECT telefone, mensagem, MAX(datetime) AS ultima_data
+        FROM meso_mensagens_solicitante
+        GROUP BY telefone, mensagem
+      ) m
+        ON m.telefone = c.telefone
+       AND m.mensagem = c.ultimamsg
+      ORDER BY datahora DESC
+    `;
+        } else {
+          qry = `
+      SELECT 
+        c.*,
+        IFNULL(m.ultima_data, c.datahora) AS datahora
+      FROM meso_contatos c
+      LEFT JOIN (
+        SELECT telefone, mensagem, MAX(datetime) AS ultima_data
+        FROM meso_mensagens_solicitante
+        GROUP BY telefone, mensagem
+      ) m
+        ON m.telefone = c.telefone
+       AND m.mensagem = c.ultimamsg
+      WHERE c.estado = '${estado}'
+      ORDER BY datahora DESC
+    `;
+        }
+      } else {
+        if (estado === 'Todos') {
+          qry = `
+      SELECT 
+        c.*,
+        IFNULL(m.ultima_data, c.datahora) AS datahora
+      FROM meso_contatos c
+      LEFT JOIN (
+        SELECT telefone, mensagem, MAX(datetime) AS ultima_data
+        FROM meso_mensagens_solicitante
+        GROUP BY telefone, mensagem
+      ) m
+        ON m.telefone = c.telefone
+       AND m.mensagem = c.ultimamsg
+      WHERE (c.usuario = '${usuario}' OR c.usuario IS NULL)
+        AND c.setor = '${tipo}'
+      ORDER BY datahora DESC
+    `;
+        } else {
+          qry = `
+      SELECT 
+        c.*,
+        IFNULL(m.ultima_data, c.datahora) AS datahora
+      FROM meso_contatos c
+      LEFT JOIN (
+        SELECT telefone, mensagem, MAX(datetime) AS ultima_data
+        FROM meso_mensagens_solicitante
+        GROUP BY telefone, mensagem
+      ) m
+        ON m.telefone = c.telefone
+       AND m.mensagem = c.ultimamsg
+      WHERE (c.usuario = '${usuario}' OR c.usuario IS NULL)
+        AND c.setor = '${tipo}'
+        AND c.estado = '${estado}'
+      ORDER BY datahora DESC
+    `;
+        }
+      }
+
+      //console.log('contato', qry)
+      ////console.log('contatos resposta', res20)
+
+      let res20 = await executaQry(qry)
+      res.json(res20)
+
+    })
+
+    this.expressAppWrapper.get("/buscarcontatomealing/:usuario/:tipo/", async (req, res, next) => {
+      let qry
+      let usuario = req.params.usuario
+      let tipo = req.params.tipo
+
+      if (tipo === 'Analista') {
+        qry = `select distinct credor as nome, Telefone, processo from meso_mealing where idAgente = (select id from meso_usuariologin where usuario = '${usuario}')`
+      } else if (tipo === 'Especialista') {
+        qry = `select distinct m.credor as nome, m.Telefone, m.processo, m.estado from meso_mealing as m inner join meso_oportunidade as o on (m.idMealing = o.idMealing) where o.estado = 'aprovado';`
+      }
+
+      ////console.log('contato', qry)
+      let res20 = await executaQry(qry)
+      res.json(res20)
+      ////console.log('contatos resposta', res20)
+
+    })
+
+    this.expressAppWrapper.get("/filtrocontatos/:usuario/:tipo/:estado", async (req, res, next) => {
+      let qry
+      let usuario = req.params.usuario
+      let tipo = req.params.tipo
+      let estado = req.params.estado
+
+      if (tipo === 'Analista') {
+        qry = `select distinct m.credor as nome, m.Telefone, m.processo,o.estado from meso_mealing as m inner join meso_oportunidade as o on (m.idMealing = o.idMealing) where idAgente = (select id from meso_usuariologin where usuario = '${usuario}') and o.estado = '${estado}' `
+      } else if (tipo === 'Especialista') {
+        qry = `select distinct m.credor as nome, m.Telefone, m.processo,o.estado from meso_mealing as m inner join meso_oportunidade as o on (m.idMealing = o.idMealing) where o.estado = '${estado}';`
+      }
+
+      ////console.log('contato', qry)
+      let res20 = await executaQry(qry)
+      res.json(res20)
+      ////console.log('contatos resposta', res20)
+
+    })
+
+    this.expressAppWrapper.get("/mediapesquisa/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let qry = `select avg(nota) as medianota from meso_pesquisa where datahora > '${data1}' and datahora < '${data2}' AND gostaria like '%SIM%' `;
+      ////console.log(qry);
+      let res2 = await executaQry(qry);
+      res.json(res2);
+      ////console.log(res2);
+
+    });
+
+    //teste MedPesq1---------------------------------------------------------------------------------------------------------------------------------------------------
+    this.expressAppWrapper.get("/mediapesquisa1/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let qry = `select sum(pergunta1 + pergunta2) as medianota from meso_pesquisa where datahora > '${data1}' and datahora < '${data2}'`;
+      ////console.log(qry);
+      let res2 = await executaQry(qry);
+      res.json(res2);
+      ////console.log(res2);
+
+    });
+
+    this.expressAppWrapper.post("/reciveMsg", async (req, res, next) => {
+
+      let telefone = req.body.telefone
+      let telFormatado = telefone
+
+      if (telefone.length == 13) {
+      }
+
+      let qry = ` select * from meso_mensagens_solicitante where telefone like "${telFormatado}"`;
+
+      //console.log('qry:', qry)
+      let res3 = await executaQry(qry);
+      res.json(res3);
+      //console.log(res3);
+
+    });
+
+    this.expressAppWrapper.get("/mediapesquisaconta/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let qry = `select count(pergunta1)as contapesq from meso_pesquisa where datahora > '${data1}' and datahora < '${data2}'`;
+      ////console.log(qry);
+      let res2 = await executaQry(qry);
+      res.json(res2);
+      ////console.log(res2);
+
+    });
+
+    this.expressAppWrapper.get("/listaanalista", async (req, res, next) => {
+      let qry = `select * from meso_usuariologin where tipo = 'Analista'`;
+
+      let res27 = await executaQry(qry);
+
+      ////console.log('socaminha', res27)
+      res.json(res27);
+
+    });
+
+    this.expressAppWrapper.get("/listaespecialista", async (req, res, next) => {
+      let qry = `select * from meso_usuariologin where tipo = 'Especialista'`;
+
+      let res27 = await executaQry(qry);
+
+      ////console.log('socaminha', res27)
+      res.json(res27);
+
+    });
+
+    //Campanha fila
+
+    //Segunda bolinha do painel de filas - Chamadas em fila//
+    this.expressAppWrapper.get("/listajoin/:fila", async (req, res, next) => {
+      let filacompleta = req.params.fila;
+      let qry = `select * from meso_join_rt where fila = '${filacompleta}'`;
+      ////console.log(qry);
+
+      let res30 = await executaQry(qry);
+      res.json(res30);
+      ////console.log(res30);
+
+    });
+    //Primeira bolinha do painel das filas
+
+    this.expressAppWrapper.get("/listajointotal/:fila/:d1/:d2", async (req, res, next) => {
+      let filacompleta = req.params.fila;
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let qry = `select * from meso_entrar where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'`;
+      ////console.log(qry);
+
+      let res31 = await executaQry(qry);
+      res.json(res31);
+      ////console.log(res31);
+
+    });
+
+    //Terceira bolinha de chamadas conectadas na fila, isto é, aquelas chamadas que estão em curso
+
+    this.expressAppWrapper.get("/filaconectada/:fila/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let filacompleta = req.params.fila;
+
+      let qry = `select * from meso_call_connected_rt where fila = '${filacompleta}' and datahora > '${data1}' and datahora < '${data2}'`;
+      ////console.log(qry);
+
+      ////console.log(qry)
+
+      let res32 = await executaQry(qry);
+      res.json(res32);
+      ////console.log(res32);
+
+    });
+    //Quarta bolinha de chamadas da fila - Abandonadas do dia
+
+    this.expressAppWrapper.get("/filasabandonadas/:fila/:d1/:d2", async (req, res, next) => {
+      let filacompleta = req.params.fila;
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let qry = `select * from meso_abandon where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'`;
+      ////console.log(qry);
+
+
+      let res33 = await executaQry(qry);
+      res.json(res33);
+      ////console.log(res33);
+
+    });
+    //Sexta bolinha tma
+
+    this.expressAppWrapper.get("/tmafilas/:fila/:d1/:d2", async (req, res, next) => {
+      let filacompleta = req.params.fila;
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+
+
+      let qry = `select avg(talktime) as mediaANNA from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'`;
+      ////console.log(qry);
+
+      let res99 = await executaQry(qry);
+      res.json(res99);
+      ////console.log(res99);
+
+    });
+
+    this.expressAppWrapper.get("/mediatmasainte/:ramal/:d1/:d2", async (req, res, next) => {
+      let ramal = req.params.ramal;
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+
+      let qry = `select time_format(sec_to_time(avg(billsec)), '%H:%i:%s') as mediaTma from cdr where calldate >= '${data1}' and calldate <= '${data2}' and cnum = '${ramal}' and disposition = 'ANSWERED' and lastapp = 'Dial'`;
+      console.log(qry)
+
+      let res1 = await executaQry(qry);
+      res.json(res1)
+      ////console.log(res1);
+    })
+
+    //Setima bolinha TME Atendidas
+
+    this.expressAppWrapper.get("/tmefilas/:fila/:d1/:d2", async (req, res, next) => {
+      let filacompleta = req.params.fila;
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+
+      let qry = `select avg(holdtime) as mediaespera from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'`;
+      ////console.log(qry);
+
+      let res35 = await executaQry(qry);
+      res.json(res35);
+      ////console.log(res35);
+
+    });
+
+    this.expressAppWrapper.get("/tmesainte/:d1/:d2/:ramal", async (req, res, next) => {
+      let ramal = req.params.ramal;
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+
+      let qry = `select sum(duration - billsec) as duracao, count(*) as contduracao from cdr where calldate > '${data1}' and calldate < '${data2}' where cnum = '${ramal}'`;
+      ////console.log(qry);
+
+      let res1 = await executaQry(qry);
+      res.json(res1);
+      ////console.log(res1);
+    })
+
+    //Oitava bolinha TME do abandono
+
+    this.expressAppWrapper.get("/tmefilasabandonadas/:fila/:d1/:d2", async (req, res, next) => {
+      let filacompleta = req.params.fila;
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+
+      let qry = `select avg(holdtime) as mediaesperaabandonada from meso_abandon where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'`;
+      ////console.log(qry);
+
+      let res35 = await executaQry(qry);
+      res.json(res35);
+      ////console.log(res35);
+
+    });
+
+    this.expressAppWrapper.get("tmeabandonadassainte/:ramal/:d1/:d2", async (req, res, next) => {
+      let ramal = req.params.ramal;
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+
+      let qry = `select sum(duration - billsec) as duracao, count(*) as contduracao from cdr where calldate > '${data1}' and calldate < '${data2}' where cnum = '${ramal}'`;
+      ////console.log(qry);
+
+      let res1 = await executaQry(qry);
+      res.json(res1);
+      ////console.log(res1);
+    });
+    //Fim da campanha fila
+    //Listar filas
+    this.expressAppWrapper.get("/listafilastotais", async (req, res, next) => {
+
+      let qry = `select extension, descr from queues_config `;
+      ////console.log(qry);
+
+      let res38 = await executaQry2(qry);
+      res.json(res38);
+      ////console.log(res38);
+
+    });
+
+    //FIM de Listar filas
+    //Listar ramais
+    this.expressAppWrapper.get("/listaramais", async (req, res, next) => {
+
+      let qry = `select extension, name from users `;
+      ////console.log(qry);
+
+      let res38 = await executaQry2(qry);
+      res.json(res38);
+      ////console.log(res38);
+
+    });
+    //FIM listar ramais
+    this.expressAppWrapper.get("/realramal", async (req, res, next) => {
+      // let filacompleta = req.params.fila;
+      //let data1 = req.params.d1 + ' 00:00:00'
+      //let data2 = req.params.d2 + ' 23:59:59'
+
+      let qry = `select * from meso_operadores_rt`;
+      ////console.log(qry);
+
+      let res36 = await executaQry(qry);
+      res.json(res36);
+      ////console.log(res36);
+
+    });
+
+    this.expressAppWrapper.get("/detalhesligacoes/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+
+      let qry = `select distinct * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid and table1.datahora > '${data1}' and table1.datahora < '${data2};' `;
+      ////console.log(qry);
+
+      ////console.log(qry)
+      let res20 = await executaQry(qry);
+      res.json(res20);
+      ////console.log(res20);
+
+
+    });
+
+    //Listar operadores
+    this.expressAppWrapper.get("/listaoperadores", async (req, res, next) => {
+
+      let qry = `select * from meso_operadores `;
+      ////console.log(qry);
+      /*select *  from meso_logado msl
+      left join meso_operadores mso on msl.pin = mso.pin
+      where mso.id is not null
+      */
+
+      let res4 = await executaQry(qry);
+      res.json(res4);
+      ////console.log(res4);
+
+    });
+    //Ligações de entrada
+    this.expressAppWrapper.get("/recebidafila/:fila/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let filacompleta = req.params.fila;
+      let qry = `select * from meso_entrar where fila = '${filacompleta}' and datahora > '${data1}' and datahora < '${data2}'; `
+
+      //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
+      ////console.log(qry);
+
+      let res20 = await executaQry(qry);
+      res.json(res20);
+      ////console.log(res20);
+
+    });
+
+    this.expressAppWrapper.get("/buscar-usuario-tipo/:tipo", async (req, res, next) => {
+      let tipo = req.params.tipo
+      let qry = `select usuario from meso_usuariologin where tipo = '${tipo}'`
+      let res20 = await executaQry(qry);
+      let res21 = [];
+      for (let x = 0; x < res20.dados.length; x++) {
+        res21.push(res20.dados[x].usuario);
+      }
+
+      res.json(res21)
+
+      // //console.log("neve cobre o chão",qry)
+      //console.log("res20 dados", res21)
+    })
+
+    this.expressAppWrapper.get("/buscar-usuario/:nome", async (req, res, next) => {
+      let nome = req.params.nome
+      let nomeSemPlug;
+
+      if (nome.includes('-PlugPhone')) {
+        nomeSemPlug = nome.replace('-PlugPhone', '');
+        console.log("Caiu aquii será?")
+      } else {
+        nomeSemPlug = nome
+      }
+
+      let res20 = await executaQry(`select usuario,senha,tipo from meso_usuariologin where usuario like '%${nomeSemPlug}%'`);
+      console.log(`oi tô aqui`, res20.dados[0]);
+
+      if (res20.dados[0]) {
+        res.json(res20.dados[0])
+      } else {
+        res.json("Usuário não encontrado")
+      }
+
+      // //console.log("neve cobre o chão",qry)
+      //console.log("res20 dados", res21)
+    })
+
+    this.expressAppWrapper.get("/recebidasucesso/:fila/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let filacompleta = req.params.fila;
+      let qry = `select * from meso_agent_complete where fila = '${filacompleta}' and datahora > '${data1}' and datahora < '${data2}'; `
+
+      //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
+      ////console.log(qry);
+
+      let res20 = await executaQry(qry);
+      res.json(res20);
+      ////console.log(res20);
+
+    });
+
+    this.expressAppWrapper.get("/recebidaabandon/:fila/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let filacompleta = req.params.fila;
+      let qry = `select * from meso_abandon where fila = '${filacompleta}' and datahora > '${data1}' and datahora < '${data2}'; `
+
+      //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
+      ////console.log(qry);
+
+      let res20 = await executaQry(qry);
+      res.json(res20);
+      ////console.log(res20);
+
+    });
+    this.expressAppWrapper.get("/recebidajoin/:fila/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let filacompleta = req.params.fila;
+      let qry = `select * from meso_entrar where fila = '${filacompleta}' and datahora > '${data1}' and datahora < '${data2}'; `
+
+      //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
+      ////console.log(qry);
+
+      let res20 = await executaQry(qry);
+      res.json(res20);
+      ////console.log(res20);
+
+    });
+    this.expressAppWrapper.get("/recebidaespera/:fila/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let filacompleta = req.params.fila;
+      let qry = `select sec_to_time(sum(meso_abandon.holdtime))as espera from meso_abandon  where meso_abandon.fila= '${filacompleta}' and meso_abandon.datahora > '${data1}' and meso_abandon.datahora < '${data2}';`
+
+      //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
+      ////console.log(qry);
+      ////console.log(qry)
+      let res20 = await executaQry(qry);
+      res.json(res20);
+      ////console.log(res20);
+
+    });
+    this.expressAppWrapper.get("/recebidaesperaatende/:fila/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let filacompleta = req.params.fila;
+      let qry = `select sec_to_time(sum(meso_agent_complete.holdtime))as esperaAtende from meso_agent_complete  where meso_agent_complete.fila= '${filacompleta}' and meso_agent_complete.datahora > '${data1}' and meso_agent_complete.datahora < '${data2}';`
+
+      //let qry = `select * from meso_agent_complete AS table1 inner join meso_bridge as table2 on table1.uniqueid = table2.uniqueid1 inner join cdr as table3 on table3.uniqueid = table1.uniqueid and datahora > '${data1}' and datahora < '${data2} limit 1;' `;
+      ////console.log(qry);
+      let res20 = await executaQry(qry);
+      res.json(res20);
+      ////console.log(res20);
+
+    });
+    //FIM DE ligações de entrada
+
+    //FLUXO DE LIGAÇÃO POR HORA
+    this.expressAppWrapper.get("/dashpizza/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let qry = `select *, DataHora as datahora from meso_entrar where datahora > '${data1}' and datahora < '${data2}'`;
+      // //console.log(qry);
+
+
+      let res24 = await executaQry(qry);
+      res.json(res24);
+      ////console.log(res24);
+
+    });
+
+    //FIM DO FLUXO DE CHAMADA
+
+    //PAUSA
+    this.expressAppWrapper.get("/pausa/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1
+      let data2 = req.params.d2
+
+      // let data2 = req.params.d2 + ' 23:59:59'
+
+      let qry = ` select *, timediff(meso_pausa_fila.despausado, meso_pausa_fila.datahora) as duracao from meso_pausa_fila, logs where meso_pausa_fila.despausado != '0000-00-00 00:00:00' and  meso_pausa_fila.datahora = logs.datahora or logs.datahora = meso_pausa_fila.datahora -1 and logs.datahora = meso_pausa_fila.datahora and meso_pausa_fila.datahora > '${data1}'  and meso_pausa_fila.datahora < '${data2}';
+      `;
+      ////console.log(qry);
+
+      let res17 = await executaQry(qry);
+      res.json(res17);
+      ////console.log(res17);
+
+    });
+
+    //DASHBOARD
+
+    this.expressAppWrapper.get("/filaabandono/:d1/:d2", async (req, res, next) => {
