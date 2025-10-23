@@ -48,32 +48,15 @@
           <br>
           <br>
           <br>
-          <v-btn rounded @click="geraVerificacao()" color="#61a5e8" class="centralizado"
-            style="color: white;    margin-bottom: 1px;margin-left: 20px;">Próximo</v-btn>
-
+          <v-btn rounded @click="login" color="#61a5e8" class="centralizado"
+            style="color: white;    margin-bottom: 1px;margin-left: 20px;">Login</v-btn>
 
 
 
         </div>
       </v-form>
     </v-card-text>
-    <v-dialog v-model="openDialogAuth" max-width="500px" persistent>
-      <v-card>
-        <v-card-title>Autenticação de 2 fatores</v-card-title>
-        <br>
-        <h3 style="margin-left: 5%;">Digite o código recebido pelo Whatsapp</h3>
-        <br>
-        <v-row class="loading">
-          <v-text-field label="Digite Seu Código" name="usuario" type="number" v-model="codigo" /> </v-row>
 
-        <v-btn rounded @click="login" color="#61a5e8" class="centralizado" style="background-color: rgb(97, 165, 232);
-    border-color: rgb(97, 165, 232);
-    color: white;
-    margin-left: 40%;
-    margin-bottom: 10%;">Login</v-btn>
-
-      </v-card>
-    </v-dialog>
   </v-container>
 
 
@@ -88,37 +71,17 @@ export default {
   data: () => ({
     usuario: "",
     senha: "",
-    openDialogAuth: false,
-    codigo: "",
     error: false,
-    telefone: ""
   }),
   methods: {
-
-    async geraVerificacao() {
-      let pegaTelefoneArray = await api.get(`pegaTelefone/${this.usuario}-PlugPhone`)
-      console.log('eu sou o telearray', pegaTelefoneArray)
-      this.telefone = pegaTelefoneArray.data.dados[0].telefone
-      console.log('bate foge bate foge', this.telefone)
-
-      let authBody = {
-        "usuario": this.usuario,
-        "telefone": this.telefone
-      }
-      let geraCódigo = await api.post(`/gera-codigo`, authBody)
-      console.log(geraCódigo)
-
-      this.openDialogAuth = true
-    },
 
     async login() {
       try {
         //localStorage.removeItem( "jwt");
         this.error = false;
-        let res = await api.post("loginconfere2/", {
+        let res = await api.post("loginconfere/", {
           login: this.usuario + "-PlugPhone",
           senha: this.senha,
-          codigo: this.codigo
         });
         console.log('dificil heim kkkk', res.data)
         if (res.data && res.data.token) {
@@ -289,10 +252,5 @@ h1 {
 .icone {
   width: 14%;
   margin-left: 42%;
-}
-
-.loading {
-  width: 75% !important;
-  margin-left: 2%;
 }
 </style>

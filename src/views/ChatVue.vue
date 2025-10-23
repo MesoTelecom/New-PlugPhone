@@ -3,6 +3,7 @@
     <v-app style="">
 
       <v-navigation-drawer app color="rgb(221 221 221)" class="sidebar">
+
         <v-img src="../assets/PlugPhoneCentro.png" class="avatar"></v-img>
         <br>
         <v-row>
@@ -156,8 +157,9 @@
       <div class="info" style="background-color: #ffffff !important;
   border-color: #ffffff !important;">
         <br>
-        <v-btn class="infoBtn">Informações <v-icon @click="openDialogForm = true" style="left: 3%;">
-            mdi-information
+        <v-btn class="infoBtn" @click="openDialogEdita = true">Informações<v-icon @click="openDialogForm = true"
+            style="left: 3%;">
+            mdi-account-edit
           </v-icon></v-btn>
         <v-data-table :items="dados" :items-per-page="1" style="background: rgb(221, 221, 221);
     border-radius: 0%;
@@ -169,12 +171,8 @@
     border-width: thin;
     height: 95%;" hide-default-footer class="responsive-table" item-class="custom-row">
           <template v-slot:item="{ item }">
-            <div class="table-row" style=" display: inline-grid;">
-              <v-icon class="edit" style="font-size: 35px;
-    border-radius: 100%;
-    width: 25%;
-    right: 3%;
-    " @click="openDialogEdita = true">mdi-account-edit</v-icon>
+            <div class="table-row" style=" display: inline-grid; margin-top: -5%;">
+
               <div v-for="(header, index) in informacao" :key="index">
                 <br> <strong>{{ header.text }}:<br></strong> {{ item[header.value] }}
               </div>
@@ -199,7 +197,7 @@
     margin-bottom: -17px;" />
 
       <v-icon @click="openDialogAnexo = true" class="imageIcon" style="left: 0%;font-size: 169%;">
-        mdi-paperclip
+        mdi-file-document
       </v-icon>
       <v-icon @click="openDialog1 = true" class="imageIcon" style="left: 0%;font-size: 169%;">
         mdi-microphone
@@ -215,11 +213,11 @@
         :disabled="tipo === 'Analista'">
         mdi-checkbox-marked-circle</v-icon>
 
-      <textarea v-model="newMessage" @keydown.enter="handleEnter" placeholder="Digite sua mensagem aqui..."
-        class="input-message"
-        style="left: 53px; bottom: 50%; width: 65%; border-radius: 1px; border-style: unset; border-bottom-style: solid; resize: none; overflow-y: auto;"
-        rows="1"></textarea>
-      <v-icon @click="openDialogForm = true" class="imageIcon" style="left: 45%;font-size: 169%;">
+      <v-textarea v-model="newMessage" :maxlength="500" counter @keydown.enter="handleEnter($event)"
+        placeholder="Digite sua mensagem aqui..." class="input-message"
+        style="left: 53px; bottom: 50%; width: 65%; border-radius: 1px; border-style: unset;  resize: none; overflow-y: auto;"
+        rows="1"></v-textarea>
+      <v-icon @click="openDialogForm = true" class="imageIcon" style="left: auto;font-size: 169%;">
         mdi-transfer
       </v-icon>
 
@@ -942,6 +940,17 @@ export default {
 
     },
 
+    handleEnter(event) {
+      // se apertar Shift+Enter, deixa o comportamento normal (quebra de linha)
+      if (event.shiftKey) return;
+
+      // evita a quebra de linha padrão quando for só Enter
+      event.preventDefault();
+
+      // chama a função de envio
+      this.sendMessage();
+    },
+
     async deslogar() {
       console.log('this.ramal', this.ramal, this.tipo)
 
@@ -1346,16 +1355,7 @@ export default {
         this.openDialog1 = false;
       }
     },
-    handleEnter(e) {
-      if (e.shiftKey) {
-        // SHIFT + ENTER → quebra de linha
-        return;
-      }
 
-      // ENTER sozinho → envia
-      e.preventDefault();
-      this.sendMessage();
-    },
     async sendMessage() {
       this.usuario = this.usuario.charAt(0).toUpperCase() + this.usuario.slice(1);
       console.log('teste usuario aqui', this.usuario)
@@ -1376,33 +1376,37 @@ export default {
         if (numMsg === 0) {
           alert('Esta é sua primeira mensagem para o contato hoje.\nPor favor, envie um template antes de continuar.');
         } else {
-          let usuario = this.usuario
-          let umaMensagem = this.newMessage
-          let numero = this.wppnum
-          console.log('me de o CUBO', msg)
-          //this.messages.push({ text: this.newMessage, sender: this.usuario });
-          console.log('eu sou oque vai ser enviado pelo socket', usuario, umaMensagem, numero)
-          this.socket.emit('send Message', { usuario, umaMensagem, numero });
-          console.log('passei do socket')
-          let resposta = await api.post("/whatsapp/send", msg);
-          console.log('passei do resposta')
+          console.log('concedi pra vc', this.newMessage.length)
+          if (this.newMessage.length > 500) {
+            alert('Não foi possível enviar essa mensagem, pois ela ultrapassa 500 caracteres.');
+          } else {
+            let usuario = this.usuario
+            let umaMensagem = this.newMessage
+            let numero = this.wppnum
+            console.log('me de o CUBO', msg)
+            //this.messages.push({ text: this.newMessage, sender: this.usuario });
+            console.log('eu sou oque vai ser enviado pelo socket', usuario, umaMensagem, numero)
+            this.socket.emit('send Message', { usuario, umaMensagem, numero });
+            console.log('passei do socket')
+            let resposta = await api.post("/whatsapp/send", msg);
+            console.log('passei do resposta')
 
-          this.newMessage = "";
-          console.log("limpou?", this.newMessage);
-          console.log('verifica resposta da API', resposta.data.dados)
+            this.newMessage = "";
+            console.log("limpou?", this.newMessage);
+            console.log('verifica resposta da API', resposta.data.dados)
 
-          if (resposta.data.dados == "mensagem não tolerada") {
-            console.log('palavrão não kkkkkkkkkkk')
-            alert('Palavras de baixo calão não serão toleradas!')
+            if (resposta.data.dados == "mensagem não tolerada") {
+              console.log('palavrão não kkkkkkkkkkk')
+              alert('Palavras de baixo calão não serão toleradas!')
+            }
+            // deve imprimir string vazia
+
+            this.$nextTick(() => {
+              this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+            });
+            this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+
           }
-          // deve imprimir string vazia
-
-          this.$nextTick(() => {
-            this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
-          });
-          this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
-
-
         }
       }
     },
@@ -1749,6 +1753,7 @@ export default {
   position: absolute;
   bottom: 0;
   left: 51px;
+  margin-bottom: -3% !important;
 
 }
 
