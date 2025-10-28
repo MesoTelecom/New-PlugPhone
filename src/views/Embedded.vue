@@ -1,43 +1,46 @@
 <template>
-  <div id="app">
-    <div id="fb-root"></div>
-    <div class="fb-login-button" data-width="" data-size="large" data-button-type="continue_with" data-layout="default"
-      data-auto-logout-link="false" data-use-continue-as="true">
-    </div>
+  <div class="container">
+    <h2>WhatsApp Business - Embedded Signup</h2>
+    <button @click="openEmbeddedSignup" class="btn">
+      Connect WhatsApp Account
+    </button>
   </div>
 </template>
 
 <script>
 export default {
-  name: "HelloWorld",
-  mounted() {
-    // injeta o SDK dinamicamente
-    (function (d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s);
-      js.id = id;
-      js.src = "https://connect.facebook.net/en_US/sdk.js";
-      js.onload = () => {
-        // só roda fbAsyncInit DEPOIS que o script carregar
-        window.fbAsyncInit = () => {
-          if (window.FB) {
-            window.FB.init({
-              appId: "7397712986921789",
-              autoLogAppEvents: true,
-              xfbml: true,
-              version: "v23.0",
-            });
-            console.log("✅ Facebook SDK carregado e inicializado!");
-          } else {
-            console.error("❌ FB ainda não disponível!");
-          }
-        };
-      };
-      fjs.parentNode.insertBefore(js, fjs);
-    })(document, "script", "facebook-jssdk");
-  },
+  name: "EmbeddedSignup",
+  methods: {
+    openEmbeddedSignup() {
+      const appId = "7397712986921789";
+      const configId = "473643052180048";
+
+      const signupUrl = `https://business.facebook.com/messaging/whatsapp/onboard/?app_id=${appId}&config_id=${configId}`;
+
+      // Abre o fluxo do EBS em um popup controlado
+      window.open(signupUrl, "EBSWindow", "width=1000,height=800,scrollbars=yes");
+    }
+  }
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.container {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.btn {
+  background-color: #075e54;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn:hover {
+  background-color: #128C7E;
+}
+</style>

@@ -4,22 +4,31 @@
     <v-card-text class="mt-12" id="centralizado">
 
       <div style="width: 100%;
+      
     position: relative;
     margin-top: -9% !important;">
         <!--text--accent-NUMBER altera a cor da letra do texto-->
         <!--<img src="../assets/plugbranco3.png" alt="" class="icone">-->
         <br>
         <br>
+        <br>
+        <br>
 
-
+        <br>
+        <br>
+        <br>
+        <br>
         <h1 class="text-center display-1" style="color: white;">Seja bem-vindo ao PlugPhone Cloud</h1>
         <br>
         <br>
-
         <br>
+        <br>
+
         <!--div que trata botões de Facebook, Google e Linkedin-->
       </div>
-      <v-form style="        top: 44%;
+
+      <v-form style="        top: 200%;
+          margin-top: 5%;
     width: 55%;
     left: 21%;
     position: relative;">
@@ -46,26 +55,40 @@
         </v-row>
         <div class="text-center" style="width: 100%">
           <br>
-          <br>
-          <br>
+
           <v-btn rounded @click="geraVerificacao()" color="#61a5e8" class="centralizado"
             style="color: white;    margin-bottom: 1px;margin-left: 20px;">Próximo</v-btn>
 
-
-
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <v-btn class="btn" @click="goToEBS">
+            Conectar WhatsApp
+          </v-btn>
 
         </div>
       </v-form>
     </v-card-text>
+    <br>
+
     <v-dialog v-model="openDialogAuth" max-width="500px" persistent>
       <v-card>
-        <v-card-title>Autenticação de 2 fatores</v-card-title>
-        <br>
+        <v-card-title>Autenticação de 2 fatores</v-card-title> <v-icon @click="openDialogAuth = false"
+          class="close">mdi-close</v-icon>
         <h3 style="margin-left: 5%;">Digite o código recebido pelo Whatsapp</h3>
         <br>
+        <br>
         <v-row class="loading">
-          <v-text-field label="Digite Seu Código" name="usuario" type="number" v-model="codigo" /> </v-row>
-
+          <v-icon style="    left: 24%;
+    margin-bottom: 1%;">mdi-lock</v-icon> <v-text-field label="Digite Seu Código" name="usuario" type="number"
+            v-model="codigo" /> </v-row>
+        <br>
         <v-btn rounded @click="login" color="#61a5e8" class="centralizado" style="background-color: rgb(97, 165, 232);
     border-color: rgb(97, 165, 232);
     color: white;
@@ -109,6 +132,16 @@ export default {
       console.log(geraCódigo)
 
       this.openDialogAuth = true
+    },
+
+    goToEBS() {
+      const appId = "7397712986921789";
+      const configId = "473643052180048";
+
+      const signupUrl = `https://business.facebook.com/messaging/whatsapp/onboard/?app_id=${appId}&config_id=${configId}`;
+
+      // Abre o fluxo do EBS em um popup controlado
+      window.open(signupUrl, "EBSWindow", "width=1000,height=800,scrollbars=yes");
     },
 
     async login() {
@@ -175,7 +208,9 @@ export default {
 <style scoped>
 /* Centralização */
 #centralizado {
-  margin-left: 4% !important;
+  margin-left: 15px !important;
+  margin-top: 1% !important;
+
 
 }
 
@@ -294,5 +329,39 @@ h1 {
 .loading {
   width: 75% !important;
   margin-left: 2%;
+}
+
+.close {
+  position: absolute;
+  font-size: 35px;
+  top: 5%;
+  left: 90%;
+}
+
+.close:hover {
+  background-color: #ccc;
+  border-radius: 60%;
+}
+
+.btn {
+  padding: 14px 22px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  left: 1%;
+  background: #a1a1a1b5 !important;
+  /* azul Meta */
+  color: #fff;
+  font-weight: 600;
+  bottom: -4%;
+}
+
+.btn:hover {
+  background-color: #165dbb;
+}
+
+.btn:active {
+  transform: translateY(1px);
 }
 </style>

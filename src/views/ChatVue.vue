@@ -1,44 +1,51 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div id="app" style="">
     <v-app style="">
 
-      <v-navigation-drawer app color="rgb(221 221 221)" class="sidebar">
+      <v-navigation-drawer app color="#001644" class="sidebar">
 
-        <v-img src="../assets/PlugPhoneCentro.png" class="avatar"></v-img>
+        <v-img src="../assets/plugBrancao.png" class="avatar"></v-img>
         <br>
         <v-row>
 
           <router-link to="/dashboard">
-            <v-icon @click="deslogar()" id="seta" class="imageIcon" style="margin-bottom: -25%;left: 100%;">
+            <v-icon @click="deslogar()" id="seta" class="imageIcon"
+              style="margin-bottom: -25%;left: 100%;  color: #c4c4c4">
               mdi-arrow-left
             </v-icon>
           </router-link>
           <v-icon @click="openDialogContato = true" class="imageIcon"
-            style="    left: 75%;font-size: 169%; margin-bottom: -1%;">
+            style="    left: 75%;font-size: 169%; margin-bottom: -1%;  color: #c4c4c4">
             mdi-plus
           </v-icon>
+          <!--<v-icon @click="OpenDialogGLPI = true" class="imageIcon"
+            style="    left: 71%;font-size: 169%; margin-bottom: -1%;">
+            mdi-help-circle
+          </v-icon>
+          -->
         </v-row>
 
         <v-list dense>
-          <h1 style="    text-align: center;">{{ estadoContatoFiltro }}</h1>
+          <h1 style="    text-align: center; color: #c4c4c4;">{{ estadoContatoFiltro }}</h1>
           <v-row>
             <v-icon
               @click="buscarContato(filtroSelecionado, estadoContatoFiltro, offset -= 100), contador > 1 ? contador-- : contador = 1"
               class="imageIcon" style="left: 25%;
-    margin-bottom: -1%;
+    margin-bottom: -1%; color: #c4c4c4;
 ">
               mdi-arrow-left</v-icon>
-            <h1 style="        position: relative;
-    left: 40%;">{{ contador }}</h1>
+            <h1 style="position: relative;
+    left: 40%; color: #c4c4c4">{{ contador }}</h1>
             <v-icon @click="buscarContato(filtroSelecionado, estadoContatoFiltro, offset += 100), contador++"
               class="imageIcon" style="    left: 55%;
-    margin-bottom: -1%;">
+    margin-bottom: -1%;  color: #c4c4c4">
               mdi-arrow-right</v-icon>
           </v-row>
 
           <v-card-text style="    margin-bottom: -10%;">
             <!-- TextField no topo -->
-            <v-text-field v-model="filtroValor" label="Digite o valor do filtro" class="mb-4"
+            <v-text-field v-model="filtroValor" label="Digite o valor do filtro" dark class="mb-4" color="white"
               @input="buscarContato(filtroSelecionado, estadoContatoFiltro, 0)"></v-text-field>
           </v-card-text>
           <v-list-item-group v-model="selectedContact">
@@ -47,13 +54,13 @@
             <v-list-item v-for="(contact, index) in contacts" :key="index">
               <v-list-item-content>
                 <v-list-item-title class="sidebar" @click="selectContact(contact.telefone)">
-                  <v-icon style="color: black; font-size: 50px; margin-bottom: -9%;">mdi-account-circle</v-icon>
-                  <b style="font-size: 14px;"> {{ contact.nome }}</b>
+                  <v-icon style="color: #c4c4c4; font-size: 50px; margin-bottom: -9%;">mdi-account-circle</v-icon>
+                  <b style="text-align: start !important; color: #c4c4c4"> {{ contact.nome }}</b>
                   <br>
 
                   <a style="    margin-left: 21%;
     font-size: 12px;
-    color: #494949;">{{ contact.ultimamsg }}</a>
+    color: #c4c4c4;">{{ contact.ultimamsg }}</a>
                   <v-icon v-if="contact.estadomsg === 'novamsg'" color="#25D366"
                     style="font-size: 15px; left: 3%;">mdi-checkbox-blank-circle
                   </v-icon>
@@ -84,7 +91,7 @@
 
       <img src="../assets/PlugPhoneCentro.png" class="plugPhone" />
 
-      <v-main style="padding: 0px; height: 100vh; display: flex; flex-direction: column;">
+      <v-main style="padding: 0px; background: #0E1C33; height: 100vh; display: flex; flex-direction: column;">
         <v-container fluid>
           <v-row class="cabecalho">
             <v-btn @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Todos')"
@@ -103,7 +110,7 @@
 
           <v-row style="margin-right: 25%;">
             <v-col cols="12" md="12" style="padding: 0%;">
-              <div class="messages" ref="messages"
+              <div class="messages gradient-bg" ref="messages"
                 style="margin-left: 4%;margin-right: 2%;max-height: 80vh;overflow-y: auto;">
                 <div v-for="(message, index) in messages" :key="'server-' + index" :class="{
                   'message-requester': !message.sender.includes('-PlugPhone'),
@@ -117,13 +124,14 @@
                       tituloSender: !message.sender.includes('-PlugPhone'),
                       titulo: message.sender.includes('-PlugPhone'),
                     }">
-                      <b>{{ message.sender }}:</b><br />
+                      <div><b id="tituloMsg">{{ message.sender }}:</b></div>
                     </span>
                     <span class="message-text">
                       <span v-if="message.isImage">
                         <img :src="message.text" alt="Imagem" style="max-width: 100%; height: auto;" />
                         <br />
-                        <data style="font-size: 12px; color: #ffffff">{{ message.datetime }}</data>
+
+
                       </span>
                       <span v-else-if="message.isAudio">
                         <audio controls>
@@ -133,8 +141,13 @@
                       </span>
                       <span v-else>
                         {{ message.text }} <br />
-                        <data style="font-size: 12px; color: #ffffff">{{ message.datetime }}</data>
+
+
                       </span>
+                      <div :style="{ 'text-align': message.sender.includes('-PlugPhone') ? 'end' : 'start' }"><data
+                          style="font-size: 12px; color: #ffffff">{{ message.datetime
+                          }}</data>
+                      </div>
                     </span>
                   </div>
                 </div>
@@ -147,27 +160,27 @@
     left: 4%;
     bottom: 16%;">
             <v-btn icon color="#6d6d6d;" @click="scrollToBottom" style="z-index: 999;">
-              <v-icon style="font-size: 35px;">mdi-arrow-down-circle</v-icon>
+              <v-icon style="font-size: 35px; color: #ffffff85">mdi-arrow-down-circle</v-icon>
             </v-btn>
           </div>
         </v-container>
       </v-main>
 
 
-      <div class="info" style="background-color: #ffffff !important;
-  border-color: #ffffff !important;">
+      <div class="info" style="background-color: #0E1C33 !important;">
         <br>
         <v-btn class="infoBtn" @click="openDialogEdita = true">Informações<v-icon @click="openDialogForm = true"
             style="left: 3%;">
             mdi-account-edit
           </v-icon></v-btn>
-        <v-data-table :items="dados" :items-per-page="1" style="background: rgb(221, 221, 221);
+        <v-data-table :items="dados" :items-per-page="1" style="background: #13284B;
     border-radius: 0%;
     position: fixed;
     bottom: 0%;
+    color: #c4c4c4;
     width: 22%;
     right: 0%;
-    border-style: inset;
+    border-style: transparent;
     border-width: thin;
     height: 95%;" hide-default-footer class="responsive-table" item-class="custom-row">
           <template v-slot:item="{ item }">
@@ -196,28 +209,28 @@
     width: 35px;
     margin-bottom: -17px;" />
 
-      <v-icon @click="openDialogAnexo = true" class="imageIcon" style="left: 0%;font-size: 169%;">
+      <v-icon @click="openDialogAnexo = true" class="imageIcon" style="left: 0%;font-size: 169%; color: gray">
         mdi-file-document
       </v-icon>
-      <v-icon @click="openDialog1 = true" class="imageIcon" style="left: 0%;font-size: 169%;">
+      <v-icon @click="openDialog1 = true" class="imageIcon" style="left: 0%;font-size: 169%; color: gray">
         mdi-microphone
       </v-icon>
-      <v-icon @click="openDialog = true" class="imageIcon" style="left: 0%;font-size: 169%;">
+      <v-icon @click="openDialog = true" class="imageIcon" style="left: 0%;font-size: 169%; color: gray">
         mdi-image
       </v-icon>
 
-      <v-icon @click="toggleEmojiPicker" class="imageIcon" style="left: 0%; font-size: 169%;">
+      <v-icon @click="toggleEmojiPicker" class="imageIcon" style="left: 0%; font-size: 169%; color: gray">
         mdi-emoticon
       </v-icon>
-      <v-icon @click="openDialogConcluir = true" class="imageIcon" style="left: 0%; font-size: 169%"
+      <v-icon @click="openDialogConcluir = true" class="imageIcon" style="left: 0%; font-size: 169%; color: gray "
         :disabled="tipo === 'Analista'">
         mdi-checkbox-marked-circle</v-icon>
 
-      <v-textarea v-model="newMessage" :maxlength="500" counter @keydown.enter="handleEnter($event)"
+      <v-textarea v-model="newMessage" dark :maxlength="500" counter @keydown.enter="handleEnter($event)"
         placeholder="Digite sua mensagem aqui..." class="input-message"
-        style="left: 53px; bottom: 50%; width: 65%; border-radius: 1px; border-style: unset;  resize: none; overflow-y: auto;"
+        style="left: 53px; bottom: 63%; width: 65%; border-radius: 1px; border-style: unset;  resize: none; overflow-y: auto;"
         rows="1"></v-textarea>
-      <v-icon @click="openDialogForm = true" class="imageIcon" style="left: auto;font-size: 169%;">
+      <v-icon @click="openDialogForm = true" class="imageIcon" style="left: auto;font-size: 169%; color: gray;">
         mdi-transfer
       </v-icon>
 
@@ -244,6 +257,26 @@
             </v-card-actions>
             <v-card-actions>
               <v-btn color="primary" @click="openDialog = false">Fechar</v-btn>
+            </v-card-actions>
+          </v-row>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="OpenDialogGLPI" max-width="500px" persistent>
+        <v-card class="dialogo">
+          <v-card-title>Abrir chamado</v-card-title>
+          <v-card-text>
+            <v-text-field v-model="nameGLPI" label="Digite o nome do seu chamado"></v-text-field>
+          </v-card-text>
+          <v-card-text>
+            <v-text-field v-model="content" label="Digite a content do seu chamado"></v-text-field>
+          </v-card-text>
+          <v-row class="linhaBtn">
+            <v-card-actions>
+              <v-btn color="primary" @click="enviaChamado">Enviar</v-btn>
+            </v-card-actions>
+            <v-card-actions>
+              <v-btn color="primary" @click="OpenDialogGLPI = false">Fechar</v-btn>
             </v-card-actions>
           </v-row>
         </v-card>
@@ -405,7 +438,8 @@
               <v-btn @click=" sendTemplate(), openDialog2 = false" class="btnAudio">
                 Whatsapp <v-icon>mdi-whatsapp</v-icon>
               </v-btn>
-              <v-btn @click="openDialogLigacao = true, openDialog2 = false" class="btnCall">
+              <v-btn @click="openDialogLigacao = true, openDialog2 = false" class="btnCall"
+                style="color: white !important;">
                 Ligação <v-icon>mdi-phone</v-icon>
               </v-btn>
               <audio v-if="audioUrl" :src="audioUrl" controls></audio>
@@ -439,7 +473,7 @@
             </v-card-actions>
             <v-card-actions style="padding-left: 10%; ">
               <v-btn color="primary" @click="openDialogLigacao = false"
-                style="background-color: #e74343 !important;">Cancelar</v-btn>
+                style="background-color: #e74343 !important; color: white !important;">Cancelar</v-btn>
             </v-card-actions>
           </v-row>
         </v-card>
@@ -566,6 +600,17 @@ export default {
     this.logar();
 
   },
+  async enviaChamado() {
+    let chamado = {
+      "name": this.nameGLPI,
+      "content": this.content
+    }
+    console.log(chamado)
+    let postChamado = await api.post(`/geraChamado`, chamado)
+    console.log(postChamado)
+
+
+  },
 
   async beforeUnmount() {
 
@@ -623,6 +668,9 @@ export default {
       novoNome: "",
       editaNome: "",
       editaNum: "",
+      OpenDialogGLPI: false,
+      content: "",
+      nameGLPI: "",
       editaEmpresa: "",
       filtroValor: "",
       openDialogEnviando: false,
@@ -1726,7 +1774,7 @@ export default {
   text-align: left;
 
   border: none;
-  color: white;
+  color: #c4c4c4;
   padding: 15px 32px;
 
   text-decoration: none;
@@ -1737,7 +1785,7 @@ export default {
   text-align: right;
 
   border: none;
-  color: white;
+  color: #c4c4c4;
   padding: 15px 32px;
 
   text-decoration: none;
@@ -1747,7 +1795,7 @@ export default {
 .input-message {
   width: calc(88% - 20px);
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #ffffff;
   border-radius: 25px;
   outline: none;
   position: absolute;
@@ -1758,9 +1806,9 @@ export default {
 }
 
 .sidebar {
-  color: rgb(0, 0, 0);
+  color: rgb(255, 255, 255);
   left: -6px;
-
+  background-color: #13284B !important;
   width: 300px !important;
 
 
@@ -1772,7 +1820,7 @@ export default {
   width: 100%;
   position: fixed;
   top: 12px;
-  background-color: white;
+  background-color: #0E1C33;
   margin-left: 2%;
 }
 
@@ -1781,35 +1829,41 @@ export default {
   margin-top: 64px;
   width: 100%;
   padding: 10px;
-  background-color: #d9d9d987;
+  background-color: #13284b8e;
   /*  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
 */
 }
 
 .button {
-  background-color: #075e54;
-  /* Green */
+  text-align: justify !important;
+  /*background-color: #075e54d6;*/
+  background: linear-gradient(223deg, rgb(0 98 119 / 70%) 0%, rgb(62 62 173 / 62%) 35%, rgb(2 7 79 / 55%) 100%);
   border: none;
-  color: white;
+  color: #ffffff;
   padding: 15px 32px;
-  text-align: start;
   border-radius: 15px;
-
   display: inline-block;
   font-size: 16px;
+  text-align: justify;
+  white-space: normal;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(3px);
+
 }
 
 .buttonSender {
-  background-color: #25d366;
-  /* Green */
+  /*background-color: #25d36680;*/
+  background: linear-gradient(113deg, rgba(70, 202, 255, 0.459) 0%, rgba(87, 199, 134, 0.445) 50%, rgba(83, 237, 132, 0.479) 100%);
   border: none;
-  color: white;
+  color: #ffffff;
   padding: 15px 32px;
   text-align: start;
   border-radius: 15px;
-
   display: inline-block;
   font-size: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(3px);
+
 }
 
 .message-text {
@@ -1830,6 +1884,10 @@ export default {
   left: 90%;
   font-size: 25px;
   top: 3px;
+}
+
+#tituloMsg {
+  text-align: end !important;
 }
 
 .imageIcon:hover {
@@ -1872,21 +1930,21 @@ export default {
 .btnAudioStop {
   left: 12% !important;
   background-color: #e74343 !important;
-  color: white !important;
+  color: #ffffff !important;
 
 }
 
 .btnTransfer {
   left: 31% !important;
   background-color: #574de0 !important;
-  color: white !important;
+  color: #ffffff !important;
 
 }
 
 .btnCall {
   left: 12% !important;
   background-color: #6cbfff !important;
-  color: white !important;
+  color: #ffffff !important;
 
 }
 
@@ -1894,7 +1952,7 @@ export default {
   left: 35% !important;
   margin-top: -10%;
   background-color: #6cbfff !important;
-  color: white !important;
+  color: #fffcfc !important;
 
 
 }
@@ -1923,7 +1981,7 @@ export default {
   text-decoration: underline;
   position: fixed;
   background-color: #243e57 !important;
-  color: white;
+  color: #c4c4c4;
 }
 
 .info {
@@ -1966,8 +2024,9 @@ export default {
 
 .infoBtn {
   width: 22%;
-  background-color: #dddddd;
+  background-color: #13284B !important;
   position: fixed;
+  color: white !important;
   right: 0%;
   top: 3px;
 }
@@ -1984,9 +2043,9 @@ export default {
 }
 
 .plugPhone {
-  position: fixed;
-  top: 15%;
-  left: 35%;
+  position: absolute;
+  top: 25%;
+  left: 22%;
   opacity: 30%;
   width: 33%;
 }
@@ -2021,7 +2080,9 @@ export default {
 
 .botaoEstado {
   height: 25px !important;
+  background-color: #13284B !important;
   margin-left: 10px !important;
+  color: white !important;
 }
 
 .loading {
@@ -2065,5 +2126,33 @@ export default {
 
 .v-navigation-drawer__content::-webkit-scrollbar-thumb:hover {
   background-color: rgba(0, 0, 0, 0.35);
+}
+
+.theme--light.v-input input,
+.theme--light.v-input textarea {
+  color: #c4c4c4 !important;
+}
+
+.messages::-webkit-scrollbar {
+  width: 6px;
+  /* Largura fina */
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.507);
+  /* Cor clarinha */
+  border-radius: 10px;
+  /* Bordas arredondadas */
+  transition: background-color 0.3s;
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  /* Um pouco mais visível no hover */
+}
+
+.messages::-webkit-scrollbar-track {
+  background-color: #243e576e;
+  /* Fundo invisível */
 }
 </style>

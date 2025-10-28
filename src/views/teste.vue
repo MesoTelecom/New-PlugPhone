@@ -1,698 +1,2153 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <v-app id="inspire" class="papel">
-    <Navbar />
-    <div class="text-center" style="
-   top: -1%;width: 65%;position: relative;
+  <div id="app" style="">
+    <v-app style="">
+
+      <v-navigation-drawer app color="#001644" class="sidebar">
+
+        <v-img src="../assets/plugBrancao.png" class="avatar"></v-img>
+        <br>
+        <v-row>
+
+          <router-link to="/dashboard">
+            <v-icon @click="deslogar()" id="seta" class="imageIcon"
+              style="margin-bottom: -25%;left: 100%;  color: #c4c4c4">
+              mdi-arrow-left
+            </v-icon>
+          </router-link>
+          <v-icon @click="openDialogContato = true" class="imageIcon"
+            style="    left: 75%;font-size: 169%; margin-bottom: -1%;  color: #c4c4c4">
+            mdi-plus
+          </v-icon>
+          <!--<v-icon @click="OpenDialogGLPI = true" class="imageIcon"
+            style="    left: 71%;font-size: 169%; margin-bottom: -1%;">
+            mdi-help-circle
+          </v-icon>
+          -->
+        </v-row>
+
+        <v-list dense>
+          <h1 style="    text-align: center; color: #c4c4c4;">{{ estadoContatoFiltro }}</h1>
+          <v-row>
+            <v-icon
+              @click="buscarContato(filtroSelecionado, estadoContatoFiltro, offset -= 100), contador > 1 ? contador-- : contador = 1"
+              class="imageIcon" style="left: 25%;
+    margin-bottom: -1%; color: #c4c4c4;
 ">
-      <v-col cols="12" sm="6" md="3">
-        <v-select :items="items" :prepend-icon="edit" label="Informe a fila"  v-model="fila"></v-select>
+              mdi-arrow-left</v-icon>
+            <h1 style="position: relative;
+    left: 40%; color: #c4c4c4">{{ contador }}</h1>
+            <v-icon @click="buscarContato(filtroSelecionado, estadoContatoFiltro, offset += 100), contador++"
+              class="imageIcon" style="    left: 55%;
+    margin-bottom: -1%;  color: #c4c4c4">
+              mdi-arrow-right</v-icon>
+          </v-row>
 
-        <v-btn color="blue darken-1" text @click="exibir" style="top: -45%;right: 20%;"> Consultar </v-btn>
-
-      </v-col>
-
-    </div>
-
-    <v-container style="margin-top:-277px ; padding: 136px">
-      <v-row>
-        <v-col cols="12" sm="12">
-          <v-toolbar flat color="rgba(0,0,0,0)" class="mt-n5">
-            <v-spacer></v-spacer>
-          </v-toolbar>
-
-          <v-row class="px-5 mt-n6 ml-5">
-            <v-col cols="12" sm="3" v-for="list in lists" :key="list.id">
-              <v-card align="center" class="rounded-square border pt-2" width="135" height="135" flat>
-
-                <h1 :class="list.id">{{ list.count }} </h1>
+          <v-card-text style="    margin-bottom: -10%;">
+            <!-- TextField no topo -->
+            <v-text-field v-model="filtroValor" label="Digite o valor do filtro" dark class="mb-4" color="white"
+              @input="buscarContato(filtroSelecionado, estadoContatoFiltro, 0)"></v-text-field>
+          </v-card-text>
+          <v-list-item-group v-model="selectedContact">
 
 
-                <v-card-text class="black--text text-lg-h10" style="margin-top: -16px;">
-                  <b>{{ list.title }}</b>
-                </v-card-text>
+            <v-list-item v-for="(contact, index) in contacts" :key="index">
+              <v-list-item-content>
+                <v-list-item-title class="sidebar" @click="selectContact(contact.telefone)">
+                  <v-icon style="color: #c4c4c4; font-size: 50px; margin-bottom: -9%;">mdi-account-circle</v-icon>
+                  <b style="text-align: start !important; color: #c4c4c4"> {{ contact.nome }}</b>
+                  <br>
 
-                <v-btn absolute fab left top style="top: 30px !important;width: 46px;height: 46px;">
-                  <v-icon size="35" style=" color: {list.icon};">
-                    {{ list.icon }}
+                  <a style="    margin-left: 21%;
+    font-size: 12px;
+    color: #c4c4c4;">{{ contact.ultimamsg }}</a>
+                  <v-icon v-if="contact.estadomsg === 'novamsg'" color="#25D366"
+                    style="font-size: 15px; left: 3%;">mdi-checkbox-blank-circle
                   </v-icon>
-                </v-btn>
-              </v-card>
+
+                  <v-icon v-if="contact.estado && contact.estado.startsWith('mdi-')" :style="{
+                    color: contact.estado === 'mdi-checkbox-marked-circle-outline'
+                      ? '#8bff9a'
+                      : contact.estado === 'mdi-cancel'
+                        ? 'red'
+                        : 'black'
+                  }">
+                    {{ contact.estado }}
+                  </v-icon>
+                  <br>
+                  <a style="margin-left: 21%; color: #8f8f8f !important;">{{ contact.datahora }}</a>
+                  <hr>
+
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+
+        <!--<img src="../assets/Logo_Meso_vetorizada.png" class="logo" />-->
+
+
+      </v-navigation-drawer>
+
+      <img src="../assets/PlugPhoneCentro.png" class="plugPhone" />
+
+      <v-main style="padding: 0px; background: #0E1C33; height: 100vh; display: flex; flex-direction: column;">
+        <v-container fluid>
+          <v-row class="cabecalho">
+            <v-btn @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Todos')"
+              class="botaoEstado">Todos</v-btn>
+            <v-btn @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Novo')"
+              class="botaoEstado">Novo</v-btn>
+            <v-btn @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Aguardando Cliente')"
+              class="botaoEstado">Aguard...
+              Cliente</v-btn>
+            <v-btn @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Aguardando Atendimento')"
+              class="botaoEstado">Aguard...
+              Atendimento</v-btn>
+            <v-btn @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Concluído')"
+              class="botaoEstado">Concluido</v-btn>
+          </v-row>
+
+          <v-row style="margin-right: 25%;">
+            <v-col cols="12" md="12" style="padding: 0%;">
+              <div class="messages" ref="messages"
+                style="margin-left: 4%;margin-right: 2%;max-height: 80vh;overflow-y: auto;">
+                <div v-for="(message, index) in messages" :key="'server-' + index" :class="{
+                  'message-requester': !message.sender.includes('-PlugPhone'),
+                  'message-agent': message.sender.includes('-PlugPhone'),
+                }">
+                  <div :class="{
+                    buttonSender: !message.sender.includes('-PlugPhone'),
+                    button: message.sender.includes('-PlugPhone'),
+                  }" :style="{ 'text-align': message.sender.includes('-PlugPhone') ? 'end' : 'start' }">
+                    <span :class="{
+                      tituloSender: !message.sender.includes('-PlugPhone'),
+                      titulo: message.sender.includes('-PlugPhone'),
+                    }">
+                      <div><b id="tituloMsg">{{ message.sender }}:</b></div>
+                    </span>
+                    <span class="message-text">
+                      <span v-if="message.isImage">
+                        <img :src="message.text" alt="Imagem" style="max-width: 100%; height: auto;" />
+                        <br />
+
+
+                      </span>
+                      <span v-else-if="message.isAudio">
+                        <audio controls>
+                          <source :src="message.text" type="audio/mpeg" />
+                          Seu navegador não suporta o elemento de áudio.
+                        </audio>
+                      </span>
+                      <span v-else>
+                        {{ message.text }} <br />
+
+
+                      </span>
+                      <div :style="{ 'text-align': message.sender.includes('-PlugPhone') ? 'end' : 'start' }"><data
+                          style="font-size: 12px; color: #ffffff">{{ message.datetime
+                          }}</data>
+                      </div>
+                    </span>
+                  </div>
+                </div>
+              </div>
             </v-col>
           </v-row>
 
-
-        </v-col>
-      </v-row>
-      
-    </v-container>
- 
-    <div class="text-center" style="
-   top: -12%;width: 66%;position: relative;
-">
-      <v-col cols="12" sm="6" md="3">
-        <v-select
-        :items="items"
-        label="Informe a fila"
-        v-model="fila2"
-      
-       
-      ></v-select>
-
-      <v-btn color="blue darken-1" text @click="exibir2" style="top: -45%;right: 20%;"> Consultar </v-btn>
-
-      </v-col>
-    </div>
-    <v-container style="margin-top: -380px; padding: 136px">
-      <v-row>
-        <v-col cols="12" sm="12">
-          <v-toolbar flat color="rgba(0,0,0,0)" class="mt-n5">
-            <v-spacer></v-spacer>
-          </v-toolbar>
-
-          <v-row class="px-5 mt-n6 ml-5">
-            <v-col cols="12" sm="3" v-for="list2 in lists2" :key="list2.id">
-              <v-card align="center" class="rounded-square border pt-2" width="135" height="135" flat>
-
-                <h1 :class="list2.id">{{ list2.count }} </h1>
+          <!-- Botão de seta para descer -->
+          <div style="    position: absolute;
+    left: 4%;
+    bottom: 16%;">
+            <v-btn icon color="#6d6d6d;" @click="scrollToBottom" style="z-index: 999;">
+              <v-icon style="font-size: 35px; color: #ffffff85">mdi-arrow-down-circle</v-icon>
+            </v-btn>
+          </div>
+        </v-container>
+      </v-main>
 
 
-                <v-card-text class="black--text text-lg-h10" style="margin-top: -16px;">
-                  <b>{{ list2.title }}</b>
-                </v-card-text>
+      <div class="info" style="background-color: #0E1C33 !important;">
+        <br>
+        <v-btn class="infoBtn" @click="openDialogEdita = true">Informações<v-icon @click="openDialogForm = true"
+            style="left: 3%;">
+            mdi-account-edit
+          </v-icon></v-btn>
+        <v-data-table :items="dados" :items-per-page="1" style="background: #13284B;
+    border-radius: 0%;
+    position: fixed;
+    bottom: 0%;
+    color: #c4c4c4;
+    width: 22%;
+    right: 0%;
+    border-style: transparent;
+    border-width: thin;
+    height: 95%;" hide-default-footer class="responsive-table" item-class="custom-row">
+          <template v-slot:item="{ item }">
+            <div class="table-row" style=" display: inline-grid; margin-top: -5%;">
 
-                <v-btn absolute fab left top style="top: 30px !important;width: 46px;height: 46px;">
-                  <v-icon size="35" style=" color: {list2.icon};">
-                    {{ list2.icon }}
-                  </v-icon>
-                </v-btn>
-              </v-card>
-            </v-col>
+              <div v-for="(header, index) in informacao" :key="index">
+                <br> <strong>{{ header.text }}:<br></strong> {{ item[header.value] }}
+              </div>
+            </div>
+          </template>
+        </v-data-table>
+      </div>
+    </v-app>
+
+
+
+
+
+
+    <div class="bottom-bar" style="    width: 100%;
+    padding-top: 5%;
+    position: absolute;
+    bottom: 0px;">
+      <img src="../assets/plugcinza.png" @click="openDialog2 = true" class="imageIcon" style="
+   margin-left: 5%;
+    width: 35px;
+    margin-bottom: -17px;" />
+
+      <v-icon @click="openDialogAnexo = true" class="imageIcon" style="left: 0%;font-size: 169%; color: gray">
+        mdi-file-document
+      </v-icon>
+      <v-icon @click="openDialog1 = true" class="imageIcon" style="left: 0%;font-size: 169%; color: gray">
+        mdi-microphone
+      </v-icon>
+      <v-icon @click="openDialog = true" class="imageIcon" style="left: 0%;font-size: 169%; color: gray">
+        mdi-image
+      </v-icon>
+
+      <v-icon @click="toggleEmojiPicker" class="imageIcon" style="left: 0%; font-size: 169%; color: gray">
+        mdi-emoticon
+      </v-icon>
+      <v-icon @click="openDialogConcluir = true" class="imageIcon" style="left: 0%; font-size: 169%; color: gray "
+        :disabled="tipo === 'Analista'">
+        mdi-checkbox-marked-circle</v-icon>
+
+      <v-textarea v-model="newMessage" dark :maxlength="500" counter @keydown.enter="handleEnter($event)"
+        placeholder="Digite sua mensagem aqui..." class="input-message"
+        style="left: 53px; bottom: 63%; width: 65%; border-radius: 1px; border-style: unset;  resize: none; overflow-y: auto;"
+        rows="1"></v-textarea>
+      <v-icon @click="openDialogForm = true" class="imageIcon" style="left: auto;font-size: 169%; color: gray;">
+        mdi-transfer
+      </v-icon>
+
+      <!-- Ícone que abre o emoji picker -->
+
+
+      <!-- Picker de Emojis -->
+      <div v-if="showEmojiPicker"
+        style="position: fixed;bottom: 5%;left: 25%;z-index: 9999;background: white;border-radius: 10px;box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 8px;">
+        <emoji-picker @emoji-click="onEmojiClick"></emoji-picker>
+      </div>
+
+      <!-- <v-icon @click="openDialog = true" class="imageIcon" style="left: 94%">mdi-image</v-icon>-->
+
+      <v-dialog v-model="openDialog" max-width="500px" persistent>
+        <v-card class="dialogo">
+          <v-card-title>Enviar Imagem</v-card-title>
+          <v-card-text>
+            <v-file-input v-model="selectedFile" label="Escolha uma imagem"></v-file-input>
+          </v-card-text>
+          <v-row class="linhaBtn">
+            <v-card-actions>
+              <v-btn color="primary" @click="uploadImage">Enviar</v-btn>
+            </v-card-actions>
+            <v-card-actions>
+              <v-btn color="primary" @click="openDialog = false">Fechar</v-btn>
+            </v-card-actions>
           </v-row>
+        </v-card>
+      </v-dialog>
 
-          <br />
-          <br />
-        </v-col>
-      </v-row>
-    </v-container>
-    
-    <router-link to="./menurealtime" class="linkp">
-      <v-btn dark class="botaoSair">voltar</v-btn>
-    </router-link>
-    <div class="footer">
-      <Footer />
+      <v-dialog v-model="OpenDialogGLPI" max-width="500px" persistent>
+        <v-card class="dialogo">
+          <v-card-title>Abrir chamado</v-card-title>
+          <v-card-text>
+            <v-text-field v-model="nameGLPI" label="Digite o nome do seu chamado"></v-text-field>
+          </v-card-text>
+          <v-card-text>
+            <v-text-field v-model="content" label="Digite a content do seu chamado"></v-text-field>
+          </v-card-text>
+          <v-row class="linhaBtn">
+            <v-card-actions>
+              <v-btn color="primary" @click="enviaChamado">Enviar</v-btn>
+            </v-card-actions>
+            <v-card-actions>
+              <v-btn color="primary" @click="OpenDialogGLPI = false">Fechar</v-btn>
+            </v-card-actions>
+          </v-row>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="openDialogFiltrado" max-width="500px" persistent>
+        <v-card class="dialogoZap">
+          <v-card-title class="text-h6">Qual Filtro Você Deseja?</v-card-title>
+
+          <v-card-text>
+            <!-- TextField no topo -->
+            <v-text-field v-model="filtroValor" label="Digite o valor do filtro" outlined class="mb-4"
+              @input="buscarContato(filtroSelecionado, estadoContatoFiltro, 0)"></v-text-field>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+
+            <v-btn color="secondary" text
+              @click="openDialogFiltrado = false;  /*filtroValor=''; buscarContato('', estadoContatoFiltro);*/">
+              Fechar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+
+      <v-dialog v-model="openDialogContato" max-width="500px" persistent>
+        <v-card>
+          <v-card-title>Adicionar Contatos</v-card-title>
+          <v-card-text>
+            <v-text-field v-model="novoNome" label="Digite o nome do seu contato"></v-text-field>
+          </v-card-text>
+
+          <v-card-text>
+
+            <v-text-field v-model="novoNum" label="Número com DDD"
+              hint="Ex: 553187654321 (sem o 9 após o DDD)"></v-text-field>
+          </v-card-text>
+          <v-card-text>
+
+            <v-select :items="setor" label="Setor" v-model="setorSelect" @update:modelValue="listar(setorSelect)">
+            </v-select>
+          </v-card-text>
+          <v-card-text>
+
+            <v-text-field v-model="novoEmail" label="Digite o email do seu contato"></v-text-field>
+          </v-card-text>
+
+          <v-card-text>
+
+
+            <v-text-field v-model="novoEmpresa" label="Digite a empresa do seu contato"></v-text-field>
+
+
+          </v-card-text>
+          <v-row class="linhaBtn">
+            <v-card-actions>
+              <v-btn color="primary" @click="addContato">Enviar</v-btn>
+            </v-card-actions>
+            <v-card-actions>
+              <v-btn color="primary" @click="openDialogContato = false">Fechar</v-btn>
+            </v-card-actions>
+          </v-row>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="openDialogEdita" max-width="500px" persistent>
+        <v-card>
+          <v-card-title>Editar Contatos</v-card-title>
+          <v-card-text>
+            <v-text-field v-model="editaNome" label="Digite o nome do seu contato"></v-text-field>
+          </v-card-text>
+
+          <v-card-text>
+
+            <v-text-field v-model="editaNum" label="Número com DDD"
+              hint="Ex: 553187654321 (sem o 9 após o DDD)"></v-text-field>
+          </v-card-text>
+          <v-card-text>
+
+            <v-select :items="setor" label="Setor" v-model="setorSelect" @update:modelValue="listar(setorSelect)">
+            </v-select>
+          </v-card-text>
+          <v-card-text>
+
+            <v-text-field v-model="editaEmail" label="Digite o email do seu contato"></v-text-field>
+          </v-card-text>
+
+          <v-card-text>
+
+
+            <v-text-field v-model="editaEmpresa" label="Digite a empresa do seu contato"></v-text-field>
+
+
+          </v-card-text>
+          <v-row class="linhaBtn">
+            <v-card-actions>
+              <v-btn color="primary" @click="editaContato()">Enviar</v-btn>
+            </v-card-actions>
+            <v-card-actions>
+              <v-btn color="primary" @click="openDialogEdita = false">Fechar</v-btn>
+            </v-card-actions>
+          </v-row>
+        </v-card>
+      </v-dialog>
+
+
+      <!--<v-icon @click="openDialog = true" class="imageIcon" style="left: 95%">mdi-image</v-icon>  -->
+
+
+      <v-dialog v-model="openDialog1" max-width="500px" persistent>
+        <v-card class="dialogo1">
+          <v-card-title>Grave seu áudio</v-card-title>
+          <v-card-text>
+            <v-btn @click="startRecording" :disabled="isRecording" class="btnAudio">
+              Iniciar Gravação <v-icon>mdi-play</v-icon>
+            </v-btn>
+            <v-btn @click="stopRecording" :disabled="!isRecording" class="btnAudioStop">
+              Parar Gravação <v-icon>mdi-stop</v-icon>
+            </v-btn>
+            <audio v-if="audioUrl" :src="audioUrl" controls></audio>
+          </v-card-text>
+          <v-row class="linhaBtn">
+            <v-card-actions>
+              <v-btn color="primary" @click="uploadAudio">Enviar</v-btn>
+            </v-card-actions>
+            <v-card-actions>
+              <v-btn color="primary" @click="openDialog1 = false">Fechar</v-btn>
+            </v-card-actions>
+          </v-row>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="openDialogAnexo" max-width="500px" persistent>
+        <v-card class="dialogo">
+          <v-card-title>Enviar Documento</v-card-title>
+          <v-card-text>
+            <v-file-input v-model="selectedFile" label="Escolha um documento"></v-file-input>
+          </v-card-text>
+          <v-row class="linhaBtn">
+            <v-card-actions>
+              <v-btn color="primary" @click="uploadDocumento">Enviar</v-btn>
+            </v-card-actions>
+            <v-card-actions>
+              <v-btn color="primary" @click="openDialogAnexo = false">Fechar</v-btn>
+            </v-card-actions>
+          </v-row>
+        </v-card>
+      </v-dialog>
+
+
+      <v-dialog v-model="openDialog2" max-width="700px">
+        <v-card class="dialogoZap">
+          <v-card-title>Qual a forma que deseja entrar em contato</v-card-title>
+          <v-card-text>
+            <v-row class="linhaContato">
+
+              <v-btn @click=" sendTemplate(), openDialog2 = false" class="btnAudio">
+                Whatsapp <v-icon>mdi-whatsapp</v-icon>
+              </v-btn>
+              <v-btn @click="openDialogLigacao = true, openDialog2 = false" class="btnCall"
+                style="color: white !important;">
+                Ligação <v-icon>mdi-phone</v-icon>
+              </v-btn>
+              <audio v-if="audioUrl" :src="audioUrl" controls></audio>
+            </v-row>
+          </v-card-text>
+
+        </v-card>
+      </v-dialog>
+
+
+      <!------------------------------------------------------------------------->
+
+      <v-dialog v-model="openDialogLigacao" max-width="500px" persistent>
+        <v-card class="dialogo1">
+          <v-card-title>Por favor digite seu Ramal</v-card-title>
+
+          <v-row class="linhaBtnCall">
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <br>
+            <v-card-actions style="padding-left: 1%;">
+              <v-btn @click="ligar()" class="btnCall">
+                Ligar <v-icon>mdi-phone</v-icon>
+              </v-btn>
+            </v-card-actions>
+            <v-card-actions style="padding-left: 10%; ">
+              <v-btn color="primary" @click="openDialogLigacao = false"
+                style="background-color: #e74343 !important; color: white !important;">Cancelar</v-btn>
+            </v-card-actions>
+          </v-row>
+        </v-card>
+      </v-dialog>
+
+      <!------------------------------------------------------------------------->
+
+      <v-dialog v-model="openDialogRamal" max-width="500px" persistent>
+        <v-card>
+          <v-card-title class="text-h6">
+            Para tornar-se disponível, digite seu ramal
+          </v-card-title>
+
+          <v-card-text>
+            <!-- Aqui vai seu campo de ramal -->
+            <v-text-field label="Ramal" v-model="ramal" />
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer />
+            <v-btn color="primary" @click="ramalDigitado()">Confirmar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-------------------------------------------------------------------------->
+
+      <v-dialog v-model="openDialogConcluir" max-width="500px" persistent>
+        <v-card class="dialogoZap">
+          <v-card-title>Deseja Concluir o atendimento?</v-card-title>
+          <br>
+
+
+
+          <v-card-text>
+            <v-row class="linhaContatoConcluir">
+
+              <v-btn @click="finalizar(finaliza = true), openDialogConcluir = false" class="btnAudio"
+                v-model="finaliza">
+                Concluir! <v-icon> mdi-checkbox-marked-circle-outline</v-icon>
+
+              </v-btn>
+              <v-btn @click="finalizar(finaliza = false), openDialogConcluir = false" class="btnAudioStop">
+                Cancelar <v-icon> mdi-cancel</v-icon>
+              </v-btn>
+
+
+            </v-row>
+
+
+            <br>
+
+          </v-card-text>
+
+        </v-card>
+
+      </v-dialog>
+
+
+
+      <v-dialog v-model="openDialogForm" max-width="500px" persistent>
+        <v-card>
+          <v-card-title>Transferir Contato</v-card-title>
+          <v-row class="linhaContatoConcluir">
+            <v-select :items="setor" label="Setor" v-model="setorSelect" @update:modelValue="listar(setorSelect)"
+              class="filtro">
+              class="filtro"></v-select>
+            <v-select :items="items" label="Operadores" v-model="usuarioSelect" class="filtro"></v-select>
+          </v-row>
+          <v-card-actions>
+            <v-btn @click="transferir()" color="primary">Transferir</v-btn>
+            <v-btn @click="openDialogForm = false" color="error">Cancelar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+
+      <v-dialog v-model="openDialogEnviando" max-width="500px" persistent>
+        <v-card>
+          <v-card-title>Enviando, por favor aguarde</v-card-title>
+          <br>
+          <v-row class="loading">
+            <v-progress-circular indeterminate color="primary"></v-progress-circular>
+
+          </v-row>
+          <br>
+          <br>
+          <br>
+        </v-card>
+      </v-dialog>
     </div>
-  </v-app>
+  </div>
 </template>
-
 
 <script>
 import { api } from "@/conf/api";
+import lamejs from 'lamejs';
+import RecordRTC from 'recordrtc';
+import io from 'socket.io-client';
+import Navbar from "../components/Navbar.vue";
+//import { Picker } from 'emoji-mart-vue'
+import 'emoji-picker-element'
+//import { apiWP } from "@/conf/apiWP";
 
-import Navbar from "../components/Navbar";
-import Footer from "../components/footer.vue";
+
+
+
+
+
+// Certifique-se de incluir o script libmp3lame.js no seu projeto e carregá-lo corretamente.
 
 export default {
+  async mounted() {
+
+  },
   async beforeMount() {
-    //const { setIntervalAsync } = require("set-interval-async/legacy");
-    this.exibir();
-    //console.log("eu sou idsetinterval Before mount", this.idsetinterval);
+    this.buscaCidadao();
+    let usuario = JSON.parse(localStorage.getItem('usu'));
+    this.tipo = usuario.tipo;
+    this.usuario = usuario.usuario + "-PlugPhone"
+    this.ramal = usuario.ramal
+    //this.idsetinterval = setInterval(() => this.buscarContato(), 5000);
+    this.buscarContato(this.filtroSelecionado, "Todos");
+    this.logar();
 
-    this.idsetinterval = setInterval(() => this.exibir(), 5000);
-    this.idsetinterval2 = setInterval(() => this.exibir2(), 5000);
-
-    this.listfila();
-
+  },
+  async enviaChamado() {
+    let chamado = {
+      "name": this.nameGLPI,
+      "content": this.content
+    }
+    console.log(chamado)
+    let postChamado = await api.post(`/geraChamado`, chamado)
+    console.log(postChamado)
 
 
   },
-
-
 
   async beforeUnmount() {
-    //console.log("eu sou idsetinterval", this.idsetinterval);
-    clearInterval(this.idsetinterval)
-    clearInterval(this.idsetinterval2)
+
+    console.log('sol apareça')
+
+    console.log("eu sou idsetinterval", this.idsetinterval);
+    clearInterval(this.idsetinterval);
     this.idsetinterval = 0;
-    this.idsetinterval2 = 0;
+
+    console.log("Desconectando socket...");
+    this.socket.disconnect();
+  },
+
+  data() {
+    return {
+      headers: [
+        {
+          text: 'ano',
+          align: 'start',
+          sortable: false,
+          value: 'ano',
+          openDialogFiltrado: false,
+        },
+        { text: 'orgao', value: 'orgao' },
+        { text: 'processo', value: 'processo' },
+        { text: 'liquidação', value: 'liguidacao' },
+        { text: 'valor da face', value: 'valor_da_face' },
+        { text: 'credor', value: 'credor' },
+        { text: 'documento', value: 'documento' },
+        { text: 'idade', value: 'idade' },
+        { text: 'renda', value: 'renda' },
+        { text: 'tipo', value: 'tipo' },
+        { text: 'telefone', value: 'telefone' },
+      ],
+      informacao: [
+        {
+          text: 'Nome',
+          align: 'start',
+          sortable: false,
+          value: 'nome',
+        },
+        { text: 'Telefone', value: 'telefone' },
+        { text: 'Setor', value: 'setor' },
+        { text: 'Agente associado', value: 'usuario' },
+        { text: 'Email', value: 'email' },
+        { text: 'Empresa', value: 'empresa' },
+
+      ],
+      messages: [],
+      offset: 0,
+
+      rama: "",
+      setor: ['Técnico', 'Comercial', 'Financeiro', 'Admin'],
+      setorSelect: "",
+      novoNome: "",
+      editaNome: "",
+      editaNum: "",
+      OpenDialogGLPI: false,
+      content: "",
+      nameGLPI: "",
+      editaEmpresa: "",
+      filtroValor: "",
+      openDialogEnviando: false,
+      editaEmail: "",
+      novoNum: "",
+      openDialogFiltrado: false,
+      filtroSelecionado: "",
+      agents: [],
+      showEmojiPicker: false,
+      observacao: "",
+      openDialogLigacao: false,
+      openDialogEdita: false,
+      openDialogContato: false,
+      openDialogConcluir: false,
+      idsetinterval: null,
+      apiWPurl: api.defaults.baseURL,
+      name: "template_plugphone2",
+      wppnum: "",
+      ramal: "",
+      items: [],
+      openDialogRamal: false,
+      plataforma: "",
+      openDialog: false,
+      contador: 1,
+
+      openDialogAnexo: false,
+      openDialog1: false,
+      openDialog2: false,
+      openDialogForm: false,
+      tipo: null,
+      selectedFile: null,
+      whatsapp: "whatsapp",
+      usuarioSelect: "",
+      novoEmpresa: "",
+      novoEmail: "",
+      telefone: "telefone",
+      processo: [],
+      socket: "",
+      usuario: "",
+      finaliza: "",
+      estadoContatoFiltro: "Todos",
+
+      estadoContatoAtual: "Todos",
+      newMessage: "",
+      audioBlob: "",
+      contacts: [],
+      dados: [],
+      dados2: [],
+      selectedContact: null,
+      link: " ",
+      id: " ",
+      isRecording: false,
+      audioUrl: null,
+      recorder: null,
+      atendeu: false,
+      reagendar: false,
+      interesse: false,
+      negociar: false
+    };
+  },
+  created() {
+    this.socket = io('https://meso.plugphone.cloud:3333');
+
+    // Evento para mensagens de texto
+    /* this.socket.on('chat message', (nome, msg) => {
+       this.messages.push({ text: msg, sender: nome });
+     });*/
+
+    // Evento para imagens
+
+    this.socket.on("erro", (mensagem) => {
+      // toca o som
+      const audio = new Audio("/notify.wav"); // coloque o arquivo em /public
+      audio.play().catch(err => console.warn("Erro ao tocar áudio:", err));
+
+      // mostra a notificação
+      if (Notification.permission === "granted") {
+        new Notification("PlugPhone", {
+          body: mensagem,
+          icon: "/icone.png", // opcional
+        });
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then((perm) => {
+          if (perm === "granted") {
+            new Notification("PlugPhone", { body: mensagem, icon: "/icone.png" });
+          }
+        });
+      }
+    });
+
+
+
+    this.socket.on('chat message', async (nome, msg, telefone) => {
+      console.log('recebi no socket', nome, msg, telefone)
+      this.contact = []
+      this.verificaMensagem(telefone, this.tipo, this.usuario)
+
+      console.log('sou o telefone e o wppnum', telefone, this.wppnum)
+      if (telefone == this.wppnum) {
+
+        this.messages.push({ text: msg, sender: nome });
+        console.log('recebi!', telefone, this.wppnum);
+        // this.playSound();
+        this.lido(telefone);
+        let a = await api.get(`/lidamsg/${this.wppnum}`);
+        console.log(a);
+        this.scrollToBottom(); // 🔥 Rola para baixo ao receber mensagem
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+
+      } else {
+        //  this.playSound();
+        console.log('foi aqui não my badkkkkkkkkk');
+        this.mudaEstado(telefone);
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+
+      }
+
+    });
+
+
+    this.socket.on('chat image', async (nome, base64Image, telefone) => {
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+      console.log('eu sou o telefone', telefone)
+
+      console.log("Imagem recebida em Base64:", base64Image);
+      if (telefone == this.wppnum) {
+
+        console.log('EU TO AQUIIIIIIIIIIIIIIIIIIIIIIIIII')
+        // Verifique se base64Image está no formato correto
+        if (base64Image.startsWith('data:image')) {
+          const imageUrl = base64Image; // Usa a imagem diretamente como URL
+
+          console.log("URL da imagem gerada:", imageUrl);
+
+          // Teste abrindo em uma nova aba
+          //window.open(imageUrl, '_blank');
+          //this.playSound()
+          this.lido(telefone)
+          let a = await api.get(`/lidamsg/${this.wppnum}`,);
+          console.log(a)
+
+          this.messages.push({
+            text: imageUrl,
+            isImage: true,
+            sender: nome,
+            datetime: new Date().toLocaleString()
+          });
+        } else {
+          console.error("Formato de imagem inválido ou Base64 ausente.");
+        }
+
+
+      } else {
+        //this.playSound()
+        console.log('foi aqui não my badkkkkkkkkk')
+        this.mudaEstado(telefone)
+      }
+    }
+    );
+
+
+
+    this.socket.on('chat audio', async (nome, base64Audio, telefone) => {
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+      console.log("audio recebida em Base64:", base64Audio);
+      if (telefone == this.wppnum) {
+        console.log('EU TO AQUIIIIIIIIIIIIIIIIIIIIIIIIII')
+        // Verifique se base64Image está no formato correto
+        // Verifique se base64Audio está no formato correto
+        if (base64Audio.startsWith('data:audio')) {
+          const audioUrl = base64Audio; // Usa a audio diretamente como URL
+
+          console.log("URL da audio gerada:", audioUrl);
+
+          // Teste abrindo em uma nova aba
+          //window.open(audioUrl, '_blank');
+          // this.playSound()
+          this.lido(telefone)
+          let a = await api.get(`/lidamsg/${this.wppnum}`,);
+          console.log(a)
+          this.messages.push({
+            text: audioUrl,
+            isAudio: true,
+            sender: nome,
+            datetime: new Date().toLocaleString()
+          });
+        } else {
+          console.error("Formato de imagem inválido ou Base64 ausente.");
+        }
+
+      } else {
+        //this.playSound()
+        console.log('foi aqui não my badkkkkkkkkk')
+        this.mudaEstado(telefone)
+      }
+    }
+
+    )
   },
 
 
-  name: "campanhafilaView",
-
-  data: () => ({
-    idsetinterval: null,
-    idsetinterval2: null,
-    fila: "",
-    fila2: "",
-    items: [],
-    lists: [
-      {
-        id: "um",
-        icon: "mdi mdi-phone",
-        title: "Total de chamadas",
-        count: 0,
-      },
-      {
-        id: "dois",
-        icon: "mdi mdi-phone-log",
-        title: "Chamadas na fila de espera",
-        count: 0,
-      },
-      {
-        id: "tres",
-        icon: "mdi mdi-phone-in-talk",
-        title: "Chamadas conectadas",
-        count: 0,
-      },
-      {
-        id: "quatro",
-        icon: "mdi mdi-phone-minus",
-        title: "Chamadas abandonadas",
-        count: 0,
-      },
-      {
-        id: "cinco",
-        icon: "mdi mdi-checkbox-marked-circle",
-        title: "Chamadas atendidas",
-        count: 0,
-      },
-      {
-        id: "seis",
-        icon: "mdi mdi-alarm",
-        title: "TMA",
-        count: 0,
-      },
-      {
-        id: "sete",
-        icon: "mdi mdi-alarm-check",
-        title: "TME atendidas",
-        count: 0,
-      },
-      {
-        id: "oito",
-        icon: "mdi mdi-map-search",
-        title: "Med Pesquisa de Satisfação",
-        count: 0,
-      },
-
-    ],
-
-    lists2: [
-      {
-        id: "um",
-        icon: "mdi mdi-phone",
-        title: "Total de chamadas",
-        count: 0,
-      },
-      {
-        id: "dois",
-        icon: "mdi mdi-phone-log",
-        title: "Chamadas na fila de espera",
-        count: 0,
-      },
-      {
-        id: "tres",
-        icon: "mdi mdi-phone-in-talk",
-        title: "Chamadas conectadas",
-        count: 0,
-      },
-      {
-        id: "quatro",
-        icon: "mdi mdi-phone-minus",
-        title: "Chamadas abandonadas",
-        count: 0,
-      },
-      {
-        id: "cinco",
-        icon: "mdi mdi-checkbox-marked-circle",
-        title: "Chamadas atendidas",
-        count: 0,
-      },
-      {
-        id: "seis",
-        icon: "mdi mdi-alarm",
-        title: "TMA",
-        count: 0,
-      },
-      {
-        id: "sete",
-        icon: "mdi mdi-alarm-check",
-        title: "TME atendidas",
-        count: 0,
-      },
-      {
-        id: "oito",
-        icon: "mdi mdi-map-search",
-        title: "Med Pesquisa de Satisfação",
-        count: 0,
-      },
-
-    ],
-
-    contatma: [],
-    listafila: [],
-    listatotalfilas: [],
-    sound:
-      '../../src/audios/multalarm2.wav',
-  }),
-  components: {
-    Navbar,
-    Footer,
+  comments: {
+    Navbar
   },
-
+  watch: {
+    setorSelect(novoValor) {
+      if (novoValor) {
+        this.listar(novoValor);
+      }
+    }
+  },
   methods: {
-    currentDateTime() {
-      const current = new Date();
-      const date =
-        current.getFullYear() +
-        "-" +
-        (current.getMonth() + 1) +
-        "-" +
-        current.getDate();
-      const time = "23:59:59";
-      const dateTime = date + " " + time;
 
-      return dateTime;
-    },
-    PastDateTime() {
-      const current = new Date();
-      const date =
-        current.getFullYear() +
-        "-" +
-        (current.getMonth() + 1) +
-        "-" +
-        current.getDate();
-      const time = "00:00:00";
-      const dateTimeB = date + " " + time;
-
-      return dateTimeB;
-    },
-
-    listfila: async function () {
-      //// console.log(this.fila)
-
+    listar: async function (tipo) {
+      this.items = []
+      // console.log(this.fila)
+      // console.log(filareal, pinreal);
       //Lista filas
-      let listafila = await api.get(`/listafilastotais`);
+      let listafila = await api.get(`/listausuariotipo/${tipo}`);
       // let entrajoin = join.data.dados;
-      //console.log(listafila);
+      console.log(listafila);
       let listatotalfilas = listafila.data.dados;
-      //console.log("Lista as filas", listatotalfilas);
-      let numerofila = [];
-      // let nomefila = [];
+      console.log('Lista as filas', listatotalfilas);
+      let nome = [];
+      //let nomefila = [];
       listatotalfilas.forEach((d) => {
-        //  nomefila = d.descr;
-        numerofila = d.extension;
-        //console.log("nome da fila:", numerofila);
+        // nomefila = d.descr;
+        nome = d.usuario;
+        console.log('nome da fila:', nome);
         // this.listafila = [nomefila];
         //this.items = nomefila;
+        this.items.push({
+          text: `${d.usuario}`,
+          token: `${d.token}`,
+          tokenM: `${d.tokenMobile}`,       // o que aparece no select
+          value: d.nome // o valor que será capturado no v-model
 
-        this.items.push([numerofila]);
-      });
-    },
-    exibir: async function () {
-      //Segunda bolinha do painel das filas
-
-      let join = await api.get(`/listajoin/${this.fila}`);
-      // let entrajoin = join.data.dados;
-      //console.log(join);
-      this.lists[1].count = join.data.dados.length;
-
-      //Primeira bolinha do painel das filas
-
-      let total = await api.get(
-        `/listajointotal/${this.fila
-        }/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      let entrajointotal = total.data.dados;
-      console.log(entrajointotal);
-      this.lists[0].count = total.data.dados.length;
-
-      //Terceira bolinha de chamadas conectadas na fila, isto é, aquelas chamadas que estão em curso
-
-      let conectadofila = await api.get(`/filaconectada/${this.fila}/${this.PastDateTime()}/${this.currentDateTime()}`);
-      // let entrajoin = join.data.dados;
-      let conectadatotal = conectadofila.data.dados;
-      console.log(conectadatotal);
-      this.lists[2].count = conectadofila.data.dados.length;
-
-      //Quarta bolinha de chamadas da fila - Abandonadas do dia
-      let abandonadasfila = await api.get(
-        `/filasabandonadas/${this.fila
-        }/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      let abandonadastotal = abandonadasfila.data.dados;
-      console.log(abandonadastotal);
-      this.lists[3].count = abandonadasfila.data.dados.length;
-
-      //Quinta bolinha chamadas atendidas na fila
-      let tudofila = total.data.dados.length;
-      let tudoabandonofila = abandonadasfila.data.dados.length;
-      let atendidas = tudofila - tudoabandonofila;
-      this.lists[4].count = atendidas;
-
-      //Sexta bolinha tma
-      let tmafila = await api.get(
-        `/tmafilas/${this.fila
-        }/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      //console.log("primeiro:", tmafila);
-      let tmarealfila = tmafila.data.dados;
-      //console.log("Opa eu sou o edu array completo:", tmarealfila);
-
-      tmarealfila.forEach((d) => {
-        let temposegundosA = d.mediaANNA;
-        //console.log("Eu sou o Edu:", temposegundosA);
-        ////console.log('Eu sou o Edu A:', temposegundosB);
-        let tma = temposegundosA / 60;
-        //console.log("Eu sou o TMA do Lucas:", tma);
-        this.lists[5].count = tma.toFixed(2);
+          //          value: d.id_agencia // o valor que será capturado no v-model
+        });
       });
 
-      //Setima bolinha TME Atendidas
-      let tmefila = await api.get(
-        `/tmefilas/${this.fila
-        }/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      //console.log("primeiro:", tmefila);
-      let tmerealfila = tmefila.data.dados;
-      //console.log("Opa eu sou o edu array completo:", tmerealfila);
+      //Listando os agentes para o filtro
 
-      tmerealfila.forEach((d) => {
-        let temposegundosB = d.mediaespera;
-        //console.log("Eu sou o Edu:", temposegundosB);
-        ////console.log('Eu sou o Edu A:', temposegundosB);
-        let tme = temposegundosB / 60;
-        //console.log("Eu sou o TME do Lucas:", tme);
-        this.lists[6].count = tme.toFixed(2);
-      });
-
-      //Oitava bolinha TME do abandono
-
-      let tmefilaabandono = await api.get(
-        `/mediapesquisa1/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      console.log("primeiro:", tmefilaabandono);
-      let tmerealfilaabandonada = tmefilaabandono.data.dados;
-      //console.log("Opa eu sou o edu array completo:", tmerealfilaabandonada);
-      let temposegundosC
-      tmerealfilaabandonada.forEach((d) => {
-        temposegundosC = d.medianota;
-        //console.log("Eu sou o Edu temposegundosC:", temposegundosC);
-        ////console.log('Eu sou o Edu A:', temposegundosB);
-        return temposegundosC
-      });
-      let conta = await api.get(
-        `/mediapesquisaconta/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      //console.log("primeiro:", conta);
-      let contaarray = conta.data.dados;
-      //console.log("Opa eu sou o edu array completo contaarray:", contaarray);
-      let count
-      contaarray.forEach((d) => {
-        count = d.contapesq;
-        //console.log("Eu sou o Edu:", count);
-        ////console.log('Eu sou o Edu A:', temposegundosB);
-
-        return count
-      });
-      let count2 = count + count
-
-      let pesq = temposegundosC / count2;
-      let tmeabandonadas = pesq.toFixed(2)
-      //console.log(tmeabandonadas)
-      this.lists[7].count = tmeabandonadas;
-      this.alarme()
-    },
-    //------------------------------------------------------------------------------------------------------------------------------
-    exibir2: async function () {
-      //Segunda bolinha do painel das filas
-
-      let join = await api.get(`/listajoin/${this.fila2}`);
-      // let entrajoin = join.data.dados;
-      //console.log(join);
-      this.lists2[1].count = join.data.dados.length;
-
-      //Primeira bolinha do painel das filas
-
-      let total = await api.get(
-        `/listajointotal/${this.fila2
-        }/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      let entrajointotal = total.data.dados;
-      console.log(entrajointotal);
-      this.lists2[0].count = total.data.dados.length;
-
-      //Terceira bolinha de chamadas conectadas na fila, isto é, aquelas chamadas que estão em curso
-
-      let conectadofila = await api.get(`/filaconectada/${this.fila2}/${this.PastDateTime()}/${this.currentDateTime()}`);
-      // let entrajoin = join.data.dados;
-      let conectadatotal = conectadofila.data.dados;
-      console.log(conectadatotal);
-      this.lists2[2].count = conectadofila.data.dados.length;
-
-      //Quarta bolinha de chamadas da fila - Abandonadas do dia
-      let abandonadasfila = await api.get(
-        `/filasabandonadas/${this.fila2
-        }/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      let abandonadastotal = abandonadasfila.data.dados;
-      console.log(abandonadastotal);
-      this.lists2[3].count = abandonadasfila.data.dados.length;
-
-      //Quinta bolinha chamadas atendidas na fila
-      let tudofila = total.data.dados.length;
-      let tudoabandonofila = abandonadasfila.data.dados.length;
-      let atendidas = tudofila - tudoabandonofila;
-      this.lists2[4].count = atendidas;
-
-      //Sexta bolinha tma
-      let tmafila = await api.get(
-        `/tmafilas/${this.fila2
-        }/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      //console.log("primeiro:", tmafila);
-      let tmarealfila = tmafila.data.dados;
-      //console.log("Opa eu sou o edu array completo:", tmarealfila);
-
-      tmarealfila.forEach((d) => {
-        let temposegundosA = d.mediaANNA;
-        //console.log("Eu sou o Edu:", temposegundosA);
-        ////console.log('Eu sou o Edu A:', temposegundosB);
-        let tma = temposegundosA / 60;
-        //console.log("Eu sou o TMA do Lucas:", tma);
-        this.lists2[5].count = tma.toFixed(2);
-      });
-
-      //Setima bolinha TME Atendidas
-      let tmefila = await api.get(
-        `/tmefilas/${this.fila2
-        }/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      //console.log("primeiro:", tmefila);
-      let tmerealfila = tmefila.data.dados;
-      //console.log("Opa eu sou o edu array completo:", tmerealfila);
-
-      tmerealfila.forEach((d) => {
-        let temposegundosB = d.mediaespera;
-        //console.log("Eu sou o Edu:", temposegundosB);
-        ////console.log('Eu sou o Edu A:', temposegundosB);
-        let tme = temposegundosB / 60;
-        //console.log("Eu sou o TME do Lucas:", tme);
-        this.lists2[6].count = tme.toFixed(2);
-      });
-
-      //Oitava bolinha TME do abandono
-
-      let tmefilaabandono = await api.get(
-        `/mediapesquisa1/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      console.log("primeiro:", tmefilaabandono);
-      let tmerealfilaabandonada = tmefilaabandono.data.dados;
-      //console.log("Opa eu sou o edu array completo:", tmerealfilaabandonada);
-      let temposegundosC
-      tmerealfilaabandonada.forEach((d) => {
-        temposegundosC = d.medianota;
-        //console.log("Eu sou o Edu temposegundosC:", temposegundosC);
-        ////console.log('Eu sou o Edu A:', temposegundosB);
-        return temposegundosC
-      });
-      let conta = await api.get(
-        `/mediapesquisaconta/${this.PastDateTime()}/${this.currentDateTime()}`
-      );
-      //console.log("primeiro:", conta);
-      let contaarray = conta.data.dados;
-      //console.log("Opa eu sou o edu array completo contaarray:", contaarray);
-      let count
-      contaarray.forEach((d) => {
-        count = d.contapesq;
-        //console.log("Eu sou o Edu:", count);
-        ////console.log('Eu sou o Edu A:', temposegundosB);
-
-        return count
-      });
-      let count2 = count + count
-
-      let pesq = temposegundosC / count2;
-      let tmeabandonadas = pesq.toFixed(2)
-      //console.log(tmeabandonadas)
-      this.lists2[7].count = tmeabandonadas;
 
     },
 
-    playSound(sound) {
-      this.sound =
-        '../../src/audios/multalarm2.wav';
-      sound = this.sound;
-      if (
-        sound ===
-        '../../src/audios/multalarm2.wav'
-      ) {
-        var audio = new Audio(require('../../src/audios/multalarm2.wav'));
-        setTimeout(function () {
-          audio.play();
-        }, 1000);
+    async addContato() {
+
+      if (this.novoNum.length > 12) {
+        alert(
+          "O número informado possui mais de 12 dígitos.\nVerifique se não incluiu o dígito 9 após o DDD."
+        )
+      } else if (this.novoNum.length < 12) {
+        alert(
+          "O número informado possui menos de 12 dígitos.\nVerifique se adicionou o código do país (55)."
+        )
       } else {
-        //console.log("feito");
+        let add = {
+          nome: this.novoNome,
+          telefone: this.novoNum,
+          setor: this.setorSelect,
+          email: this.novoEmail,
+          empresa: this.novoEmpresa
+
+        }
+        console.log('eu sou add', add)
+        let addContatoArray = await api.post(`/cadastrarcontato`, add)
+
+        console.log('eu sou o addContatoArray', addContatoArray)
+
+        alert(addContatoArray.data.mensagem)
+
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+
+        this.openDialogContato = false
       }
     },
-    alarme: async function () {
-      if (this.lists[1].count >= 2) {
 
-        setTimeout(() => { this.playSound(); }, 3000);
-        console.log('oi')
-        this.lists[1].icon = 'mdi mdi-alert'
+    async editaContato() {
+      console.log('preciso ouvir, preciso ouvir, que quer viver')
+      if (this.editaNum.length > 12) {
+        alert(
+          "O número informado possui mais de 12 dígitos.\nVerifique se não incluiu o dígito 9 após o DDD."
+        )
+      } else if (this.editaNum.length < 12) {
+        alert(
+          "O número informado possui menos de 12 dígitos.\nVerifique se adicionou o código do país (55)."
+        )
       } else {
-        this.sound = "";
-        this.lists[1].icon = 'mdi mdi-phone-log'
-      }
+        let edit = {
+          nome: this.editaNome,
+          telefone: this.editaNum,
+          setor: this.setorSelect,
+          email: this.editaEmail,
+          empresa: this.editaEmpresa
 
-      if (this.lists2[1].count >= 2) {
-        console.log('tudobem?')
-        setTimeout(() => { this.playSound(); }, 3000);
-        this.lists2[1].icon = 'mdi mdi-alert'
-      } else {
-        this.sound = "";
-        this.lists2[1].icon = 'mdi mdi-phone-log'
+        }
+        console.log('eu sou edit', edit)
+        let editContatoArray = await api.post(`/editarcontato`, edit)
+
+        console.log('eu sou o editContatoArray', editContatoArray)
+
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+
+        this.openDialogEdita = false
       }
     },
+
+    async logar() {
+      console.log('this.ramal', this.ramal, this.tipo)
+
+      let login = await api.get(`logar/${this.ramal}/${this.tipo}/${this.usuario}`)
+
+      console.log(login)
+
+    },
+
+    handleEnter(event) {
+      // se apertar Shift+Enter, deixa o comportamento normal (quebra de linha)
+      if (event.shiftKey) return;
+
+      // evita a quebra de linha padrão quando for só Enter
+      event.preventDefault();
+
+      // chama a função de envio
+      this.sendMessage();
+    },
+
+    async deslogar() {
+      console.log('this.ramal', this.ramal, this.tipo)
+
+      let login = await api.get(`deslogar/${this.ramal}/${this.tipo}/${this.usuario}`)
+      console.log(login)
+    },
+    async ramalDigitado() {
+      if (this.ramal == "" || this.ramal == undefined) {
+        alert('Seu ramal não pode ser Nulo')
+      } else {
+        let verRamal = await api.get(`/verificaramal/${this.ramal}`)
+        console.log('existe ramal?', verRamal.data.dados[0].ramal)
+        console.log('EEEEU SOU SIMPLEEEES :D', this.ramal)
+        let pegaRamal = verRamal.data.dados[0].ramal
+        console.log('peguei o ramal', pegaRamal)
+        if (pegaRamal >= 1) {
+          this.openDialogRamal = false
+        } else {
+          alert('O Ramal não existe')
+        }
+      }
+
+    },
+
+    verificaEstado() {
+
+      this.openDialogRamal = true
+    },
+
+    toggleEmojiPicker() {
+      this.showEmojiPicker = !this.showEmojiPicker
+    },
+    onEmojiClick(event) {
+      this.newMessage += event.detail.unicode
+      this.showEmojiPicker = false
+    },
+
+    scrollToBottom() {
+      console.log('JESUS CRISTO AMEEEEEEEEEEM')
+      const el = this.$refs.messages;
+      if (el) {
+        el.scrollTop = el.scrollHeight;
+      }
+    },
+
+
+    async transferir() {
+      let usuario = this.usuarioSelect
+      let area = this.setorSelect
+      console.log('teste de select', area, usuario, this.wppnum)
+
+      let a = await api.get(`/transferirchamado/${area}/${this.wppnum}/${usuario}`);
+      console.log(a)
+      this.openDialogForm = false
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+      location.reload()
+
+    },
+    async finalizar(finaliza) {
+      console.log('finaliza', finaliza)
+
+      if (finaliza == true) {
+        //   let response = await api.get(`/finaliza/${processo}/aprovado`);
+        //  console.log(response)
+        let a = await api.get(`/concluido/${this.wppnum}`)
+        console.log(a)
+        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+
+      } else {
+        //let response = await api.get(`/finaliza/${processo}/reprovado`);
+        //console.log(response)
+        //location.reload()
+
+      }
+    },
+
+    async mudaEstado(telefone) {
+      let a = await api.get(
+        `/mudamsg/${telefone}`
+      );
+
+      console.log('eu sou o A', a)
+    },
+
+    async lido(telefone) {
+      let a = await api.get(
+        `/lidamsg/${telefone}`
+      );
+
+      console.log('eu sou o A', a)
+    },
+
+    async populaOportunidade(plataforma) {
+      console.log("eu sou", this.usuario)
+      console.log('eu sou oportunidade', this.processo[this.selectedContact])
+      let processo = this.processo[this.selectedContact].processo
+      this.plataforma = plataforma
+      console.log('eu sou plataforma', plataforma, processo)
+      console.log('eu sou o homem de ferro', this.dados[0])
+
+      if (this.tipo == 'Analista') {
+        console.log('OLA O PROCESSO AQUIIIII', processo)
+        var response = await api.get(`/oportunidade/${processo}/${this.plataforma}`);
+
+
+        let msg = {
+          to: this.wppnum,
+          name: this.name,
+
+          usuario: this.usuario
+        };
+        let template = await api.post("/sendtemplate", msg);
+
+        console.log(template)
+
+      } else {
+        //response = await api.get(`/oportunidadeespecialista/${processo}/${this.plataforma}/${this.usuario}`);
+        let msg = {
+          name: this.name,
+          to: this.wppnum,
+          usuario: this.usuario
+
+        };
+        let template = await api.post("/sendtemplate", msg);
+
+        console.log(template)
+
+      }
+
+
+
+
+      console.log(response)
+
+    },
+
+    async receiveMessage() {
+
+
+      console.log('MAIS FACIL DE ACHAR', this.usuario);
+
+
+      if (this.tipo == 'admin') {
+        console.log('admin não atualiza usuario')
+      } else {
+        await api.get(`/atualizausuario/${this.usuario}/${this.wppnum}`)
+      }
+
+
+      let a = await api.get(`/lidamsg/${this.wppnum}`,);
+
+      console.log('eu sou o A Só que lido kkkkkkk', a)
+
+      console.log('eu sou o selected contact do receiveMessage', this.selectedContact, this.wppnum);
+      console
+
+      let msg = { telefone: this.wppnum };
+      console.log('eu sou o wppnum', this.wppnum);
+      this.buscarCliente();
+
+      let response = await api.post("/reciveMsg", msg);
+      let receivedMessages = response.data.dados;
+
+      console.log('Mensagens recebidas:', receivedMessages); // Verifique todas as mensagens
+
+      // Armazena todas as mensagens temporariamente antes de adicionar ao chat
+      let allMessages = [];
+
+      for (let message of receivedMessages) {
+        console.log('Mensagem:', message); // Verifique cada mensagem
+
+        if (message.type === 'image') {
+          // Processa imagens
+          try {
+            let imageResponse = await api.get(`/get-image/${message.mensagem}`, { responseType: 'blob' });
+            let imageUrl = URL.createObjectURL(imageResponse.data);
+            allMessages.push({ text: imageUrl, datetime: message.datetime, sender: message.nome, isImage: true });
+          } catch (err) {
+            console.error('Erro ao buscar imagem:', err);
+          }
+        } else if (message.type === 'audio' || message.mensagem.endsWith('.mp3')) {
+          console.log('Processando áudio...');
+          try {
+            let audioResponse = await api.get(`/get-audio/${message.mensagem}`, { responseType: 'blob' });
+            let audioUrl = URL.createObjectURL(audioResponse.data);
+            allMessages.push({ text: audioUrl, datetime: message.datetime, sender: message.nome, isAudio: true });
+          } catch (err) {
+            console.error('Erro ao buscar áudio:', err);
+          }
+        } else {
+          allMessages.push({ text: message.mensagem, datetime: message.datetime, sender: message.nome, isImage: false, isAudio: false });
+        }
+
+
+      }
+      console.log(allMessages)
+
+      // Adiciona todas as mensagens ao estado de uma só vez
+      this.messages.push(...allMessages);
+
+      this.scrollToBottom();
+
+
+    }
+    ,
+
+    playSound() {
+
+      var audio = new Audio(require('../../src/audios/notify.wav'));
+      setTimeout(function () {
+        audio.play();
+      }, 1000);
+
+    },
+
+    async sendTemplate() {
+
+      console.log('eu sou o homem de ferro', this.dados[0].nome)
+
+      let msg = {
+        to: this.wppnum,
+        name: this.name,
+        usuario: this.usuario,
+        text: this.dados[0].nome
+
+      };
+      let template = await api.post("/sendtemplate", msg);
+
+      console.log(template)
+      this.messages.push({ text: "boas_vindas_plugphone", sender: this.usuario });
+    },
+    async enviarMealing() {
+      this.openDialogLigacao = false
+      let atendeu
+      let reagendar
+      let interesse
+      let negociar
+
+      if (this.atendeu == true) {
+        atendeu = "sim"
+        console.log(atendeu)
+      } else {
+        atendeu = "nao"
+      }
+
+      if (this.reagendar == true) {
+        reagendar = "sim"
+        console.log(reagendar)
+      } else {
+        reagendar = "nao"
+      }
+
+
+      if (this.interesse == true) {
+        interesse = "sim"
+        console.log(interesse)
+      } else {
+        interesse = "nao"
+      }
+
+
+      if (this.negociar == true) {
+        negociar = "sim"
+        console.log(negociar)
+      } else {
+        negociar = "nao"
+      }
+
+      let processo = this.processo[this.selectedContact].processo
+      this.contact = []
+
+
+      let a = await api.get(`/estadoMealing/${processo}/${atendeu}/${reagendar}/${interesse}/${negociar}/${this.observacao}`)
+      console.log(a)
+
+      this.openDialogForm = false
+
+      location.reload()
+    },
+    selectContact(contact) {
+      //this.openDialog2 = true
+      console.log('oque é você rapazinho', contact)
+      console.log('eu sou o contact XURASTAY OU XURAIGO', this.contact)
+      this.messages = [];
+      this.selectedContact = contact;
+      //      let a =  api.get(`/insereusuario/${}`)
+
+      console.log('eu sou o selected contact do selectContact', this.estadoContatoAtual);
+
+      this.wppnum = this.selectedContact;
+      api.get(`/lidamsg/${this.wppnum}`);
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+      this.receiveMessage();
+    },
+    async startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.recorder = new RecordRTC(stream, {
+          type: 'audio',
+          mimeType: 'audio/mp3',  // Definir o tipo MIME como áudio MP3
+          recorderType: RecordRTC.StereoAudioRecorder,
+          desiredSampRate: 16000,
+          audioBitsPerSecond: 128000,
+          numberOfAudioChannels: 1,
+          bufferSize: 16384,
+          sampleRate: 44100,
+          frameRate: 20000,
+        });
+        this.recorder.startRecording();
+        this.isRecording = true;
+      } catch (error) {
+        console.error('Error accessing microphone', error);
+      }
+    },
+
+    stopRecording() {
+      this.recorder.stopRecording(() => {
+        this.audioBlob = this.recorder.getBlob();
+
+        // Verifique o tipo de arquivo
+        if (this.audioBlob.type !== 'audio/mpeg') {
+          console.warn('O áudio não está no formato MP3, ele será enviado como WAV');
+        }
+
+        this.audioUrl = URL.createObjectURL(this.audioBlob);
+        this.isRecording = false;
+      });
+    },
+    async uploadAudio() {
+      const MPEGMode = 'stereo'; // ou 'mono', dependendo do seu caso
+      this.openDialogEnviando = true
+      console.log(MPEGMode)
+      if (!this.audioBlob) {
+        console.error("Nenhum áudio selecionado");
+        this.openDialogEnviando = false
+
+        return;
+      }
+
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const audioBuffer = await audioContext.decodeAudioData(await this.audioBlob.arrayBuffer());
+      const sampleRate = audioBuffer.sampleRate;
+      console.log('Taxa de amostragem do áudio:', sampleRate);
+
+      const audioData = audioBuffer.getChannelData(0);  // Pega o primeiro canal
+      const audioDataInt16 = new Int16Array(audioData.length);
+
+      for (let i = 0; i < audioData.length; i++) {
+        audioDataInt16[i] = Math.max(-1, Math.min(1, audioData[i])) < 0 ? audioData[i] * 0x8000 : audioData[i] * 0x7FFF;
+      }
+
+      const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, 128); // 1 canal, 44.1kHz, 128 kbps
+      const mp3Data = [];
+      const samplesPerFrame = 1152;
+
+      for (let i = 0; i < audioDataInt16.length; i += samplesPerFrame) {
+        const chunk = audioDataInt16.subarray(i, i + samplesPerFrame);
+        const mp3Chunk = mp3Encoder.encodeBuffer(chunk);
+        if (mp3Chunk.length > 0) {
+          mp3Data.push(new Uint8Array(mp3Chunk));
+        }
+      }
+
+      const mp3End = mp3Encoder.flush();
+      if (mp3End.length > 0) {
+        mp3Data.push(new Uint8Array(mp3End));
+      }
+
+      const mp3Blob = new Blob(mp3Data, { type: 'audio/mpeg' });
+      const formData = new FormData();
+      formData.append('audio', mp3Blob, 'recording.mp3');
+
+      try {
+        let response = await api.post("upload-audio", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        console.log('Áudio enviado com sucesso, ID:', response.data.id);
+        let pegaId = response.data.id;
+
+        let enviaAudio = {
+          to: this.wppnum,
+          id: pegaId,
+          usuario: this.usuario
+        };
+        await api.post("sendAudio", enviaAudio);
+
+        const audioUrl = URL.createObjectURL(mp3Blob);
+
+        this.messages.push({
+          text: audioUrl,
+          datetime: new Date().toISOString(),
+          sender: this.usuario,
+          isAudio: true
+        });
+        this.openDialogEnviando = false
+
+        this.openDialog1 = false;
+      } catch (error) {
+        console.error('Erro ao enviar áudio:', error);
+        this.openDialogEnviando = false
+        this.openDialog1 = false;
+      }
+    },
+
+    async sendMessage() {
+      this.usuario = this.usuario.charAt(0).toUpperCase() + this.usuario.slice(1);
+      console.log('teste usuario aqui', this.usuario)
+      console.log('eu aqui né vei kkkk', this.newMessage)
+      if (this.newMessage.trim() !== "") {
+        let msg = {
+          to: this.wppnum,
+          body: `${this.usuario} \n${this.newMessage}`,
+          nome: this.usuario
+        };
+        let contaMsg = await api.get(`/contaMsg/${this.wppnum}`)
+
+        console.log('aaaaah', contaMsg)
+
+        let numMsg = contaMsg.data.dados[0].mensagens
+        console.log('BBBBBBBBBB', numMsg)
+
+        if (numMsg === 0) {
+          alert('Esta é sua primeira mensagem para o contato hoje.\nPor favor, envie um template antes de continuar.');
+        } else {
+          console.log('concedi pra vc', this.newMessage.length)
+          if (this.newMessage.length > 500) {
+            alert('Não foi possível enviar essa mensagem, pois ela ultrapassa 500 caracteres.');
+          } else {
+            let usuario = this.usuario
+            let umaMensagem = this.newMessage
+            let numero = this.wppnum
+            console.log('me de o CUBO', msg)
+            //this.messages.push({ text: this.newMessage, sender: this.usuario });
+            console.log('eu sou oque vai ser enviado pelo socket', usuario, umaMensagem, numero)
+            this.socket.emit('send Message', { usuario, umaMensagem, numero });
+            console.log('passei do socket')
+            let resposta = await api.post("/whatsapp/send", msg);
+            console.log('passei do resposta')
+
+            this.newMessage = "";
+            console.log("limpou?", this.newMessage);
+            console.log('verifica resposta da API', resposta.data.dados)
+
+            if (resposta.data.dados == "mensagem não tolerada") {
+              console.log('palavrão não kkkkkkkkkkk')
+              alert('Palavras de baixo calão não serão toleradas!')
+            }
+            // deve imprimir string vazia
+
+            this.$nextTick(() => {
+              this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
+            });
+            this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+
+          }
+        }
+      }
+    },
+
+    async buscaCidadao() {
+      let usuario = JSON.parse(localStorage.getItem('usu'));
+      console.log('eu sou o usuario', usuario);
+
+      // Monta com PlugPhone
+      let nomeFormatado = usuario.usuario.charAt(0).toUpperCase() + usuario.usuario.slice(1);
+      this.usuario = nomeFormatado + "-PlugPhone";
+
+      console.log('eu sou o this.usuario SATORU GOJO', this.usuario);
+    },
+
+    async buscarCliente() {
+      let a = await api.get(`/buscarmealing/${this.wppnum}`);
+      console.log('Vira lata Caramelo', a)
+      this.dados = a.data.dados;
+      console.log('eu sou os dados do cliente', this.dados)
+      this.editaNome = this.dados[0].nome
+      this.editaNum = this.dados[0].telefone
+      this.setorSelect = this.dados[0].setor
+      this.editaEmail = this.dados[0].email
+      this.editaEmpresa = this.dados[0].empresa
+    },
+
+    async ligar() {
+      console.log('eu sou a função ligar', this.wppnum)
+      let liga = await api.get(`/ligar/${this.ramal}/${this.wppnum}`);
+      console.log('eou sou', liga)
+
+    },
+
+    async uploadImage() {
+      this.openDialogEnviando = true
+
+      if (!this.selectedFile) {
+        console.error("Nenhuma imagem selecionada.");
+        this.openDialogEnviando = false
+
+        return;
+      }
+
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      if (!allowedTypes.includes(this.selectedFile.type)) {
+        console.error("O arquivo selecionado não é uma imagem.");
+        this.openDialogEnviando = false
+        alert('O arquivo selecionado não é uma imagem.');
+
+        return;
+      }
+
+      let formData = new FormData();
+      formData.append("image", this.selectedFile, this.selectedFile.name);
+
+      try {
+        // Envia a imagem via POST
+        let response = await api.post("/upload-image", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        let pegaId = response.data.id;
+        this.messages.push({ text: URL.createObjectURL(this.selectedFile), sender: this.usuario, isImage: true });
+
+        // Envio da imagem via POST para o WhatsApp
+        let enviaImg = {
+          to: this.wppnum, id: pegaId, usuario: this.usuario
+        };
+        await api.post("sendimage", enviaImg);
+
+        // Recupera a URL da imagem
+        let getURL = await api.get(`/pegaURL/${pegaId}`);
+        console.log('URL AQUI', getURL.data);
+        let imageURL = { "url": getURL.data.url, "id": pegaId };
+
+        console.log('EU SOU O IMAGE URL ', imageURL)
+        // Agora usamos o axios diretamente para fazer o GET na URL externa com os headers
+
+        // Fazendo a requisição GET para a URL externa
+        console.log('eu cheguei até aqui')
+        let image = await api.post(`/geraImage/`, imageURL);
+        console.log('eu sou a imagem', image);
+
+        this.openDialog = false;
+        this.openDialogEnviando = false
+
+      } catch (error) {
+        console.error("Erro ao enviar imagem:", error);
+        this.messages.push({ text: "Erro ao enviar imagem.", sender: this.usuario });
+        this.openDialog = false;
+        this.openDialogEnviando = false
+
+      }
+    },
+    async uploadDocumento() {
+      this.openDialogEnviando = true
+
+      if (!this.selectedFile) {
+        console.error("Nenhum documento selecionado.");
+        this.openDialogEnviando = false
+
+        return;
+      }
+
+      // Tipos de documentos permitidos
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+      ];
+
+      if (!allowedTypes.includes(this.selectedFile.type)) {
+        console.error("O arquivo selecionado não é um documento válido.");
+        this.openDialogEnviando = false
+        alert('O arquivo selecionado não é um documento válido.')
+
+        return;
+      }
+
+      let formData = new FormData();
+      formData.append("file", this.selectedFile, this.selectedFile.name);
+
+      try {
+        // Envia o documento para o backend
+        let response = await api.post("/upload-document", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        let pegaId = response.data.id;
+        let caminho = response.data.caminhoFinal
+
+        let caminhoLimpo = caminho.replace(/^uploads\//, '');
+        console.log('eu sou o caminho limpo, eu sou a luz', caminhoLimpo);
+        //console.log('eu sou o caminho, eu sou a verdade', caminho)
+        // Mensagem no chat indicando que o doc foi enviado (com nome e link temporário)
+        this.messages.push({
+          text: `${this.apiWPurl}/midia/${caminhoLimpo}`,
+          file: URL.createObjectURL(this.selectedFile),
+          sender: this.usuario,
+          isDocument: true
+        });
+
+        // Envio para o WhatsApp
+        let enviaDoc = {
+          to: this.wppnum,
+          id: `${caminhoLimpo}`,
+          nomeArquivo: this.selectedFile.name,
+          usuario: this.usuario
+        };
+
+        console.log('eu sou o enviaDoc', enviaDoc)
+        await api.post("/senddocument", enviaDoc);
+
+        // Recupera URL final do documento
+        let getURL = await api.get(`/midia/${caminhoLimpo}`);
+        let docURL = { url: getURL.data.url, id: pegaId };
+
+        console.log('URL DO DOCUMENTO:', docURL);
+
+        // Chamada final pro backend processar (se necessário)
+        //await apiWP.post("/geraDocumento", docURL);
+
+        this.selectedFile = null
+        this.openDialogAnexo = false;
+        this.openDialogEnviando = false
+
+      } catch (error) {
+        console.error("Erro ao enviar documento:", error);
+        this.messages.push({ text: "Erro ao enviar documento.", sender: this.usuario });
+        this.openDialogAnexo = false;
+        this.openDialogEnviando = false
+
+      }
+    },
+
+
+
+    async verificaMensagem(telefone, setor, usuario) {
+      this.contacts = []
+      let contatos = await api.get(`/verificamensagem/${telefone}/`);
+      let contatosArray = contatos.data.dados;
+      console.log(contatosArray)
+      let tel = ""
+      let setorV = ""
+      let usuarioV = ""
+      contatosArray.forEach(e => {
+
+        tel = e.telefone
+        setorV = e.setor
+        usuarioV = e.usuario
+      });
+
+      console.log('passei', tel
+        , setorV
+        , usuarioV, '// \n', telefone, setor, usuario)
+      //this.playSound()
+
+
+      if ((setorV == setor || setor == 'admin') && (usuarioV == usuario || usuarioV == null || usuarioV == "" || usuarioV == "null" || typeof usuarioV === "undefined")) {
+        this.playSound();
+      } else {
+        console.log('não passei pelo if');
+      }
+    },
+
+    async buscarContato(filtro, estadoContato, offset) {
+      console.log('pode n', offset)
+      console.log("Me mostre ele", estadoContato)
+      console.log('contador', this.contador)
+
+
+      if (offset < 0) {
+        console.log('já está ná pagina inicial')
+        this.offset = 0
+        offset = 0
+        this.contador = 1
+
+      }
+      filtro = "";
+      this.contacts = [];
+      this.estadoContatoAtual = estadoContato
+      filtro = this.filtroSelecionado
+      let contatos = "";
+
+      console.log("filtro", filtro)
+
+      if (this.filtroValor == "") {
+        contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/null/${offset}`);
+      } else {
+        contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}/${offset}`);
+      }
+
+
+
+      let contatosArray = contatos.data.dados;
+      console.log("Esse é o contato array", contatosArray);
+
+      contatosArray.forEach(e => {
+        // Converte a data para o formato brasileiro e remove a vírgula
+        let dataFormatada = new Date(e.datahora).toLocaleString("pt-BR").replace(",", "");
+
+        this.contacts.push({
+          nome: e.nome,
+          telefone: e.telefone,
+          estado: e.estado,
+          estadomsg: e.estadomsg,
+          ultimamsg: e.ultimamsg,
+          datahora: dataFormatada
+        });
+
+        //console.log("Eu sou os contatos :D", this.contacts);
+      });
+      if (this.contacts.length == 0) {
+        console.log('ja passou do limite')
+        console.log(this.offset)
+        this.offset = 0
+        this.contador = 1
+        offset = 0
+        console.log("filtro", filtro)
+
+        if (this.filtroValor == "") {
+          contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/null/${offset}`);
+        } else {
+          contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}/${offset}`);
+        }
+
+
+
+        let contatosArray = contatos.data.dados;
+        console.log("Esse é o contato array", contatosArray);
+
+        contatosArray.forEach(e => {
+          // Converte a data para o formato brasileiro e remove a vírgula
+          let dataFormatada = new Date(e.datahora).toLocaleString("pt-BR").replace(",", "");
+
+          this.contacts.push({
+            nome: e.nome,
+            telefone: e.telefone,
+            estado: e.estado,
+            estadomsg: e.estadomsg,
+            ultimamsg: e.ultimamsg,
+            datahora: dataFormatada
+          });
+
+          //console.log("Eu sou os contatos :D", this.contacts);
+        });
+
+      }
+    }
+    ,
+
+
+    closeDialogConcluir() {
+      this.openDialogConcluir = false
+    },
+    closeDialogAnexo() {
+      this.openDialogAnexo = false
+    }
   },
-
 };
 </script>
-<style scoped>
-.border {
-  border: 2px solid #243e57 !important;
+
+
+<style>
+.message {
+  margin-bottom: -65px !important;
+  padding: 5px;
+  border-radius: 5px;
+  width: 100%;
+  word-wrap: break-word;
 }
 
-.v-btn--fab.v-size--default.v-btn--absolute.v-btn--top {
-  top: 65px !important;
-}
+.message-requester {
+  text-align: left;
 
-.v-btn--absolute.v-btn--left,
-.v-btn--fixed.v-btn--left {
-  left: -26px !important;
-}
+  border: none;
+  color: #c4c4c4;
+  padding: 15px 32px;
 
-.mdi-phone-in-talk {
-  color: green !important;
-}
-
-.tres {
-  font-size: 48px;
-  color: green !important;
-}
-
-.mdi-alarm {
-  color: blue !important;
-}
-
-.seis {
-  font-size: 48px;
-  color: blue !important;
-}
-
-.mdi-map-search {
-  color: rgb(59, 137, 255) !important;
-}
-
-.oito {
-  font-size: 48px;
-  color: rgb(59, 137, 255) !important;
-}
-
-.linkp {
   text-decoration: none;
+  font-size: 16px;
 }
 
-.botaoSair {
-  margin-left: 47%;
-  bottom: 9%;
+.message-agent {
+  text-align: right;
+
+  border: none;
+  color: #c4c4c4;
+  padding: 15px 32px;
+
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.input-message {
+  width: calc(88% - 20px);
+  padding: 8px;
+  border: 1px solid #ffffff;
+  border-radius: 25px;
+  outline: none;
   position: absolute;
-  text-decoration: none !important;
-  background-color: green !important;
-}
-
-.mdi-checkbox-marked-circle {
-  color: green !important;
-}
-
-.cinco {
-  font-size: 48px;
-  color: green !important;
-}
-
-.mdi-phone-log {
-  color: orange !important;
-}
-
-.dois {
-  font-size: 48px;
-  color: orange !important;
-}
-
-.mdi-phone-minus {
-  color: red !important;
-}
-
-.quatro {
-  font-size: 48px;
-  color: red !important;
-}
-
-.mdi-alert {
-  color: #ff6f00 !important;
+  bottom: 0;
+  left: 51px;
+  margin-bottom: -3% !important;
 
 }
 
-.custom-select .v-icon {
-  font-size: 6px !important; 
-}
-
-.mdi-phone {
-  color: blue !important;
-}
-
-.um {
-  font-size: 48px;
-  color: blue !important;
-}
-
-.mdi-alarm-check {
-  color: green !important;
-}
+.sidebar {
+  color: rgb(255, 255, 255);
+  left: -6px;
+  background-color: #13284B !important;
+  width: 300px !important;
 
 
-.sete {
-  font-size: 48px;
-  color: green !important;
+
 }
 
-.mdi-alarm-off {
-  color: red !important;
+.cabecalho {
+
+  width: 100%;
+  position: fixed;
+  top: 12px;
+  background-color: #0E1C33;
+  margin-left: 2%;
 }
-.footer{
+
+.bottom-bar {
+  position: relative;
+  margin-top: 64px;
+  width: 100%;
+  padding: 10px;
+  background-color: #13284b8e;
+  /*  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+*/
+}
+
+.button {
+  text-align: justify !important;
+  /*background-color: #075e54d6;*/
+  background: linear-gradient(223deg, rgb(0 98 119 / 70%) 0%, rgb(62 62 173 / 62%) 35%, rgb(2 7 79 / 55%) 100%);
+  border: none;
+  color: #ffffff;
+  padding: 15px 32px;
+  border-radius: 15px;
+  display: inline-block;
+  font-size: 16px;
+  text-align: justify;
+  white-space: normal;
+
+}
+
+.buttonSender {
+  /*background-color: #25d36680;*/
+  background: linear-gradient(113deg, rgba(70, 202, 255, 0.459) 0%, rgba(87, 199, 134, 0.445) 50%, rgba(83, 237, 132, 0.479) 100%);
+  border: none;
+  color: #ffffff;
+  padding: 15px 32px;
+  text-align: start;
+  border-radius: 15px;
+  display: inline-block;
+  font-size: 16px;
+}
+
+.message-text {
+  word-break: break-word;
+}
+
+.titulo {
+  text-align: end;
+}
+
+.imageIcon {
+  left: 91%;
+  font-size: 25px;
+  top: 3px;
+}
+
+.micIcon {
+  left: 90%;
+  font-size: 25px;
+  top: 3px;
+}
+
+#tituloMsg {
+  text-align: end !important;
+}
+
+.imageIcon:hover {
+  background-color: #b0b0b0;
+  border-radius: 25%;
+}
+
+.edit:hover {
+
+  background-color: #b0b0b0;
+
+
+}
+
+.micIcon:hover {
+  background-color: #b0b0b0;
+  border-radius: 25%;
+}
+
+.linhaBtn {
+  width: 50%;
+  margin-left: 3%;
+}
+
+.dialogo {
+  height: 302px
+}
+
+.dialogo1 {
+  height: 302px
+}
+
+
+
+.btnAudio {
+  background-color: #65cf65 !important;
+  color: rgb(255, 255, 255) !important
+}
+
+.btnAudioStop {
+  left: 12% !important;
+  background-color: #e74343 !important;
+  color: #ffffff !important;
+
+}
+
+.btnTransfer {
+  left: 31% !important;
+  background-color: #574de0 !important;
+  color: #ffffff !important;
+
+}
+
+.btnCall {
+  left: 12% !important;
+  background-color: #6cbfff !important;
+  color: #ffffff !important;
+
+}
+
+.btnCancel {
+  left: 35% !important;
+  margin-top: -10%;
+  background-color: #6cbfff !important;
+  color: #fffcfc !important;
+
+
+}
+
+.linhaContato {
+  margin: 12%;
+  margin-left: 25%;
+}
+
+
+.linhaContatoConcluir {
+  margin: 12%;
+  margin-left: 15%;
+}
+
+.plug {
+  width: 59px;
+  bottom: -56%;
+  position: relative;
+}
+
+.tema {
+  left: 94%;
+  widows: 8%;
+  text-decoration: bold;
+  text-decoration: underline;
+  position: fixed;
+  background-color: #243e57 !important;
+  color: #c4c4c4;
+}
+
+.info {
+
+  width: 22%;
+  position: fixed;
+  right: 1%;
+
+}
+
+.v-application {}
+
+@media (max-width: 768px) {
+  .info {
+    width: 100%;
+    position: static;
+    right: 0;
+    background-color: #ffffff !important;
+    border-color: #ffffff !important;
+  }
+}
+
+.responsive-table .v-data-table__wrapper {
+  display: block;
+}
+
+.table-row {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+@media (min-width: 769px) {
+  .table-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+.infoBtn {
+  width: 22%;
+  background-color: #13284B !important;
+  position: fixed;
+  color: white !important;
+  right: 0%;
+  top: 3px;
+}
+
+.plug {
+  width: 80px;
+  left: 34%;
+}
+
+.avatar {
+  width: 60%;
+  left: 24%;
+  top: 3%;
+}
+
+.plugPhone {
   position: absolute;
-bottom: 0%;
-width: 100%;
+  top: 25%;
+  left: 22%;
+  opacity: 30%;
+  width: 33%;
+}
+
+.logo {
+  width: 30%;
+  right: 40%;
+  position: fixed;
+  bottom: 3%;
+}
+
+.filtro {
+  width: 20% !important;
+  padding-right: 6%;
+  padding-left: 0%;
+}
+
+#seta {
+  /* cor de fundo opcional */
+  border-radius: 50%;
+  border-style: solid;
+  border-color: #6d6d6d;
+  padding: 0px;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.linhaBtnCall {
+  width: 75%;
+  margin-left: 22%;
+}
+
+.botaoEstado {
+  height: 25px !important;
+  background-color: #13284B !important;
+  margin-left: 10px !important;
+  color: white !important;
+}
+
+.loading {
+  width: 5%;
+  margin-top: 11%;
+  margin-left: 48%;
+  margin-bottom: 11%;
+
+}
+
+/* Alvo o container do drawer - ajuste o seletor se o seu for outro */
+.v-navigation-drawer__content,
+.navbar,
+/* opcional, se tiver outro seletor */
+.sidebar {
+  /* Firefox */
+  scrollbar-width: thin;
+  /* "auto" | "thin" | "none" */
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+  /* thumb color + track color */
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+.v-navigation-drawer__content::-webkit-scrollbar {
+  width: 8px;
+  /* largura da barra */
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.20);
+  /* cor do "polegar" */
+  border-radius: 8px;
+  border: 2px solid transparent;
+  /* dá espaço ao redor pra ficar mais clean */
+  background-clip: padding-box;
+}
+
+.v-navigation-drawer__content::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+.theme--light.v-input input,
+.theme--light.v-input textarea {
+  color: #c4c4c4 !important;
+}
+
+.messages::-webkit-scrollbar {
+  width: 6px;
+  /* Largura fina */
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.507);
+  /* Cor clarinha */
+  border-radius: 10px;
+  /* Bordas arredondadas */
+  transition: background-color 0.3s;
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  /* Um pouco mais visível no hover */
+}
+
+.messages::-webkit-scrollbar-track {
+  background-color: #243e576e;
+  /* Fundo invisível */
 }
 </style>
