@@ -57,7 +57,7 @@ ami.on('dialbegin', async function (evt) {
 ami.on('dialend', async function (evt) {
     if (evt.dialstatus == 'ANSWER') {
         console.log('entrando no banco Meso_detalhe')
-        let qry = `update meso_detalhe_sainte set estado = 'atendida' where uniqueid = '${evt.uniqueid}';`
+        let qry = `update meso_detalhe_sainte set estado = 'atendida' where uniqueid = '${evt.destuniqueid}';`
         console.log('1 dado gravado ou atualizado, complete')
         await executaQry(qry)
     }
@@ -110,7 +110,7 @@ ami.on('agentcomplete', async function (evt) {
 ami.on('dialend', async function (evt) {
     console.log('entrando no banco Meso_detalhe')
     if (evt.dialstatus == "ANSWER") {
-        let qry = `update meso_detalhe_sainte set teleatendente = '${evt.connectedlinenum}' where uniqueid = '${evt.uniqueid}';`
+        let qry = `update meso_detalhe_sainte set teleatendente = '${evt.connectedlinenum}' where uniqueid = '${evt.destuniqueid}';`
         console.log(qry)
         console.log('1 dado gravado ou atualizado, complete')
         await executaQry(qry)
@@ -162,9 +162,9 @@ ami.on('agentcomplete', async function (evt) {
 });
 
 ami.on('dialend', async function (evt) {
-
+    console.log('eu sou o dialend', evt)
     console.log('entrando no banco Meso_detalhe')
-    let qry = `update meso_detalhe_sainte set dialend = now() where uniqueid = '${evt.uniqueid}';`
+    let qry = `update meso_detalhe_sainte set dialend = now() where uniqueid = '${evt.destuniqueid}';`
     console.log('1 dado gravado ou atualizado, complete')
     await executaQry(qry)
 
@@ -193,7 +193,7 @@ ami.on('dialend', async function (evt) {
     if (evt.dialstatus != 'ANSWER') {
 
         console.log('entrando no banco Meso_detalhe')
-        let qry = `update meso_detalhe_sainte set estado = 'abandonado' where uniqueid = '${evt.uniqueid}';`
+        let qry = `update meso_detalhe_sainte set estado = 'abandonado' where uniqueid = '${evt.destuniqueid}';`
         console.log('1 dado gravado ou atualizado, complete')
         await executaQry(qry)
     }
@@ -362,7 +362,7 @@ ami.on('dialend', async function (evt) {
     if (
         evt.event != "rtcpsent" && evt.event != "rtcpreceived" && evt.event != "varset") {
 
-        let qry = `update meso_dial set terminochamada = now(), dialstatus = '${evt.dialstatus}' where uniqueid= '${evt.uniqueid}'`
+        let qry = `update meso_dial set terminochamada = now(), dialstatus = '${evt.dialstatus}' where uniqueid= '${evt.destuniqueid}'`
         console.log('dado atualizado em dial')
         await executaQry(qry)
 
@@ -780,20 +780,41 @@ ami.on('agentcalled', async function (evt) {
     }
 });
 
+
 ami.on('agentcomplete', async function (evt) {
-    uniqueid = evt.uniqueid
     if (
-        evt.event != "rtcpsent" && evt.event != "rtcpreceived" && evt.event != "varset") {
+        evt.event != "rtcpsent" &&
+        evt.event != "rtcpreceived" &&
+        evt.event != "varset"
+    ) {
+        console.log('entrando no banco agentcomplete');
 
-        console.log('entrando no banco agentcomplete')
-        let qry = `insert into meso_agent_complete(evento, privilege, fila, uniqueid, channel, membername, calleridnum, calleridname, connectedlinenum, connectedlinename, holdtime, talktime, reason) values ('${evt.event}','${evt.privilege}','${evt.queue}','${evt.uniqueid}','${evt.channel}','${evt.membername}','${evt.calleridnum}','${evt.calleridname}','${evt.connectedlinenum}','${evt.connectedlinename}','${evt.holdtime}','${evt.talktime}','${evt.reason}');`
+        let qry = `
+            INSERT INTO meso_agent_complete
+            (evento, privilege, fila, uniqueid, channel, member, membername,calleridnum, calleridname, holdtime, talktime, reason)
+            VALUES (
+                '${evt.event || ''}',
+                '${evt.privilege || ''}',
+                '${evt.queue || ''}',
+                '${evt.uniqueid || ''}',
+                '${evt.channel || ''}',
+                '${evt.member || ''}',
+                '${evt.membername || ''}',
+                '${evt.calleridnum || ''}',
+                '${evt.calleridname || ''}',
+                '${evt.holdtime || 0}',
+                '${evt.talktime || 0}',
+                '${evt.reason || ''}'
+            );
+        `;
 
-        console.log('1 dado gravado ou atualizado, complete')
+        console.log('sasuke uchiha', qry);
+        console.log('1 dado gravado ou atualizado, complete');
 
-        await executaQry(qry)
+        await executaQry(qry);
     }
-
 });
+
 //------------------------------------agent_called_realtime--------------------------------------------------------------------------------    
 ami.on('agentcalled', async function (evt) {
     uniqueid = evt.uniqueid

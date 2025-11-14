@@ -3,7 +3,7 @@ const router = express.Router();
 const { executaQry } = require("../banco/bd");
 const { executaQry2 } = require("../banco/db2");
 const { geraToken } = require("./jwt/jwt");
-const { send, sendImage, sendVideo, sendAudio, sendDocument, sendTemplate, download, test, getImage, getAudio, getDocument, reciveMediaLink, geraMedia, sendGpt, verificaPalavrao } = require('/meso/whatsapp/webhook/methods.js');
+const { send, sendImage, sendVideo, sendAudio, sendDocument, sendTemplate, download, test, getImage, getAudio, getDocument, reciveMediaLink, geraMedia, sendGpt, verificaPalavrao, sendAutenticacao } = require('/meso/whatsapp/webhook/methods.js');
 const axios = require("axios");
 const { executaQryServer } = require('../banco/dbServer');
 const multer = require('multer');
@@ -14,6 +14,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 var proxy = require('express-http-proxy');
 const { exec } = require("child_process");
 const zlib = require('zlib');
+const crypto = require('crypto');
 const { buscarMensagem } = require("../../webhook/SocketConnection");
 const upload = multer({ dest: 'uploads/' });
 class ExpressController {
@@ -160,7 +161,7 @@ class ExpressController {
           res.json({ success: true, mensagem: 'Usuário atualizado com sucesso!' });
         } else {
           console.log('não chegou aqui no update');
-          res.json({ success: false, mensagem: 'Não foi possível atualizar o usuário!' });
+          res.json({ success: false, mensagem: 'Não foi possível atualizar o usuário!r' });
         }
       } catch (error) {
         console.error("Erro ao editar contato:", error);
@@ -321,6 +322,14 @@ class ExpressController {
       res.json({ id: idDocumento });
     });;
 
+    this.expressAppWrapper.get('/pegaIdEmpresa/:telefone', async (req, res, next) => {
+      let telefone = req.params.telefone
+      let qry = `select id_empresa from meso_empresas where telefone = '${telefone}'`
+      console.log('sou qry mealing', qry)
+      let res1 = await executaQry(qry)
+      res.json(res1)
+    })
+
     this.expressAppWrapper.post('/upload-document', async (req, res) => {
       //////console.log('oi')
 
@@ -437,8 +446,14 @@ class ExpressController {
       let setor = req.params.setor;
       let telefone = req.params.telefone;
       let usuario = req.params.usuario
-      let qry = `UPDATE meso_contatos SET setor = '${setor}', usuario = ${usuario === 'undefined' ? 'NULL' : `'${usuario}'`} WHERE telefone = '${telefone}'`;
+      let qry = `UPDATE meso_contatos SET atendimento_ai = 0, setor = '${setor}', usuario = ${usuario === 'undefined' ? 'NULL' : `'${usuario}'`} WHERE telefone = '${telefone}'`;
       console.log("transferindo contato", qry)
+
+      let qry22 = `update meso_atendimentos set status= 'Transferido', setor_atual ='${setor}', agenteTransferido = ${usuario === 'undefined' ? 'NULL' : `'${usuario}'`} where telefone ='${telefone}' and status <> 'Concluído';`
+      console.log('c', qry22)
+      let res3 = await executaQry(qry22)
+      console.log(res3)
+
       let resultado = await executaQry(qry);
       if (resultado?.dados?.affectedRows > 0) {
         res.json({
@@ -453,6 +468,47 @@ class ExpressController {
         });
       }
     })
+
+    this.expressAppWrapper.get('/buscarAtendimentos/:telefone', async (req, res, next) => {
+      try {
+        let telefone = req.params.telefone;
+
+        let qry = `
+      SELECT 
+        id,
+        id_contato,
+        id_agente,
+        telefone,
+        agente,
+        agenteTransferido,
+        pendencia,
+        setor_origem,
+        setor_atual,
+        canal,
+        assunto,
+        status,
+        DATE_FORMAT(data_inicio, '%d/%m/%Y %H:%i:%s') AS data_inicio,
+        DATE_FORMAT(data_fim, '%d/%m/%Y %H:%i:%s') AS data_fim,
+        TIMESTAMPDIFF(SECOND, data_inicio, data_fim) AS duracao_segundos,
+        satisfacao,
+        contexto,
+        ultima_mensagem,
+        criado_por,
+        atualizado_em
+      FROM meso_atendimentos
+      WHERE telefone LIKE ${telefone}
+      ORDER BY data_inicio DESC;
+    `;
+
+        let result = await executaQry(qry);
+        res.json(result);
+
+      } catch (err) {
+        console.error('Erro ao buscar atendimentos por telefone:', err);
+        res.status(500).json({ error: err.message });
+      }
+    });
+
 
     this.expressAppWrapper.post("/geraImage/", async (req, res, next) => {
       let url = req.body.url;
@@ -625,10 +681,32 @@ class ExpressController {
 
       //console.log("Olha que bonito", usuario, telefone)
 
-      qry = `update meso_contatos set usuario = '${usuario}' where telefone = '${telefone}'`
+      qry = `update meso_contatos set usuario = '${usuario}', atendimento_ai = 0 where telefone = '${telefone}'`
 
       console.log('contato', qry)
       let res20 = await executaQry(qry)
+
+      let qry22 = `UPDATE meso_atendimentos
+SET 
+  status = 'Em Andamento',
+  agenteTransferido = CASE 
+    WHEN status = 'Transferido' THEN '${usuario}' 
+    ELSE agenteTransferido 
+  END,
+  agente = CASE 
+    WHEN agente IS NULL OR agente = '' THEN '${usuario}' 
+    ELSE agente 
+  END
+WHERE telefone = '${telefone}'
+  AND status <> 'Concluído' AND status <> 'Transferido';
+;
+`
+      console.log('grau de relevância', qry22)
+      let res3 = await executaQry(qry22)
+      let qry33 = `update meso_atendimentos set agenteTransferido = '${usuario}' where status ='Transferido'`
+      console.log('grau de relevância', qry33)
+      let res4 = await executaQry(qry33)
+      console.log(res4)
       res.json(res20)
       ////console.log('contatos resposta', res20)
 
@@ -818,6 +896,66 @@ class ExpressController {
       res.json(res20)
 
     })
+
+    this.expressAppWrapper.get("/buscarcontatos5/:tipo/:usuario/:estado/:filtro/:offset", async (req, res, next) => {
+      let qry
+
+      let tipo = req.params.tipo
+      let usuario = req.params.usuario
+      let estado = req.params.estado
+      let filtro = req.params.filtro
+      let offset = req.params.offset
+
+      let idEmpresaArray = await executaQry(`select id_empresa from meso_usuariologin where usuario = '${usuario}'`)
+
+      console.log('eu sou o idEmpresa', idEmpresaArray)
+
+      let idEmpresa = idEmpresaArray.dados[0].id_empresa
+      console.log('OFFSET RAPAAAA', offset)
+      if (offset == 'undefined') {
+        offset = 0
+        console.log(offset)
+      }
+
+      console.log("Olha meu filtro no buscar contato", filtro)
+
+      if (tipo === 'admin') {
+        // Admin com filtro de estado
+        if (estado === 'Todos') {
+          qry = `SELECT * FROM meso_contatos ${filtro != 'null' ? `where id_empresa= '${idEmpresa}' and nome like '%${filtro}%' or telefone like '%${filtro}%' or email like '%${filtro}%' ORDER BY datahora DESC` : ` where id_empresa= '${idEmpresa}' ORDER BY datahora DESC`}  LIMIT 100 OFFSET ${offset}`;
+        } else {
+          qry = `SELECT * FROM meso_contatos WHERE estado = '${estado}' and id_empresa= '${idEmpresa}' ${filtro != 'null' ? `AND   (nome LIKE '%${filtro}%' OR telefone LIKE '%${filtro}%' OR email LIKE '%${filtro}%')` : "ORDER BY datahora DESC"}  LIMIT 100 OFFSET ${offset}`;
+        }
+      } else {
+        // Usuário comum
+        if (estado === 'Todos') {
+          qry = `
+              SELECT * FROM meso_contatos
+              WHERE  id_empresa= '${idEmpresa}' and (usuario like '%${usuario}%' OR usuario IS NULL)
+              AND setor = '${tipo}'
+              ${filtro != 'null'
+              ? `AND (nome LIKE '%${filtro}%' OR telefone LIKE '%${filtro}%' OR email LIKE '%${filtro}%')`
+              : "ORDER BY datahora DESC"}  LIMIT 100 OFFSET ${offset}`;
+        } else {
+          qry = `
+              SELECT * FROM meso_contatos
+              WHERE  id_empresa= '${idEmpresa}' and (usuario like '%${usuario}%' OR usuario IS NULL)
+              AND setor = '${tipo}'
+              AND estado = '${estado}'
+              ${filtro != 'null'
+              ? `AND (nome LIKE '%${filtro}%' OR telefone LIKE '%${filtro}%' OR email LIKE '%${filtro}%')`
+              : "ORDER BY datahora DESC"}  LIMIT 100 OFFSET ${offset}`;
+        }
+
+      }
+      console.log('oq retornou aqui no contato', qry)
+      ////console.log('contatos resposta', res20)
+
+      let res20 = await executaQry(qry)
+      res.json(res20)
+
+    })
+
 
 
     this.expressAppWrapper.get("/buscarcontatos1/:tipo/:usuario/:estado", async (req, res, next) => {
@@ -1517,10 +1655,6 @@ class ExpressController {
 
     });
 
-
-
-    //Login-------------------------------------------------------------------------------------
-
     this.expressAppWrapper.post("/loginconfere", async (req, res) => {
       res.header("Access-Control-Allow-Origin", "*");
       res.header("Access-Control-Allow-Headers", "Origin, X-Request-Width, Content-Type, Accept");
@@ -1555,6 +1689,105 @@ class ExpressController {
         //console.log(e);
       }
     });
+    //Login-------------------------------------------------------------------------------------
+
+
+    this.expressAppWrapper.post("/loginconfere2", async (req, res) => {
+      res.header("Access-Control-Allow-Origin", "*");
+      res.header("Access-Control-Allow-Headers", "Origin, X-Request-Width, Content-Type, Accept");
+
+      const usuario = req.body.login;
+      const senha = req.body.senha;
+      const codigo = req.body.codigo;
+
+      console.log('🔔 /loginconfere ->', { usuario, codigoProvided: !!codigo });
+
+      try {
+        // 1) Verifica usuário e senha (interpolado - conforme tu pediu)
+        const qryLogin = `
+      SELECT *
+      FROM meso_usuariologin
+      WHERE usuario = '${usuario}'
+        AND senha = MD5('${senha}')
+      LIMIT 1;
+    `;
+        const resLogin = await executaQry(qryLogin);
+        if (!resLogin.dados || resLogin.dados.length === 0) {
+          console.log('❌ Usuário/senha inválidos');
+          return res.status(401).json({ erro: "Usuario ou senha incorretos." });
+        }
+        const user = resLogin.dados[0];
+
+        // 2) Exige que o código seja enviado
+        if (!codigo) {
+          return res.status(400).json({ erro: "Código 2FA obrigatório." });
+        }
+
+        // 3) Verifica código 2FA — só aceita se código corresponder, não usado e não expirado
+        const qryCodigoValido = `
+      SELECT id_dois_fatores, telefone, codigo, criado_em, expira_em, usado
+      FROM meso_dois_fatores
+      WHERE id_usuario = ${user.id}
+        AND codigo = '${codigo}'
+        AND usado = 0
+        AND expira_em > NOW()
+      ORDER BY criado_em DESC
+      LIMIT 1;
+    `;
+        const resCodigoValido = await executaQry(qryCodigoValido);
+
+        if (!resCodigoValido.dados || resCodigoValido.dados.length === 0) {
+          // Diferencia pra mensagens mais informativas (opcional)
+          // Busca o último registro do usuário pra saber por que falhou
+          const qryUltimo = `
+        SELECT id_dois_fatores, codigo, criado_em, expira_em, usado
+        FROM meso_dois_fatores
+        WHERE id_usuario = ${user.id}
+        ORDER BY criado_em DESC
+        LIMIT 1;
+      `;
+          const resUltimo = await executaQry(qryUltimo);
+
+          if (!resUltimo.dados || resUltimo.dados.length === 0) {
+            return res.status(400).json({ erro: "Nenhum código cadastrado. Gere um novo código 2FA." });
+          }
+
+          const rec = resUltimo.dados[0];
+          if (rec.usado == 1) return res.status(400).json({ erro: "Código já usado. Gere um novo." });
+          if (new Date(rec.expira_em) <= new Date()) return res.status(400).json({ erro: "Código expirado. Gere um novo." });
+
+          // Se chegou aqui, provavelmente o código digitado está incorreto
+          return res.status(400).json({ erro: "Código inválido." });
+        }
+
+        // 4) Marca o código como usado (prevenir replay)
+        const idDois = resCodigoValido.dados[0].id_dois_fatores;
+        const qryMarcaUsado = `
+      UPDATE meso_dois_fatores
+      SET usado = 1
+      WHERE id_dois_fatores = ${idDois};
+    `;
+        await executaQry(qryMarcaUsado);
+
+        // 5) Gera token e retorna dados do login (só após código válido)
+        const token = geraToken(user.usuario); // tua função existente
+        const tipo = user.tipo;
+        const usuario2 = user.id;
+        const idPermissao = user.id_permissao;
+        const ramal = user.ramal;
+        const telefone = user.telefone;
+
+        console.log('✅ Login 2FA ok', { usuario2, telefone });
+        return res.json({ token, tipo, usuario2, idPermissao, ramal, telefone });
+
+      } catch (e) {
+        console.error('Erro em /loginconfere:', e);
+        return res.status(500).json({ erro: 'Erro interno' });
+      }
+    });
+
+
+
 
     this.expressAppWrapper.app.post('/enviar-audio', upload.single('audio'), (req, res) => {
       const audioFile = req.file;
@@ -2009,7 +2242,22 @@ class ExpressController {
     this.expressAppWrapper.get("/cdr/:d1/:d2/", async (req, res, next) => {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d1 + ' 23:59:59'
-      let qry = `select * from cdr where calldate >= '${data1}' and calldate <= '${data2}'`;
+      let qry = `SELECT
+  *,
+  CASE
+    WHEN dcontext IN ('from-internal', 'outbound', 'macro-dialout-trunk')
+         OR dstchannel LIKE 'SIP/meso_%'
+         OR dst NOT REGEXP '^[0-9]{3}$'  -- não é ramal
+      THEN 'Sainte'
+    WHEN dcontext IN ('ext-queues', 'from-trunk', 'from-pstn')
+         OR channel LIKE 'SIP/%-trunk%'
+         OR dst REGEXP '^[0-9]{3}$'      -- é ramal
+      THEN 'Entrante'
+    ELSE 'Indefinido'
+  END AS tipo_chamada
+FROM cdr
+WHERE calldate >= '${data1}' AND calldate <= '${data2}';
+`;
       console.log('ja to de voltakkkkkkkkkkk', qry);
 
       let res1 = await executaQry(qry);
@@ -2658,7 +2906,29 @@ class ExpressController {
       let qry = `update meso_contatos set estado = 'Concluído' where telefone like '%${telefone}%'`
       console.log('som de milhões? hmmmmm', qry)
       let res2 = await executaQry(qry)
+
+      let qry2 = `update meso_atendimentos set status= 'Concluído', data_fim = now() where telefone ='${telefone}' and status <> 'Concluído';`
+      console.log('cocô com gliter', qry2)
+      let res3 = await executaQry(qry2)
+      console.log(res3)
       res.json(res2)
+    })
+
+    this.expressAppWrapper.post('/concluidoPendente/', async (req, res, next) => {
+      let telefone = req.body.telefone
+      let pendencia = req.body.pendencia
+
+      let qry = `update meso_contatos set estado = 'Concluído' where telefone like '%${telefone}%'`
+      console.log('som de milhões? hmmmmm', qry)
+      let res2 = await executaQry(qry)
+
+      let qry2 = `update meso_atendimentos set pendencia ='${pendencia}', status= 'Concluído', data_fim = now() where telefone ='${telefone}' and status <> 'Concluído'`
+      console.log('cocô com gliter', qry2)
+      let res3 = await executaQry(qry2)
+
+      console.log('res3', res3)
+      res.json(res2)
+
     })
 
 
@@ -2673,9 +2943,17 @@ class ExpressController {
       ////console.log('teoricamente eu sou o telefone', telefone)
       ////console.log('talvez eu seja o ramal', ramal)
 
+      if (telefone.startsWith("5531")) {
+        telefone = telefone.slice(4)
+        telefone = "9" + telefone
+      } else {
+        telefone = telefone.slice(2)
+        telefone = telefone.slice(0, 3) + "9" + telefone.slice(3);
+
+      }
 
 
-      var ami = new require('asterisk-manager')('5038', '127.0.0.1', 'admin', 'Mtes0206', true);
+      var ami = new require('asterisk-manager')('5038', 'localhost', 'admin', 'Mtes0206', true);
       // In case of any connectiviy problems we got you coverd.
       ami.keepConnected();
 
@@ -2693,6 +2971,7 @@ class ExpressController {
 
     })
     this.expressAppWrapper.get('/logar/:ramal/:tipo/:usuario', async (req, res) => {
+
       try {
         // ────────────────────────────────────────────────────────────
         // 1. Parâmetros
@@ -2701,17 +2980,21 @@ class ExpressController {
         const tipo = req.params.tipo;
         const usuario = req.params.usuario;
 
+
+        console.log('tudo culpa sua', numeroRamal,
+          tipo,
+          usuario,)
         // ────────────────────────────────────────────────────────────
         // 2. Busca a fila no banco (use bind params p/ evitar SQLi)
         // ────────────────────────────────────────────────────────────
         const qry = `SELECT fila FROM meso_usuariologin WHERE usuario = '${usuario}'`;
         const getFilaArray = await executaQry(qry);
-
         if (!getFilaArray.dados.length) {
           return res.status(404).send('Fila não encontrada');
         }
 
         const fila = getFilaArray.dados[0].fila;
+        console.log('eu sou tipo a fila', fila)
 
         // ────────────────────────────────────────────────────────────
         // 3. Conecta no AMI
@@ -2750,7 +3033,8 @@ class ExpressController {
         // 6. HTTP OK
         // ────────────────────────────────────────────────────────────
 
-        let qry2 = `update users set estado = 'logado' where extension = '${numeroRamal}'`
+        let qry2 = `update users set estado = 'logado', fila ='${fila}' where extension = '${numeroRamal}'`
+
         await executaQry2(qry2)
         let qry3 = `insert into logs (user,ramal, fila, motivo, datahora)values ('PJSIP/${numeroRamal}','PJSIP/${numeroRamal}','${fila}','Login', now())`
         console.log('talvez seja minha culpa', qry3)
@@ -2763,6 +3047,7 @@ class ExpressController {
       }
     });
 
+
     this.expressAppWrapper.get('/deslogar/:ramal/:tipo/:usuario', async (req, res) => {
       try {
         // ────────────────────────────────────────────────────────────
@@ -2771,6 +3056,9 @@ class ExpressController {
         const numeroRamal = req.params.ramal;       // só o número
         const tipo = req.params.tipo;
         const usuario = req.params.usuario;
+        console.log('eu sou tudo', numeroRamal,
+          tipo,
+          usuario,)
 
         // ────────────────────────────────────────────────────────────
         // 2. Busca a fila no banco (use bind params p/ evitar SQLi)
@@ -3242,6 +3530,25 @@ class ExpressController {
 
     });
 
+    this.expressAppWrapper.post("/enviaExp", async (req, res) => {
+
+      let titulo = req.body.titulo
+      let descricao = req.body.descricao
+      let palavrasChave = req.body.palavrasChave
+      let usuario = req.body.usuario
+
+      try {
+        let qry = `insert into meso_bot_exp(titulo, descricao,  palavras_chave, autor)
+        values ('${titulo}','${descricao}', '${palavrasChave}','${usuario}')`;
+        ////console.log(qry);
+        let res47 = await executaQry(qry);
+        res.json(res47);
+      } catch (e) {
+        ////console.log(e);
+      }
+
+    });
+
 
     //------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -3623,12 +3930,33 @@ class ExpressController {
     this.expressAppWrapper.post("/atualizacontato", async (req, res) => {
       let mensagem = req.body.msg
       let tel = req.body.tel
-      let qry = `UPDATE meso_contatos SET ultimamsg = '${mensagem}', datahora = NOW() WHERE telefone = '${tel}'`
-      //console.log('Something in the way', qry)
+      let qry = `UPDATE meso_contatos SET ultimamsg = '${mensagem}', atendimento_ai = 0, datahora = NOW() WHERE telefone = '${tel}'`
+      console.log('Something in the way', qry)
       executaQry(qry)
       res.send('Atualizado')
     })
 
+    this.expressAppWrapper.post("/gera-codigo", async (req, res) => {
+      let usuario = req.body.usuario
+      let telefone = req.body.telefone;
+      const codigo = crypto.randomInt(100000, 999999).toString();
+
+      let codigoValidoArray = await executaQry(`SELECT usado, expira_em < NOW() AS expirado FROM meso_dois_fatores WHERE telefone = '${telefone}' ORDER BY id_dois_fatores DESC LIMIT 1;`)
+
+      let usado = codigoValidoArray.dados[0].usado
+      let expirado = codigoValidoArray.dados[0].expirado
+
+      if (usado == 1 || expirado == 1) {
+        let qry = `update meso_dois_fatores set codigo = '${codigo}',criado_em = now(), expira_em = DATE_ADD(NOW(), INTERVAL 5 MINUTE), usado = 0 where telefone = '${telefone}'`
+        await executaQry(qry)
+        console.log('Te melo o rego', qry)
+        sendAutenticacao(telefone, codigo, res)
+        console.log("Saiu do gravar codigo")
+        res.json("Foi")
+      } else {
+        res.status(200).json("Código já utilizado ou já expirado");
+      }
+    })
 
     this.expressAppWrapper.get('/buscarmealing/:telefone', async (req, res, next) => {
       let telefone = req.params.telefone
@@ -3637,6 +3965,68 @@ class ExpressController {
       let res1 = await executaQry(qry)
       res.json(res1)
     })
+
+
+    this.expressAppWrapper.get('/pegaTelefone/:usuario', async (req, res) => {
+      try {
+        const usuario = req.params.usuario;
+
+        // 🔍 Busca o ID do usuário
+        const pegaId = `
+      SELECT id 
+      FROM meso_usuariologin 
+      WHERE usuario = '${usuario}'
+    `;
+        console.log('🔎 Query pegaId:', pegaId);
+
+        const pegaIDArray = await executaQry(pegaId);
+
+        if (!pegaIDArray?.dados?.length) {
+          return res.status(404).json({
+            success: false,
+            msg: `Usuário '${usuario}' não encontrado.`,
+            dados: [],
+          });
+        }
+
+        const id = pegaIDArray.dados[0].id;
+
+        // 🔍 Busca o telefone pelo id do usuário
+        const pegaTelefone = `
+      SELECT telefone 
+      FROM meso_dois_fatores 
+      WHERE id_usuario = ${id}
+    `;
+        console.log('📞 Query pegaTelefone:', pegaTelefone);
+
+        const pegaTelefoneArray = await executaQry(pegaTelefone);
+
+        if (!pegaTelefoneArray?.dados?.length) {
+          return res.status(404).json({
+            success: false,
+            msg: `Nenhum telefone encontrado para o usuário '${usuario}'.`,
+            dados: [],
+          });
+        }
+
+        console.log(`✅ Telefone encontrado para ${usuario}:`, pegaTelefoneArray.dados);
+
+        return res.status(200).json({
+          success: true,
+          msg: "Telefone encontrado com sucesso.",
+          dados: pegaTelefoneArray.dados,
+        });
+
+      } catch (error) {
+        console.error('❌ Erro na rota /pegaTelefone:', error);
+        return res.status(500).json({
+          success: false,
+          msg: "Erro interno ao buscar telefone.",
+          erro: error.message,
+        });
+      }
+    });
+
 
     this.expressAppWrapper.get("/estadoMealing/:processo/:atendeu/:reagendar/:interesse/:negociar/:observacao", async (req, res, next) => {
       ////console.log('entrei aqui')
@@ -3704,5 +4094,6 @@ class ExpressController {
     this.expressAppWrapper.listen(this.porta, () => console.log('serv on ' + this.porta))
   }
 }
+
 
 module.exports = ExpressController;

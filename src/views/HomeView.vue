@@ -6,18 +6,10 @@
       <div style="width: 100%;
       
     position: relative;
-    margin-top: -9% !important;">
+    ">
         <!--text--accent-NUMBER altera a cor da letra do texto-->
         <!--<img src="../assets/plugbranco3.png" alt="" class="icone">-->
-        <br>
-        <br>
-        <br>
-        <br>
 
-        <br>
-        <br>
-        <br>
-        <br>
         <h1 class="text-center display-1" style="color: white;">Seja bem-vindo ao PlugPhone Cloud</h1>
         <br>
         <br>
@@ -28,8 +20,9 @@
       </div>
 
       <v-form style="        top: 200%;
-          margin-top: 5%;
+          margin-top: 0%;
     width: 55%;
+    height: 200px;
     left: 21%;
     position: relative;">
         <v-row style="    width: 72%;
@@ -349,7 +342,7 @@ h1 {
   border-radius: 12px;
   font-size: 16px;
   cursor: pointer;
-  left: 1%;
+  left: 2%;
   background: #a1a1a1b5 !important;
   /* azul Meta */
   color: #fff;

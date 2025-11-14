@@ -6,6 +6,12 @@ let emitMensagem = function (socket, nome, msg, telefone) {
 
 }
 
+let emitMensagem2 = function (socket, nome, msg, telefone) {
+    socket.emit('chat_message_teste', data.nome, data.telefone, data.mensagem, data.agente, data.type, data.datetime)
+    console.log('Mensagem enviada 2.0:', data.nome, data.telefone, data.mensagem, data.agente, data.type, data.datetime);
+
+}
+
 let emitImage = function (socket, nome, imageBuffer, telefone) {
     socket.emit('chat image', nome, imageBuffer, telefone);
     //console.log('Imagem enviada:', nome, telefone);
@@ -55,5 +61,5 @@ async function emitContatosFlutter(socket, estado, usuario, setor) {
     socket.emit('contatos', contatos.dados);
 }
 
-module.exports = { emitMensagem, emitImage, emitAudio, emitDocument, cadastrarMensagem, emitContatosFlutter };
+module.exports = { emitMensagem, emitImage, emitAudio, emitDocument, cadastrarMensagem, emitContatosFlutter, emitMensagem2 };
 

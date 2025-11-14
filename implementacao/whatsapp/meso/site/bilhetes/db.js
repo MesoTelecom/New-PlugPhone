@@ -6,6 +6,9 @@ const con = mysql.createPool({
   user: "root",
   password: "Mtes0206",
   database: "asteriskcdrdb",
+  waitForConnections: true,
+  connectionLimit: 20,
+  queueLimit: 0,
 
 });
 /*

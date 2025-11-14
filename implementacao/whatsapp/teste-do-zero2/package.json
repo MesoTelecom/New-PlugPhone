@@ -11,10 +11,10 @@
   "license": "ISC",
   "dependencies": {
     "asterisk-manager": "^0.2.0",
-    "axios": "^1.8.4",
+    "axios": "^1.13.1",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "express": "^4.21.1",
     "express-http-proxy": "^2.0.0",
     "fluent-ffmpeg": "^2.1.3",
