@@ -412,6 +412,14 @@ const routes = [
   },
   
   {
+    path: '/atendimentos',
+    name: 'atendimentos',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/atendimentosView.vue')
+  },
+  {
     path: '/chat',
     name: 'chat',
     // route level code-splitting
@@ -441,15 +449,33 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
+  const jwt = sessionStorage.getItem("jwt");
 
-  //console.log("logado?", store.state.logado);
-  if (localStorage.getItem("jwt")) {
-    api.defaults.headers.common[
-      "x-access-token"
-    ] = localStorage.getItem("jwt");
+  // Atualizar headers
+  if (jwt) {
+    api.defaults.headers.common["x-access-token"] = jwt;
   }
-  if (to.name !== "home" && localStorage.getItem("jwt") == undefined) next({ name: "home" });
-  else next();
+
+  // Timeout de inatividade
+  const lastActivity = Number(sessionStorage.getItem("lastActivity"));
+  const agora = Date.now();
+  const tempoMaximo = 30 * 60 * 1000; // 30min
+
+  if (jwt && lastActivity && (agora - lastActivity > tempoMaximo)) {
+    sessionStorage.clear();
+    return next({ name: "home" });
+  }
+
+  if (jwt) {
+    sessionStorage.setItem("lastActivity", agora);
+  }
+
+  // Bloqueia rotas privadas
+  if (to.name !== "home" && !jwt) {
+    return next({ name: "home" });
+  }
+
+  return next();
 });
 
 export default router

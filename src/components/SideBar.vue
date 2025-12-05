@@ -152,7 +152,7 @@ export default {
       try {
         this.error = false;
 
-        localStorage.removeItem("jwt");
+        sessionStorage.removeItem("jwt");
         this.$router.push("/");
 
         // console.log(res.data.dados[0]);

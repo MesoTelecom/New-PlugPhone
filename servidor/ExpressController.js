@@ -313,7 +313,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
+            'Authorization': 'Bearer Seu Token'
           }
         });
     
@@ -360,7 +360,7 @@ this.expressAppWrapper.post("/geraAudio", async (req, res, next) => {
             url: url,
             responseType: 'stream',
             headers: {
-                'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
+                'Authorization': 'Bearer Seu Token'
             }
         });
 
@@ -410,7 +410,7 @@ this.expressAppWrapper.post("/geraDocument", async (req, res, next) => {
           url: url,
           responseType: 'stream',
           headers: {
-              'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
+              'Authorization': 'Bearer Seu Token'
           }
       });
 

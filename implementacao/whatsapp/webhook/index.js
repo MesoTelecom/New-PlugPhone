@@ -10,8 +10,9 @@ const fs = require("fs");
 const cors = require("cors");
 const axios = require("axios");
 const { executaQry } = require('/meso/whatsapp/webhook/db');
-const { send, sendImage, sendVideo, sendAudio, gerenciarAtendimento, sendDocument, sendTemplate, download, sendTemplateMenu, reciveMediaLink, verificaPalavrao } = require('./methods');
+const { send, sendImage, sendVideo, sendAudio, gerenciarAtendimento, sendDocument, sendTemplate, download, sendTemplateMenu, reciveMediaLink, verificaPalavrao, audioGpt } = require('./methods');
 const { emitMensagem, emitImage, emitAudio, emitDocument, emitMensagem2 } = require("./emit");
+const { sendToNia } = require("./NiaBot/src/niaService.js");
 const { Socket } = require("socket.io");
 const app = express().use(body_parser.json());
 const porta = 3333;
@@ -36,7 +37,7 @@ webpush.setVapidDetails(
 
 
 let tokens = [];
-const serviceAccount = require('./plugphonechat-f3a19-firebase-adminsdk-fbsvc-5c600117a5.json'); // Substitua pelo caminho correto
+const serviceAccount = require('./plugphonechat-f3a19-firebase-adminsdk-fbsvc-4432807ed7.json'); // Substitua pelo caminho correto
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -107,12 +108,12 @@ app.post("/webhooks", async (req, res) => {
     const meta = tudo?.entry?.[0]?.changes?.[0]?.value?.metadata;
     const statusObj = tudo?.entry?.[0]?.changes?.[0]?.value?.statuses?.[0];
 
-    console.log('vinijr é foda', msgObj, meta, statusObj)
+    //console.log('vinijr é foda', msgObj, meta, statusObj)
 
 
     // ❌ se não tem mensagem, provavelmente é evento de status
     if (!msgObj && statusObj) {
-        console.log(`⚠️ Ignorado STATUS: ${statusObj.status}`);
+        //console.log(`⚠️ Ignorado STATUS: ${statusObj.status}`);
         return res.sendStatus(200);
     }
 
@@ -120,7 +121,7 @@ app.post("/webhooks", async (req, res) => {
     const botNumber = meta?.display_phone_number?.replace("+", "");
     const from = msgObj?.from;
     if (from === botNumber) {
-        console.log("⚠️ Ignorado — Bot falando");
+        //console.log("⚠️ Ignorado — Bot falando");
         return res.sendStatus(200);
     }
 
@@ -129,18 +130,22 @@ app.post("/webhooks", async (req, res) => {
     if (msgObj?.type === "text") {
         iaPodeResponder = true;
     } else {
-        console.log(`⚠️ Mídia recebida (${msgObj?.type}) — IA não responde`);
+        //console.log(`⚠️ Mídia recebida (${msgObj?.type}) — IA não responde`);
     }
 
 
     let visualização = tudo?.entry?.[0].changes?.[0].value?.statuses?.[0].status
     let numRecebe = tudo.entry[0].changes[0].value.metadata.display_phone_number
-
+    console.log('requiem ofereço', numRecebe)
     let waId = tudo?.entry?.[0]?.changes?.[0]?.value?.contacts?.[0]?.wa_id;
     let nome = tudo.entry[0].changes[0].value.contacts[0].profile.name;
 
     let arrayID = await api.get(`/pegaIdEmpresa/${numRecebe}`)
     let idEmpresa = arrayID.data.dados[0].id_empresa
+    let wpp_id = arrayID.data.dados[0].wpp_id
+
+    console.log(wpp_id)
+
     await gerenciarAtendimento(msgObj, nome, meta, numRecebe, idEmpresa);
 
     let numeroWhatsapp = body_param?.entry?.[0]?.changes?.[0]?.value?.contacts?.[0]?.wa_id;
@@ -151,14 +156,21 @@ app.post("/webhooks", async (req, res) => {
     if (!numeroWhatsapp) {
         return res.status(400).json({ error: "Número de WhatsApp não encontrado na requisição" });
     }
-    let qry = `select count(whatsappid) as quantNum from meso_mensagens_solicitante where whatsappid = '${numeroWhatsapp}' and DATE(datetime) = CURDATE()`;
+    let qry = `select count(whatsappid) as quantNum from meso_mensagens_solicitante where whatsappid = '${numeroWhatsapp}' and id_empresa = '${idEmpresa}' and DATE(datetime) = CURDATE()`;
     let quantNumArray = await executaQry(qry);
     let quantNum = quantNumArray.dados[0].quantNum;
 
-    let qry2 = `select estado from meso_contatos where telefone = '${numeroWhatsapp}' `;
+    let qry2 = `select estado from meso_contatos where id_empresa = '${idEmpresa}' and telefone = '${numeroWhatsapp}' `;
     let estadoArray = await executaQry(qry2);
     let estado = estadoArray.dados[0].estado;
     console.log('Cupcake', estado)
+
+    /*   let queryMudaEmpresa = `update meso_contatos set id_empresa = ${idEmpresa} where telefone = '${waId}'`
+       console.log('queryMudaEMpresa', queryMudaEmpresa)
+   
+       await executaQry(queryMudaEmpresa)
+       */
+    console.log('besteirinhas', quantNum, 'e', estado)
     if (quantNum >= 1 && estado != 'Concluído') {
 
 
@@ -174,10 +186,27 @@ app.post("/webhooks", async (req, res) => {
                     let msg = mensagem.text.body;
                     let nome = tudo.entry[0].changes[0].value.contacts[0].profile.name;
                     let waId = tudo.entry[0].changes[0].value.contacts[0].wa_id;
+
+                    let telEmpresa = tudo.entry[0].changes[0].value.metadata.display_phone_number
+
                     let messageId = mensagem.id;
                     let timestamp = parseInt(mensagem.timestamp);
                     let agora = Math.floor(Date.now() / 1000);
                     let message_id_resposta = mensagem.context ? true : false;
+
+                    let pegaEmpresa = `select id_empresa, telefone from meso_contatos where telefone = '${waId}'`
+                    console.log('velinho de barba', pegaEmpresa)
+                    let arrayID = await executaQry(pegaEmpresa)
+
+                    let empresa = arrayID.dados[0].id_empresa
+                    let wpnumber = arrayID.dados[0].telefone
+
+
+                    let arrayWpp = `select wpp_id from meso_empresas where id_empresa = '${empresa}'`
+
+                    let whatId = await executaQry(arrayWpp)
+                    console.log('vida e viver', whatId.dados[0].wpp_id)
+                    let wpp_id = whatId.dados[0].wpp_id
 
                     // 👉 verifica IA
 
@@ -189,6 +218,14 @@ app.post("/webhooks", async (req, res) => {
 
                         console.log('🤖 IA ativada para', waId);
 
+                        let buscaThread = await executaQry(`
+SELECT thread_id 
+FROM meso_contatos 
+WHERE telefone = '${waId}' and id_empresa = '${idEmpresa}'
+    `);
+
+                        let threadId = buscaThread.dados[0]?.thread_id || null;
+
                         const msgLower = msg.toLowerCase();
                         const querHumano =
                             msgLower.includes("falar com atendente") ||
@@ -199,29 +236,51 @@ app.post("/webhooks", async (req, res) => {
 
                         if (querHumano) {
                             await executaQry(`UPDATE meso_contatos SET atendimento_ai = 0 WHERE telefone = '${waId}'`);
-                            await send(waId, "Certo, vou te transferir para um de nossos atendentes. Um momento...", "Bot-PlugPhone", res, io);
+                            await send(waId, "Certo, vou te transferir para um de nossos atendentes. Um momento...", "Bot-PlugPhone", wpp_id, telEmpresa);
                             return res.sendStatus(200);
-                            ;
                         }
 
-                        let qry55 = `INSERT INTO meso_mensagens_solicitante 
-                        (nome, whatsappid, mensagem, telefone, type, visualizacao, message_id, id_empresa) 
-                        VALUES ('${nome}', '${waId}','${msg}','${waId}','${type}', 'not read', '${messageId}','${idEmpresa}');`;
+                        // Registrar mensagem
+                        let qry55 = `
+        INSERT INTO meso_mensagens_solicitante 
+        (nome, whatsappid, mensagem, telefone, wpnumber, type, visualizacao, message_id, id_empresa) 
+        VALUES ('${nome}', '${waId}', '${msg}', '${waId}','${telEmpresa}', '${type}', 'not read', '${messageId}', '${idEmpresa}');
+    `;
+
+                        console.log('teyrubitou', qry55)
                         await executaQry(qry55);
 
-                        if (!global.sessions) global.sessions = {};
-                        const result = await plugBot(msg, global.sessions[waId]);
-                        global.sessions[waId] = result.session;
-
-                        if (result.reply == 'Caso precise de mais alguma coisa, estou à disposição para ajudar.') {
-                            await executaQry(`UPDATE meso_contatos SET atendimento_ai = 0 WHERE telefone = '${waId}'`);
-
+                        // Enviar para NIA
+                        const { reply, threadId: novoThread } = await sendToNia({
+                            message: msg,
+                            threadId
+                        });
+                        console.log('sessão nostalgia', reply)
+                        // Atualizar thread
+                        if (!threadId && novoThread) {
+                            await executaQry(`
+            UPDATE meso_contatos 
+            SET thread_id = '${novoThread}' 
+            WHERE telefone = '${waId}'
+        `);
                         }
 
-                        await send(waId, result.reply, "Bot-PlugPhone", res, io);
+                        // Finalizar IA se identificar término
+                        if (reply.includes("concluídas") || reply.includes("Perfeito")) {
+                            await executaQry(`
+            UPDATE meso_contatos 
+            SET atendimento_ai = 0 
+            WHERE telefone = '${waId}'
+        `);
+                        }
+
+                        // *** AQUI FALTAVA! ***
+                        //                                await send(to, body, nome, res, wpp_id, wpnumber)
+
+                        await send(waId, reply, "Bot-PlugPhone", res, wpp_id, telEmpresa);
                         return res.sendStatus(200);
-                        ;
                     }
+
 
                     if (agora - timestamp > 10) return res.sendStatus(200);
                     ;
@@ -236,8 +295,10 @@ app.post("/webhooks", async (req, res) => {
                     }
 
                     qry = `INSERT INTO meso_mensagens_solicitante 
-                        (nome, whatsappid, mensagem, telefone, type, visualizacao, message_id, id_empresa) 
-                        VALUES ('${nome}', '${waId}','${msg}','${waId}','${type}', 'not read', '${messageId}','${idEmpresa}');`;
+                        (nome, whatsappid, mensagem, telefone,wpnumber, type, visualizacao, message_id, id_empresa) 
+                        VALUES ('${nome}', '${waId}','${msg}','${waId}','${telEmpresa}','${type}', 'not read', '${messageId}','${idEmpresa}');`;
+                    console.log('TA ERRADO CHEFE?', qry)
+
                     await executaQry(qry);
 
                     let qry1 = `SELECT MAX(id) as id FROM meso_mensagens_solicitante WHERE telefone = ${waId}`;
@@ -245,10 +306,13 @@ app.post("/webhooks", async (req, res) => {
 
                     // VERIFICA se o contato existe
                     let qry5 = `SELECT COUNT(*) as contatoExiste FROM meso_contatos WHERE nome = '${nome}';`;
+                    console.log('chapei?', qry5)
+
+                    console.log('LUFFY O MEU CHAPÉU EU VOU TE ENTREGAR',)
                     let contatoExisteArray = await executaQry(qry5);
                     let contatoExiste = contatoExisteArray.dados[0].contatoExiste;
 
-                    let qry4 = `update meso_contatos set estado = 'Aguardando Atendimento' where telefone like '%${waId}%';`
+                    let qry4 = `update meso_contatos set estado = 'Aguardando Atendimento' where telefone like '%${waId}%' and id_empresa = '${idEmpresa}' ; `
                     ////////console.log('veia chata', qry4)
                     await executaQry(qry4)
 
@@ -259,12 +323,13 @@ app.post("/webhooks", async (req, res) => {
                             SELECT '${nome}', '${waId}', '${idEmpresa}'
                             FROM DUAL
                             WHERE NOT EXISTS (
-                                SELECT 1 FROM meso_contatos WHERE telefone = '${waId}'
+                                SELECT 1 FROM meso_contatos WHERE telefone = '${waId}' and id_empresa = ${idEmpresa}
                             );`;
+                        console.log('sucker for pain', qry4)
                         await executaQry(qry4);
                     }
 
-                    let salva = { "msg": msg, "tel": waId };
+                    let salva = { "msg": msg, "tel": waId, "idEmpresa": idEmpresa };
                     await api.post("/atualizacontato", salva);
 
                     const agoraTempo = new Date();
@@ -290,6 +355,7 @@ app.post("/webhooks", async (req, res) => {
 
                     emitMensagem(io, nome, msg, waId);
 
+                    console.log("Mamute pequenino ", msgEnviada);
 
                     io.emit('receive-message', [
                         msgEnviada.telefone,
@@ -360,12 +426,12 @@ app.post("/webhooks", async (req, res) => {
 
                     if (mandaToken.dados[0].usuario == null || mandaToken.dados[0].usuario == "") {
                         pegatokenfire(msg, nome, null, mandaToken.dados[0].setor, waId, io)
-                        pegatokenfireMobile(msg, nome, null, mandaToken.dados[0].setor)
-                        ////////console.log("me retorna aqui usuario nulo");
+                        pegatokenfireMobile(msg, nome, null, mandaToken.dados[0].setor, waId)
+                        console.log("me retorna aqui usuario nulo");
                     } else {
                         pegatokenfire(msg, nome, mandaToken.dados[0].usuario, null, waId, io)
-                        pegatokenfireMobile(msg, nome, mandaToken.dados[0].usuario, null)
-                        ////////console.log("me retorna aqui setor");
+                        pegatokenfireMobile(msg, nome, mandaToken.dados[0].usuario, null, waId)
+                        console.log("me retorna aqui setor");
                     }
 
                     ////////console.log("Depois me mostre", mandaToken.dados[0].usuario, mandaToken.dados[0].setor)
@@ -384,6 +450,8 @@ app.post("/webhooks", async (req, res) => {
                     let msg = mensagem.button.text;
                     let nome = tudo.entry[0].changes[0].value.contacts[0].profile.name;
                     let waId = tudo.entry[0].changes[0].value.contacts[0].wa_id;
+                    let telEmpresa = tudo.entry[0].changes[0].value.metadata.display_phone_number
+
                     let messageId = mensagem.id;
                     let timestamp = parseInt(mensagem.timestamp);
                     let agora = Math.floor(Date.now() / 1000);
@@ -401,9 +469,10 @@ app.post("/webhooks", async (req, res) => {
                     // INSERE A MENSAGEM NO BANCO
                     let qry = `
                         INSERT INTO meso_mensagens_solicitante 
-                        (nome, whatsappid, mensagem, telefone, type, message_id, id_empresa) 
-                        VALUES ('${nome}', '${waId}','${msg}','${waId}','${type}', '${messageId}','${idEmpresa}');
+                        (nome, whatsappid, mensagem, telefone,wpnumber, type, message_id, id_empresa) 
+                        VALUES ('${nome}', '${waId}','${msg}','${waId}','${telEmpresa}','${type}', '${messageId}','${idEmpresa}');
                     `;
+                    console.log('vc me sente?', qry)
                     await executaQry(qry);
 
                     let verSetorqry = `select setor from meso_contatos where telefone = '${waId}'`
@@ -411,6 +480,12 @@ app.post("/webhooks", async (req, res) => {
 
                     let getSetor = verSetor.dados[0].setor
                     // ATUALIZA SETOR COM BASE NO BOTÃO
+                    let getId = `select id_empresa from meso_contatos where telefone = '${waId}'`
+                    console.log('velinho de barba', getId)
+                    let id_empresaArray = await executaQry(getId)
+
+                    let id_empresa = id_empresaArray.dados[0].id_empresa
+                    console.log('eu sou o idEmpresa', id_empresa)
                     ////////console.log('ver Setor', getSetor)
                     let verificaAtendimento = await executaQry(`
   SELECT id FROM meso_atendimentos 
@@ -423,10 +498,11 @@ app.post("/webhooks", async (req, res) => {
 
                         let qryInsert = `
     INSERT INTO meso_atendimentos 
-      (id_contato, telefone, setor_origem, setor_atual, canal, status, data_inicio, ultima_mensagem, criado_por, atualizado_em)
+      (id_contato, telefone, id_empresa,setor_origem, setor_atual, canal, status, data_inicio, ultima_mensagem, criado_por, atualizado_em)
     VALUES (
       (SELECT id FROM meso_contatos WHERE telefone = '${waId}' LIMIT 1),
       '${waId}',
+      '${id_empresa}',
       'Bot',
       '${msg}',
       'WhatsApp',
@@ -467,30 +543,59 @@ app.post("/webhooks", async (req, res) => {
                     }
 
                     // INÍCIO DO ATENDIMENTO IA
-                    if (msg.toLowerCase().includes("técnico") || msg.toLowerCase().includes("tecnico")) {
+                    if (
+                        msg.toLowerCase().includes("técnico") ||
+                        msg.toLowerCase().includes("tecnico") ||
+                        msg.toLowerCase().includes("comercial") ||
+                        msg.toLowerCase().includes("financeiro")
+                    ) {
+                        console.log("📌 Cliente selecionou um setor.");
 
-                        // ativa IA no banco
-                        await executaQry(`UPDATE meso_contatos SET atendimento_ai = 1 WHERE telefone = '${waId}'`);
+                        // identificar setor
+                        let setor = "geral";
+                        if (msg.toLowerCase().includes("técnico") || msg.toLowerCase().includes("tecnico")) setor = "técnico";
+                        if (msg.toLowerCase().includes("comercial")) setor = "comercial";
+                        if (msg.toLowerCase().includes("financeiro")) setor = "financeiro";
 
-                        // mensagem de boas-vindas
-                        console.log('sai do óbivio, cheguei no deveria ia atender')
-                        // IA responde normalmente se não for pedido de humano
-                        if (!global.sessions) global.sessions = {};
-                        const result = await plugBot(msg, global.sessions[waId]);
-                        global.sessions[waId] = result.session;
-                        console.log('sou resultado', result)
-                        await send(waId, result.reply, "Bot-PlugPhone", res, io);
+                        // 1) Ativa IA
+                        await executaQry(`
+        UPDATE meso_contatos 
+        SET atendimento_ai = 1, setor='${setor}'
+        WHERE telefone = '${waId}' AND id_empresa = '${idEmpresa}'
+    `);
+
+                        let buscaThread = await executaQry(`
+SELECT thread_id 
+FROM meso_contatos 
+WHERE telefone = '${waId}' and id_empresa = '${idEmpresa}'
+    `);
+
+                        let threadId = buscaThread.dados[0]?.thread_id || null;
+
+                        console.log('vish', threadId)
+
+                        if (msg == 'Comercial') {
+                            console.log('entrei no comercial')
+                            await sendToNia({
+                                message: 'ativar modo comercial',
+                                threadId
+                            });
+                        }
+
+
+                        // ⚠️ IMPORTANTE: NÃO CHAMA A NIA AQUI!
+                        // Agora o próximo texto do cliente cairá no bloco (iaAtiva && iaPodeResponder)
+
                         return res.sendStatus(200);
-                        ;
-
-                        return res.sendStatus(200);
-                        ; // interrompe o fluxo e evita cair no atendimento humano
                     }
+
+
 
                     //////console.log("Mensagens vindas da API", msg);
 
                     // VERIFICA SE O CONTATO JÁ EXISTE
-                    let qry5 = `SELECT COUNT(*) as contatoExiste FROM meso_contatos WHERE nome = '${nome}';`;
+                    let qry5 = `SELECT COUNT(*) as contatoExiste FROM meso_contatos WHERE nome = '${nome}'  and id_empresa = '${idEmpresa}';`;
+                    console.log('chapei?', qry5)
                     let contatoExisteArray = await executaQry(qry5);
                     let contatoExiste = contatoExisteArray.dados[0].contatoExiste;
 
@@ -502,8 +607,9 @@ app.post("/webhooks", async (req, res) => {
 SELECT '${nome}', '${waId}','${idEmpresa}'
 FROM DUAL
 WHERE NOT EXISTS (
-    SELECT 1 FROM meso_contatos WHERE telefone = '${waId}'
+    SELECT 1 FROM meso_contatos WHERE telefone = '${waId}' and id_empresa = ${idEmpresa}
 );`;
+                        console.log('sucker for pain', qry4)
                         await executaQry(qry4);
                     }
 
@@ -614,6 +720,7 @@ WHERE NOT EXISTS (
             }
             else if (tudo.entry[0].changes[0].value.messages[0].type == 'image') {
                 try {
+                    console.log('cheguei aqui  narutin')
                     let mensagem = tudo.entry[0].changes[0].value.messages[0];
                     let produto = tudo.entry[0].changes[0].value;
 
@@ -621,6 +728,8 @@ WHERE NOT EXISTS (
                     let msg = mensagem.image.id;
                     let nome = tudo.entry[0].changes[0].value.contacts[0].profile.name;
                     let waId = tudo.entry[0].changes[0].value.contacts[0].wa_id;
+                    let telEmpresa = tudo.entry[0].changes[0].value.metadata.display_phone_number
+
                     let messageId = mensagem.id;
                     let timestamp = parseInt(mensagem.timestamp);
                     let agora = Math.floor(Date.now() / 1000);
@@ -638,9 +747,11 @@ WHERE NOT EXISTS (
                     // INSERE NO BANCO
                     let qry = `
                         INSERT INTO meso_mensagens_solicitante 
-                        (nome, whatsappid, mensagem, telefone, type, message_id, id_empresa) 
-                        VALUES ('${nome}', '${waId}','${msg}.jpeg','${waId}','${type}', '${messageId}','${idEmpresa}');
+                        (nome, whatsappid, mensagem, wpnumber,telefone,  type, message_id, id_empresa) 
+                        VALUES ('${nome}', '${waId}','${msg}.jpeg','${telEmpresa}','${waId}','${type}', '${messageId}','${idEmpresa}');
                     `;
+
+                    console.log('é o fim?', qry)
                     await executaQry(qry);
 
                     // PEGA URL DA IMAGEM
@@ -784,6 +895,8 @@ WHERE NOT EXISTS (
                     let msg = mensagem.audio.id;
                     let nome = tudo.entry[0].changes[0].value.contacts[0].profile.name;
                     let waId = tudo.entry[0].changes[0].value.contacts[0].wa_id;
+                    let telEmpresa = tudo.entry[0].changes[0].value.metadata.display_phone_number
+
                     let messageId = mensagem.id;
                     let timestamp = parseInt(mensagem.timestamp);
                     let agora = Math.floor(Date.now() / 1000);
@@ -798,12 +911,14 @@ WHERE NOT EXISTS (
                     if (check.dados[0].jaExiste > 0) return res.sendStatus(200);
                     ;
 
+
                     // INSERE NO BANCO
                     let qry = `
                         INSERT INTO meso_mensagens_solicitante 
-                        (nome, whatsappid, mensagem, telefone, type, message_id, id_empresa) 
-                        VALUES ('${nome}', '${waId}','${msg}.mp3','${waId}','${type}', '${messageId}','${idEmpresa}');
+                        (nome, whatsappid, mensagem, wpnumber, telefone, type, message_id, id_empresa) 
+                        VALUES ('${nome}', '${waId}','${msg}.mp3','${telEmpresa}', '${waId}','${type}', '${messageId}','${idEmpresa}');
                     `;
+                    console.log('bolsonaro segue preso', qry)
                     await executaQry(qry);
 
                     // PEGA A URL DO ÁUDIO
@@ -829,7 +944,7 @@ WHERE NOT EXISTS (
 
                         let salva = { "msg": "audio", "tel": waId };
                         await api.post("atualizacontato", salva);
-                        let qry4 = `update meso_contatos set estado = 'Aguardando Atendimento' where telefone like '%${waId}%';`
+                        let qry4 = `update meso_contatos set estado = 'Aguardando Atendimento' where telefone like '%${waId}%' and id_empresa = '${idEmpresa}';`
                         ////////console.log('veia chata', qry4)
                         await executaQry(qry4)
 
@@ -954,7 +1069,7 @@ WHERE NOT EXISTS (
 
                     let fileName = tudo.entry[0].changes[0].value.messages[0].document.filename; // ex: "contrato.v1.final.pdf"
                     let extensao = fileName.substring(fileName.lastIndexOf(".") + 1);
-                    qry = `insert into meso_mensagens_solicitante (nome, whatsappid, mensagem, telefone, type ) VALUES ('${nome}', '${waId}','https://meso.plugphone.cloud:4444/midia/${msg}.${extensao}','${waId}','${type}');`
+                    qry = `insert into meso_mensagens_solicitante (nome, whatsappid, mensagem, telefone, wpnumber, type ) VALUES ('${nome}', '${waId}','https://meso.plugphone.cloud:4444/midia/${msg}.${extensao}','${waId}','${telEmpresa}','${type}');`
                     //////console.log('Satoru gojo', qry)
                     executaQry(qry)
 
@@ -962,12 +1077,13 @@ WHERE NOT EXISTS (
                     //////console.log(a.data);
                     let url = a.data.url;
                     ////console.log('MÃE SOLTEIRA', url)
+
                     let bodyImage = {
                         "url": url,
                         "id": msg,
                         "extensao": extensao
                     };
-                    let qry4 = `update meso_contatos set estado = 'Aguardando Atendimento', ultimamsg = 'documento' where telefone like '%${waId}%';`
+                    let qry4 = `update meso_contatos set estado = 'Aguardando Atendimento', ultimamsg = 'documento' where telefone like '%${waId}%' and id_empresa = '${idEmpresa}';`
                     await executaQry(qry4)
                     await api.post(`/geraDocument/`, bodyImage);
                     emitMensagem(io, nome, `Link do documento: \nhttps://meso.plugphone.cloud:4444/midia/${msg}.${extensao}`, waId)
@@ -1018,6 +1134,8 @@ WHERE NOT EXISTS (
         let msg = mensagem?.text?.body || "";
         let nome = tudo.entry[0].changes[0].value.contacts[0].profile.name;
         let waId = tudo.entry[0].changes[0].value.contacts[0].wa_id;
+        let telEmpresa = tudo.entry[0].changes[0].value.metadata.display_phone_number
+
         let messageId = mensagem.id;
         let timestamp = parseInt(mensagem.timestamp);
         let agora = Math.floor(Date.now() / 1000);
@@ -1033,12 +1151,13 @@ WHERE NOT EXISTS (
         ;
 
         let qry = `INSERT INTO meso_mensagens_solicitante 
-        (nome, whatsappid, mensagem, telefone, type, visualizacao, message_id) 
-        VALUES ('${nome}', '${waId}','${msg}','${waId}','${type}', '${visualização}', '${messageId}');`;
+        (nome, whatsappid, mensagem, telefone,wpnumber, type, visualizacao, message_id) 
+        VALUES ('${nome}', '${waId}','${msg}','${waId}','${telEmpresa}','${type}', '${visualização}', '${messageId}');`;
         await executaQry(qry);
         //buscarMensagem();
         //////console.log('me mostra qry',qry)
-        let qry5 = `select count(*) as contatoExiste from meso_contatos where nome = '${nome}';`
+        let qry5 = `select count(*) as contatoExiste from meso_contatos where nome = '${nome}'  and id_empresa = '${idEmpresa}';`
+        console.log('chapei?', qry5)
 
         ////////////console.log(qry5)
         let contatoExisteArray = await executaQry(qry5)
@@ -1047,7 +1166,7 @@ WHERE NOT EXISTS (
 
 
         ////////////console.log('Eu sou o contatoExiste', contatoExiste)
-        let qry4 = `update meso_contatos set estado = 'Aguardando Atendimento' where telefone like '%${waId}%';`
+        let qry4 = `update meso_contatos set estado = 'Aguardando Atendimento' where telefone like '%${waId}%' and id_empresa = '${idEmpresa}';`
         ////////console.log('veia chata', qry4)
         await executaQry(qry4)
 
@@ -1156,12 +1275,32 @@ WHERE NOT EXISTS (
             SELECT '${nome}', '${waId}','${idEmpresa}'
                 FROM DUAL
             WHERE NOT EXISTS (
-            SELECT 1 FROM meso_contatos WHERE telefone = '${waId}'
+            SELECT 1 FROM meso_contatos WHERE telefone = '${waId}' and id_empresa = ${idEmpresa}
                 );`;
+            console.log('sucker for pain', qry4)
             await executaQry(qry4);
         }
 
-        sendTemplateMenu(numeroWhatsapp, template, res)
+        //let arrayID = await api.get(`/pegaIdEmpresa/${numRecebe}`)
+
+        let pegaEmpresa = `select id_empresa from meso_contatos where telefone = '${waId}'`
+        console.log('velinho de barba', pegaEmpresa)
+        let arrayID = await executaQry(pegaEmpresa)
+
+        let empresa = arrayID.dados[0].id_empresa
+
+
+        let arrayWpp = `select wpp_id from meso_empresas where id_empresa = '${idEmpresa}'`
+
+        let whatId = await executaQry(arrayWpp)
+        console.log('vida e viver', whatId.dados[0].wpp_id)
+        let wpp_id = whatId.dados[0].wpp_id
+
+        console.log('maira', numeroWhatsapp, template, wpp_id)
+
+        console.log('legends never dies', numeroWhatsapp, template, wpp_id, idEmpresa)
+
+        sendTemplateMenu(numeroWhatsapp, template, res, wpp_id, telEmpresa, idEmpresa)
 
     }
     res.status(200).end()
@@ -1210,7 +1349,15 @@ app.post("/send", async (req, res) => {
     let to = req.body.to
     let body = req.body.body
     let nome = req.body.nome
-    ////console.log('dificil heim kkkkkkk', to, body, nome)
+    let id_empresa = req.body.idEmpresa
+
+    let qry = `select wpp_id, telefone from meso_empresas where id_empresa = '${id_empresa}'`
+    console.log('irritado', qry)
+    let wpp = await executaQry(qry)
+    let wpp_id = wpp.dados[0].wpp_id
+    let wpnumber = wpp.dados[0].telefone
+
+    console.log('dificil heim kkkkkkk', to, body, nome, wpp_id, wpnumber)
     let palavrao = await verificaPalavrao(body)
     ////console.log('palavrão nãokkkkkkk', palavrao)
     if (palavrao) {
@@ -1219,9 +1366,21 @@ app.post("/send", async (req, res) => {
         res.json({ "dados": "mensagem não tolerada" });
     } else {
         //////////console.log('passei mesmo kkkkk')
-        send(to, body, nome, res, io)
-        let qry = `update meso_contatos set ultimamsg = '${body}' where telefone = ${to}`
-        //////console.log('eu sou a ultimamsg', qry)
+
+
+        /*
+                let qry1 = `
+            UPDATE meso_contatos 
+            SET atendimento_ai = 0
+            WHERE telefone = '${to}' and id_empresa = '${id_empresa}'
+          `;
+        
+                console.log('opaaaaa vamo q vamo', qry1)
+                await executaQry(qry1)
+        */
+        await send(to, body, nome, res, wpp_id, wpnumber)
+        let qry = `update meso_contatos set ultimamsg = '${body}' where telefone = ${to} and id_empresa = '${id_empresa}'`
+        console.log('eu sou a ultimamsg', qry)
         await executaQry(qry)
 
 
@@ -1268,6 +1427,7 @@ app.post("/sendaudio", async (req, res) => {
 
 
 app.post("/sendtemplate", async (req, res) => {
+
 
     let to = req.body.to
     let name = 'boas_vindas_plugphone'
@@ -1408,6 +1568,11 @@ app.post('/registrar-token-mobile', async (req, res) => {
 
 });
 
+app.post('/transcrever-audio', async (req, res) => {
+    audioGpt();
+    res.json("Foi")
+});
+
 app.get('/public_key', (req, res) => {
     res.json({ publicKey: publicVapidKey });
 });
@@ -1526,7 +1691,7 @@ let pegatokenfire = async function (mensagem, nome, usuario, setor, telefone, io
 
 
 
-let pegatokenfireMobile = async function (mensagem, nome, usuario, setor) {
+let pegatokenfireMobile = async function (mensagem, nome, usuario, setor, telefone) {
     try {
         // 1. Buscar tokens do banco
         let qry = `
@@ -1538,7 +1703,7 @@ let pegatokenfireMobile = async function (mensagem, nome, usuario, setor) {
 `;
 
         let resultado = await executaQry(qry);
-        //console.log('🔍 Consulta executada:', qry);
+        console.log('🔍 Consulta executada:', qry);
 
         if (!Array.isArray(resultado.dados) || resultado.dados.length === 0) {
             ////console.log('⚠️ Nenhum token encontrado');
@@ -1566,16 +1731,16 @@ let pegatokenfireMobile = async function (mensagem, nome, usuario, setor) {
         // 3. Enviar notificações em lotes
         for (let i = 0; i < tokens.length; i += MAX_TOKENS) {
             const tokenBatch = tokens.slice(i, i + MAX_TOKENS);
-
+            console.log("Olha meus tokens aqui", tokenBatch)
             const multicastMessage = {
                 notification: {
                     title: nome,
                     body: mensagem,
                 },
                 data: {
-                    nome: 'Matheus',
-                    telefone: '553196472282',
-                    usuario: "Matheus",
+                    nome: nome,
+                    telefone: telefone,
+                    usuario: usuario,
                 },
                 android: {
                     priority: 'high',
@@ -1601,7 +1766,8 @@ let pegatokenfireMobile = async function (mensagem, nome, usuario, setor) {
 
             const response = await admin.messaging().sendEachForMulticast(multicastMessage);
 
-            ////console.log(`✅ Enviado lote de ${ tokenBatch.length } tokens - Sucesso: ${ response.successCount }, Falha: ${ response.failureCount } `);
+            console.log(`✅ Enviado lote de ${tokenBatch.length} tokens - Sucesso: ${response.successCount}, Falha: ${response.failureCount} `);
+            console.log("Minha responser", response)
 
             // 4. Tratar falhas
             if (response.failureCount > 0) {
@@ -1611,25 +1777,29 @@ let pegatokenfireMobile = async function (mensagem, nome, usuario, setor) {
                         const errCode = res.error?.code || 'unknown';
                         const errMsg = res.error?.message || 'Mensagem desconhecida';
 
-                        //console.warn(`⚠️ Falha no token: ${ failedToken } → ${ errCode } - ${ errMsg } `);
+                        console.warn(`⚠️ Falha no token: ${failedToken}`);
+                        console.warn(`   ↳ Código do erro: ${errCode}`);
+                        console.warn(`   ↳ Detalhes: ${errMsg}`);
 
                         if (errCode === 'messaging/registration-token-not-registered') {
-                            ////console.log(`🗑️ Limpando token inválido: ${ failedToken } `);
+                            console.log(`🗑️ Limpando token inválido: ${failedToken}`);
 
                             let removeQry = `
                                 UPDATE meso_usuariologin 
                                 SET token = CASE WHEN token = '${failedToken}' THEN '' ELSE token END,
-    tokenMobile = CASE WHEN tokenMobile = '${failedToken}' THEN '' ELSE tokenMobile END
+                                    tokenMobile = CASE WHEN tokenMobile = '${failedToken}' THEN '' ELSE tokenMobile END
                                 WHERE token = '${failedToken}' OR tokenMobile = '${failedToken}';
-`;
+                            `;
                             await executaQry(removeQry);
                         }
                     }
                 }));
             }
+
         }
     } catch (error) {
-        //console.error("🔥 Erro geral ao enviar notificações:", error.message);
-        //console.error("📄 Detalhes completos:", error);
+        console.error("🔥 Erro geral ao enviar notificações:", error.message);
+        console.error("📄 Detalhes completos:", error);
     }
 };
+

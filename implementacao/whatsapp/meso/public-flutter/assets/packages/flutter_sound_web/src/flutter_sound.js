@@ -150,7 +150,7 @@ function getRecordURL( aPath,)
                 myStorage = window.localStorage;
         } else
         {
-                myStorage = window.sessionStorage;
+                myStorage = window.localStorage;
         }
 
         var url = myStorage.getItem(path);

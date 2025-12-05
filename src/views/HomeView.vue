@@ -118,10 +118,10 @@ export default {
       console.log('bate foge bate foge', this.telefone)
 
       let authBody = {
-        "usuario": this.usuario,
+        "usuario": `${this.usuario}`,
         "telefone": this.telefone
       }
-      let geraCódigo = await api.post(`/gera-codigo`, authBody)
+      let geraCódigo = await api.post(`/gera-codigo `, authBody)
       console.log(geraCódigo)
 
       this.openDialogAuth = true
@@ -154,18 +154,20 @@ export default {
           this.$store.state.adm = res.data.tipo == "admin";
 
           this.$store.state.ramal = res.data.ramal;
+          this.$store.state.id_empresa = res.data.id_empresa;
           let usu = {
             usuario: this.usuario,
             pin: res.data.token,
             tipo: res.data.tipo,
             ramal: res.data.ramal,
+            id_empresa: res.data.id_empresa
           };
 
           console.log('usuario de java credo', usu)
           this.$store.dispatch('insereUsuario', usu)
           localStorage.setItem("usu", JSON.stringify(usu));
-          localStorage.setItem("jwt", this.$store.state.token);
-
+          sessionStorage.setItem("jwt", this.$store.state.token);
+          sessionStorage.setItem("lastActivity", Date.now());
           api.defaults.headers.common[
             "x-access-token"
           ] = this.$store.state.token;
@@ -178,7 +180,8 @@ export default {
           this.error = true;
         }
         if (res.data.tipo == "vendedor") {
-          localStorage.setItem("jwt", this.$store.state.token);
+          sessionStorage.setItem("jwt", this.$store.state.token);
+          sessionStorage.setItem("lastActivity", Date.now());
           api.defaults.headers.common[
             "x-access-token"
           ] = this.$store.state.token;

@@ -110,7 +110,7 @@ class SocketController {
 
         if (evt.dialstatus == 'ANSWER') {
           //console.log('entrando no banco Meso_detalhe')
-          let qry = `update meso_detalhe_sainte set estado = 'atendida' where uniqueid = '${evt.uniqueid}';`
+          let qry = `update meso_detalhe_sainte set estado = 'atendida' where uniqueid = '${evt.destuniqueid}';`
           //console.log('1 dado gravado ou atualizado, complete',qry)
           await executaQry(qry)
 
@@ -128,11 +128,11 @@ class SocketController {
         }
 
         //console.log('entrando no banco Meso_detalhe')
-        let qry = `update meso_detalhe_sainte set dialend = now() where uniqueid = '${evt.uniqueid}';`
+        let qry = `update meso_detalhe_sainte set dialend = now() where uniqueid = '${evt.destuniqueid}';`
         console.log('1 dado gravado ou atualizado, complete', qry)
         await executaQry(qry)
 
-        let qry2 = `update meso_dial set terminochamada = now(), dialstatus = '${evt.dialstatus}' where uniqueid= '${evt.uniqueid}'`
+        let qry2 = `update meso_dial set terminochamada = now(), dialstatus = '${evt.dialstatus}' where uniqueid= '${evt.destuniqueid}'`
         //console.log('dado atualizado em dial')
         await executaQry(qry2)
       }
@@ -316,7 +316,7 @@ class SocketController {
       }
       else if (evt.dialstatus == 'ANSWER') {
         //console.log('entrando no banco Meso_detalhe')
-        let qry = `update meso_detalhe_sainte set estado = 'atendida' where uniqueid = '${evt.uniqueid}';`
+        let qry = `update meso_detalhe_sainte set estado = 'atendida' where uniqueid = '${evt.destuniqueid}';`
         console.log('1 dado gravado ou atualizado, complete', qry)
         await executaQry(qry)
         let qry1 = `update meso_detalhe_sainte set teleatendente = '${evt.connectedlinenum}' where uniqueid = '${evt.uniqueid}';`
@@ -324,11 +324,11 @@ class SocketController {
         // console.log('1 dado gravado ou atualizado, complete',qry1)
         await executaQry(qry1)
       }
-      let qry = `update meso_detalhe_sainte set dialend = now() where uniqueid = '${evt.uniqueid}';`
+      let qry = `update meso_detalhe_sainte set dialend = now() where uniqueid = '${evt.destuniqueid}';`
       console.log('1 dado gravado ou atualizado, complete', qry)
       await executaQry(qry)
 
-      qry = `update meso_dial set terminochamada = now(), dialstatus = '${evt.dialstatus}' where uniqueid= '${evt.uniqueid}'`
+      qry = `update meso_dial set terminochamada = now(), dialstatus = '${evt.dialstatus}' where uniqueid= '${evt.destuniqueid}'`
       //console.log('dado atualizado em dial')
       await executaQry(qry)
     });

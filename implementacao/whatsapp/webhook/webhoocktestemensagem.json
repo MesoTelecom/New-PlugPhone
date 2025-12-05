@@ -1,3 +1,0 @@
-Query executada: SELECT * FROM meso_contatos ORDER BY datahora DESC
-Negocio aqui {"object":"whatsapp_business_account","entry":[{"id":"118701541326382","changes":[{"value":{"messaging_product":"whatsapp","metadata":{"display_phone_number":"551131646301","phone_number_id":"116793154851650"},"contacts":[{"profile":{"name":"Matheus"},"wa_id":"553196472282"}],"messages":[{"context":{"from":"551131646301","id":"wamid.HBgMNTUzMTk2NDcyMjgyFQIAERgSQTE2MjJBMTRCRjJCMTJBRUI4AA=="},"from":"553196472282","id":"wamid.HBgMNTUzMTk2NDcyMjgyFQIAEhggQUMwOTAzOTI1REM5QzhCODQ3MjNENDJCRjQ5NkRDRUEA","timestamp":"1759151986","text":{"body":"Respondido"},"type":"text"}]},"field":"messages"}]}]}
-Mensagem enviada: Matheus Respondido 553196472282

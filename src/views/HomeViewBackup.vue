@@ -102,6 +102,8 @@ export default {
           this.$store.dispatch('insereUsuario', usu)
           localStorage.setItem("usu", JSON.stringify(usu));
           localStorage.setItem("jwt", this.$store.state.token);
+          localStorage.setItem("lastActivity", Date.now());
+          this.$store.state.token);
 
           api.defaults.headers.common[
             "x-access-token"
@@ -116,6 +118,8 @@ export default {
         }
         if (res.data.tipo == "vendedor") {
           localStorage.setItem("jwt", this.$store.state.token);
+          localStorage.setItem("lastActivity", Date.now());
+          this.$store.state.token);
           api.defaults.headers.common[
             "x-access-token"
           ] = this.$store.state.token;

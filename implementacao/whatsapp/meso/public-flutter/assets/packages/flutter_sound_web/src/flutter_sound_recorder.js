@@ -110,8 +110,8 @@ class FlutterSoundRecorder {
                         myStorage = window.localStorage;
                         this.callbackTable[CB_recorder_log](this.callback, DBG, 'localStorage');
                 } else {
-                        myStorage = window.sessionStorage;
-                        this.callbackTable[CB_recorder_log](this.callback, DBG, 'sessionStorage');
+                        myStorage = window.localStorage;
+                        this.callbackTable[CB_recorder_log](this.callback, DBG, 'localStorage');
                 }
                 var oldUrl = myStorage.getItem(path);
                 if (oldUrl != null && oldUrl != '') {
@@ -147,8 +147,8 @@ class FlutterSoundRecorder {
                         myStorage = window.localStorage;
                         this.callbackTable[CB_recorder_log](this.callback, DBG, 'localStorage');
                 } else {
-                        myStorage = window.sessionStorage;
-                        this.callbackTable[CB_recorder_log](this.callback, DBG, 'sessionStorage');
+                        myStorage = window.localStorage;
+                        this.callbackTable[CB_recorder_log](this.callback, DBG, 'localStorage');
                 }
                 var oldUrl = myStorage.getItem(path);
                 if (oldUrl != null && oldUrl != '') {

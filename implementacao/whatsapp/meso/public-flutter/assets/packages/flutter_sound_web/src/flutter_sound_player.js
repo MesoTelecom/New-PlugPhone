@@ -181,8 +181,8 @@ class FlutterSoundPlayer {
                         myStorage = window.localStorage;
                         this.callbackTable[CB_player_log](this.callback, DBG, 'localStorage');
                 } else {
-                        myStorage = window.sessionStorage;
-                        this.callbackTable[CB_player_log](this.callback, DBG, 'sessionStorage');
+                        myStorage = window.localStorage;
+                        this.callbackTable[CB_player_log](this.callback, DBG, 'localStorage');
                 }
 
                 var url = myStorage.getItem(path);

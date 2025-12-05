@@ -178,43 +178,52 @@
             <v-col cols="12" md="12" style="padding: 0%;">
               <div class="messages gradient-bg" ref="messages"
                 style="margin-left: 4%;margin-right: 2%;max-height: 80vh;overflow-y: auto;">
-                <div v-for="(message, index) in messages" :key="'server-' + index" :class="{
-                  'message-requester': !message.sender.includes('-PlugPhone'),
-                  'message-agent': message.sender.includes('-PlugPhone'),
-                }">
+                <div v-for="(message, index) in messages" :key="index">
+
+                  <!-- ✅ bloco da data -->
+                  <div v-if="shouldShowDate(index)" class="date-divider">
+                    {{ formatDateLabel(message.datetime) }}
+                  </div>
+
+                  <!-- ✅ sua mensagem normal -->
                   <div :class="{
-                    buttonSender: !message.sender.includes('-PlugPhone'),
-                    button: message.sender.includes('-PlugPhone'),
-                  }" :style="{ 'text-align': message.sender.includes('-PlugPhone') ? 'end' : 'start' }">
-                    <span :class="{
-                      tituloSender: !message.sender.includes('-PlugPhone'),
-                      titulo: message.sender.includes('-PlugPhone'),
-                    }">
-                      <div><b id="tituloMsg">{{ message.sender }}:</b></div>
-                    </span>
-                    <span class="message-text">
-                      <span v-if="message.isImage">
-                        <img :src="message.text" alt="Imagem" style="max-width: 100%; height: auto;" />
-                        <br />
+                    'message-requester': !message.sender.includes('-PlugPhone'),
+                    'message-agent': message.sender.includes('-PlugPhone'),
+                  }">
 
-
+                    <div :class="{
+                      buttonSender: !message.sender.includes('-PlugPhone'),
+                      button: message.sender.includes('-PlugPhone'),
+                    }" :style="{ 'text-align': message.sender.includes('-PlugPhone') ? 'end' : 'start' }">
+                      <span :class="{
+                        tituloSender: !message.sender.includes('-PlugPhone'),
+                        titulo: message.sender.includes('-PlugPhone'),
+                      }">
+                        <div><b id="tituloMsg">{{ message.sender }}:</b></div>
                       </span>
-                      <span v-else-if="message.isAudio">
-                        <audio controls>
-                          <source :src="message.text" type="audio/mpeg" />
-                          Seu navegador não suporta o elemento de áudio.
-                        </audio>
-                      </span>
-                      <span v-else>
-                        {{ message.text }} <br />
+                      <span class="message-text">
+                        <span v-if="message.isImage">
+                          <img :src="message.text" alt="Imagem" style="max-width: 100%; height: auto;" />
+                          <br />
 
 
+                        </span>
+                        <span v-else-if="message.isAudio">
+                          <audio controls>
+                            <source :src="message.text" type="audio/mpeg" />
+                            Seu navegador não suporta o elemento de áudio.
+                          </audio>
+                        </span>
+                        <span v-else>
+                          {{ message.text }} <br />
+
+
+                        </span>
+                        <div :style="{ 'text-align': message.sender.includes('-PlugPhone') ? 'end' : 'start' }"><data
+                            style="font-size: 12px; color: #ffffff">{{ formatTime(message.datetime) }}</data>
+                        </div>
                       </span>
-                      <div :style="{ 'text-align': message.sender.includes('-PlugPhone') ? 'end' : 'start' }"><data
-                          style="font-size: 12px; color: #ffffff">{{ message.datetime
-                          }}</data>
-                      </div>
-                    </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -258,6 +267,7 @@
               </div>
             </template>
           </v-data-table>
+          <br>
 
           <!-- LISTAGEM DE ATENDIMENTOS -->
           <div class="atendimentos-list" style="margin-top: 20px;">
@@ -272,17 +282,16 @@
               </v-card-title>
 
               <v-card-text style="font-size: 13px;">
-                <div><b>Setor atual:</b> {{ atendimento.setor_atual }}</div>
                 <div><b>Setor origem:</b> {{ atendimento.setor_origem }}</div>
+
+                <div><b>Setor atual:</b> {{ atendimento.setor_atual }}</div>
                 <div v-if="atendimento.agente">
                   <b>Agente:</b> {{ atendimento.agente }}
                 </div>
                 <div v-if="atendimento.agenteTransferido">
                   <b>Agente Transferido:</b> {{ atendimento.agenteTransferido }}
                 </div>
-                <div v-if="atendimento.pendencia">
-                  <b>Pendência:</b> {{ atendimento.pendencia }}
-                </div>
+
                 <div><b>Início:</b> {{ atendimento.data_inicio }}</div>
                 <div v-if="atendimento.data_fim">
                   <b>Fim:</b> {{ atendimento.data_fim }}
@@ -290,9 +299,17 @@
                 <div v-if="atendimento.id_agente">
                   <b>Atendido por:</b> {{ atendimento.id_agente }}
                 </div>
+                <div v-if="atendimento.pendencia">
+                  <b>Pendência:</b> {{ atendimento.pendencia }}
+                </div>
+                <div style="margin-left: 25%;">
+                  <v-btn @click="enviaAtendimentos()" style="font-size: 10px;
+    background-color: white;
+    right: 45%;
+    color:#2196f3;
+    box-shadow: none;"> <b>Mais detalhes</b></v-btn>
+                </div>
               </v-card-text>
-
-
             </v-card>
           </div>
         </div>
@@ -364,7 +381,7 @@
 
 
       <v-textarea v-model="newMessage" :maxlength="500" counter @keydown.enter="handleEnter($event)"
-        placeholder="Digite uma mensagem" class="input-message"
+        placeholder="Digite uma mensagem" class="input-message" auto-grow
         style="left: 53px; bottom: 63%; width: 67%; border-radius: 1px; border-style: unset;  resize: none; overflow-y: auto;"
         rows="1"></v-textarea>
       <v-icon @click="openDialogForm = true" class="imageIcon" style="    left: 25px;
@@ -418,7 +435,7 @@
           </v-card-text>
           <v-row class="linhaBtn">
             <v-card-actions>
-              <v-btn color="primary" @click="enviaChamado">Enviar</v-btn>
+              <v-btn color="primary" @click="enviaChamado()">Enviar</v-btn>
             </v-card-actions>
             <v-card-actions>
               <v-btn color="primary" @click="OpenDialogGLPI = false">Fechar</v-btn>
@@ -769,11 +786,19 @@ export default {
     this.tipo = usuario.tipo;
     this.usuario = usuario.usuario + "-PlugPhone"
     this.ramal = usuario.ramal
+    this.id_empresa = usuario.id_empresa
     //this.idsetinterval = setInterval(() => this.buscarContato(), 5000);
     this.buscarContato(this.filtroSelecionado, "Todos");
     this.logar();
+    const token = sessionStorage.getItem("jwt");
+    console.log("Token no beforeMount:", token);
+    if (!usuario || !token) {
+      this.$router.push("/");
+      return;
+    }
 
   },
+
   async enviaChamado() {
     let chamado = {
       "name": this.nameGLPI,
@@ -835,6 +860,7 @@ export default {
       ],
       messages: [],
       dialogDetalhes: false,
+      id_empresa: "",
       offset: 0,
       pendencia: "",
       rama: "",
@@ -962,7 +988,10 @@ export default {
       console.log('sou o telefone e o wppnum', telefone, this.wppnum)
       if (telefone == this.wppnum) {
 
-        this.messages.push({ text: msg, sender: nome });
+        this.messages.push({
+          text: msg, sender: nome, datetime: new Date().toLocaleString("pt-BR")
+
+        });
         console.log('recebi!', telefone, this.wppnum);
         // this.playSound();
         this.lido(telefone);
@@ -979,7 +1008,7 @@ export default {
 
       }
       this.atendimentos = []
-      let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}`)
+      let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}/${this.id_empresa}`)
       console.log('acho que dos 60 ate o 70', atendimentoArray)
 
       this.atendimentos = atendimentoArray.data.dados
@@ -1012,7 +1041,8 @@ export default {
             text: imageUrl,
             isImage: true,
             sender: nome,
-            datetime: new Date().toLocaleString()
+            datetime: new Date().toLocaleString("pt-BR")
+
           });
         } else {
           console.error("Formato de imagem inválido ou Base64 ausente.");
@@ -1025,7 +1055,7 @@ export default {
         this.mudaEstado(telefone)
       }
       this.atendimentos = []
-      let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}`)
+      let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}/${this.id_empresa}`)
       console.log('acho que dos 60 ate o 70', atendimentoArray)
 
       this.atendimentos = atendimentoArray.data.dados
@@ -1057,7 +1087,7 @@ export default {
             text: audioUrl,
             isAudio: true,
             sender: nome,
-            datetime: new Date().toLocaleString()
+            datetime: new Date().toLocaleString("pt-BR")
           });
         } else {
           console.error("Formato de imagem inválido ou Base64 ausente.");
@@ -1069,7 +1099,7 @@ export default {
         this.mudaEstado(telefone)
       }
       this.atendimentos = []
-      let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}`)
+      let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}/${this.id_empresa}`)
       console.log('acho que dos 60 ate o 70', atendimentoArray)
 
       this.atendimentos = atendimentoArray.data.dados
@@ -1127,7 +1157,7 @@ export default {
       // console.log(this.fila)
       // console.log(filareal, pinreal);
       //Lista filas
-      let listafila = await api.get(`/listausuariotipo/${tipo}`);
+      let listafila = await api.get(`/listausuariotipo/${tipo}/${this.id_empresa}`);
       // let entrajoin = join.data.dados;
       console.log(listafila);
       let listatotalfilas = listafila.data.dados;
@@ -1171,7 +1201,8 @@ export default {
           telefone: this.novoNum,
           setor: this.setorSelect,
           email: this.novoEmail,
-          empresa: this.novoEmpresa
+          empresa: this.novoEmpresa,
+          idEmpresa: this.id_empresa
 
         }
         console.log('eu sou add', add)
@@ -1203,7 +1234,8 @@ export default {
           telefone: this.editaNum,
           setor: this.setorSelect,
           email: this.editaEmail,
-          empresa: this.editaEmpresa
+          empresa: this.editaEmpresa,
+          idEmpresa: this.id_empresa
 
         }
         console.log('eu sou edit', edit)
@@ -1243,6 +1275,10 @@ export default {
       let login = await api.get(`deslogar/${this.ramal}/${this.tipo}/${this.usuario}`)
       console.log(login)
       this.$router.push("dashboard");
+
+    },
+    async enviaAtendimentos() {
+      this.$router.push("atendimentos");
 
     },
     async ramalDigitado() {
@@ -1318,7 +1354,8 @@ export default {
       console.log('finaliza', finaliza)
       let fim = {
         telefone: this.wppnum,
-        pendencia: this.pendencia
+        pendencia: this.pendencia,
+        idEmpresa: this.id_empresa
       }
 
 
@@ -1333,7 +1370,7 @@ export default {
         this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
 
         this.atendimentos = []
-        let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}`)
+        let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}/${this.id_empresa}`)
         console.log('acho que dos 60 ate o 70', atendimentoArray)
 
         this.atendimentos = atendimentoArray.data.dados
@@ -1384,7 +1421,7 @@ export default {
         let template = await api.post("/sendtemplate", msg);
 
         this.atendimentos = []
-        let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}`)
+        let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}/${this.id_empresa}`)
         console.log('acho que dos 60 ate o 70', atendimentoArray)
 
         this.atendimentos = atendimentoArray.data.dados
@@ -1402,7 +1439,7 @@ export default {
         let template = await api.post("/sendtemplate", msg);
 
         this.atendimentos = []
-        let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}`)
+        let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}/${this.id_empresa}`)
         console.log('acho que dos 60 ate o 70', atendimentoArray)
 
         this.atendimentos = atendimentoArray.data.dados
@@ -1426,6 +1463,8 @@ export default {
 
       if (this.tipo == 'admin') {
         console.log('admin não atualiza usuario')
+        await api.get(`/paraBot/${this.wppnum}/${this.id_empresa}`)
+
       } else {
         await api.get(`/atualizausuario/${this.usuario}/${this.wppnum}`)
       }
@@ -1438,7 +1477,7 @@ export default {
       console.log('eu sou o selected contact do receiveMessage', this.selectedContact, this.wppnum);
       console
 
-      let msg = { telefone: this.wppnum };
+      let msg = { telefone: this.wppnum, idEmpresa: this.id_empresa };
       console.log('eu sou o wppnum', this.wppnum);
       this.buscarCliente();
 
@@ -1458,7 +1497,10 @@ export default {
           try {
             let imageResponse = await api.get(`/get-image/${message.mensagem}`, { responseType: 'blob' });
             let imageUrl = URL.createObjectURL(imageResponse.data);
-            allMessages.push({ text: imageUrl, datetime: message.datetime, sender: message.nome, isImage: true });
+            const fixedDate = message.datetime
+              ? new Date(message.datetime.replace(" ", "T"))
+              : new Date();
+            allMessages.push({ text: imageUrl, datetime: fixedDate.toISOString(), sender: message.nome, isImage: true });
           } catch (err) {
             console.error('Erro ao buscar imagem:', err);
           }
@@ -1467,12 +1509,18 @@ export default {
           try {
             let audioResponse = await api.get(`/get-audio/${message.mensagem}`, { responseType: 'blob' });
             let audioUrl = URL.createObjectURL(audioResponse.data);
-            allMessages.push({ text: audioUrl, datetime: message.datetime, sender: message.nome, isAudio: true });
+            const fixedDate = message.datetime
+              ? new Date(message.datetime.replace(" ", "T"))
+              : new Date();
+            allMessages.push({ text: audioUrl, datetime: fixedDate.toISOString(), sender: message.nome, isAudio: true });
           } catch (err) {
             console.error('Erro ao buscar áudio:', err);
           }
         } else {
-          allMessages.push({ text: message.mensagem, datetime: message.datetime, sender: message.nome, isImage: false, isAudio: false });
+          const fixedDate = message.datetime
+            ? new Date(message.datetime.replace(" ", "T"))
+            : new Date();
+          allMessages.push({ text: message.mensagem, datetime: fixedDate.toISOString(), sender: message.nome, isImage: false, isAudio: false });
         }
 
 
@@ -1488,6 +1536,23 @@ export default {
     }
     ,
 
+    formatTime(dateString) {
+      if (!dateString) return "";
+
+      const date = new Date(dateString);
+      if (isNaN(date)) return "";
+
+      return date.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+    }
+    ,
+
     playSound() {
 
       var audio = new Audio(require('../../src/audios/notify.wav'));
@@ -1497,26 +1562,60 @@ export default {
 
     },
 
+    formatDateLabel(dateString) {
+      const date = new Date(dateString);
+      const today = new Date();
+
+      const isToday = date.toDateString() === today.toDateString();
+      const yesterday = new Date();
+      yesterday.setDate(today.getDate() - 1);
+
+      const isYesterday = date.toDateString() === yesterday.toDateString();
+
+      if (isToday) return "HOJE";
+      if (isYesterday) return "ONTEM";
+
+      return date.toLocaleDateString("pt-BR");
+    },
+    shouldShowDate(index) {
+      if (index === 0) return true;
+
+      const currentRaw = this.messages[index].datetime;
+      const previousRaw = this.messages[index - 1].datetime;
+
+      if (!currentRaw || !previousRaw) return false;
+
+      const current = new Date(currentRaw);
+      const previous = new Date(previousRaw);
+
+      if (isNaN(current) || isNaN(previous)) return false;
+
+      return current.toLocaleDateString("pt-BR") !== previous.toLocaleDateString("pt-BR");
+    },
+
+
     async sendTemplate() {
 
       console.log('eu sou o homem de ferro', this.dados[0].nome)
 
+      console.log('levanta aguarda', this.id_empresa)
       let msg = {
         to: this.wppnum,
         name: this.name,
         usuario: this.usuario,
-        text: this.dados[0].nome
+        text: this.dados[0].nome,
+        idEmpresa: this.id_empresa
 
       };
-      let template = await api.post("/sendtemplate", msg);
+      let template = await api.post("/sendtemplate2", msg);
 
-      let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}`)
+      let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}/${this.id_empresa}`)
       console.log('acho que dos 60 ate o 70', atendimentoArray)
 
       this.atendimentos = atendimentoArray.data.dados
       console.log('Tecnologia', this.atendimentos)
       console.log(template)
-      this.messages.push({ text: "boas_vindas_plugphone", sender: this.usuario });
+      this.messages.push({ text: "Olá, tudo bem? \nAqui é da equipe da Meso Telecom. \nEstamos entrando em contato para tratar de um assunto referente ao seu atendimento. Podemos conversar por aqui?", sender: this.usuario });
     },
     async enviarMealing() {
       this.openDialogLigacao = false
@@ -1580,6 +1679,8 @@ export default {
       api.get(`/lidamsg/${this.wppnum}`);
       this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
       this.receiveMessage();
+
+
     },
     async startRecording() {
       try {
@@ -1670,7 +1771,8 @@ export default {
         let enviaAudio = {
           to: this.wppnum,
           id: pegaId,
-          usuario: this.usuario
+          usuario: this.usuario,
+          idEmpresa: this.id_empresa
         };
         await api.post("sendAudio", enviaAudio);
 
@@ -1700,7 +1802,8 @@ export default {
         let msg = {
           to: this.wppnum,
           body: `${this.usuario} \n${this.newMessage}`,
-          nome: this.usuario
+          nome: this.usuario,
+          idEmpresa: this.id_empresa
         };
         let contaMsg = await api.get(`/contaMsg/${this.wppnum}`)
 
@@ -1760,7 +1863,7 @@ export default {
 
     async buscarCliente() {
       this.atendimentos = []
-      let a = await api.get(`/buscarmealing/${this.wppnum}`);
+      let a = await api.get(`/buscarmealing/${this.wppnum}/${this.id_empresa}`);
       console.log('Vira lata Caramelo', a)
       this.dados = a.data.dados;
       console.log('eu sou os dados do cliente', this.dados)
@@ -1770,8 +1873,14 @@ export default {
       this.editaEmail = this.dados[0].email
       this.editaEmpresa = this.dados[0].empresa
 
-      let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}`)
+
+
+
+      let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}/${this.id_empresa}`)
       console.log('acho que dos 60 ate o 70', atendimentoArray)
+      this.$store.dispatch('insereWppnum', this.wppnum)
+
+      console.log('oque aconteceu com o wppnum', this.$store.state.wppnum)
 
       this.atendimentos = atendimentoArray.data.dados
       console.log('Tecnologia', this.atendimentos)
@@ -1817,7 +1926,7 @@ export default {
 
         // Envio da imagem via POST para o WhatsApp
         let enviaImg = {
-          to: this.wppnum, id: pegaId, usuario: this.usuario
+          to: this.wppnum, id: pegaId, usuario: this.usuario, idEmpresa: this.id_empresa
         };
         await api.post("sendimage", enviaImg);
 
@@ -1900,14 +2009,15 @@ export default {
           to: this.wppnum,
           id: `${caminhoLimpo}`,
           nomeArquivo: this.selectedFile.name,
-          usuario: this.usuario
+          usuario: this.usuario,
+          idEmpresa: this.id_empresa
         };
 
         console.log('eu sou o enviaDoc', enviaDoc)
         await api.post("/senddocument", enviaDoc);
 
         this.atendimentos = []
-        let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}`)
+        let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}/${this.id_empresa}`)
         console.log('acho que dos 60 ate o 70', atendimentoArray)
 
         this.atendimentos = atendimentoArray.data.dados
@@ -1944,11 +2054,13 @@ export default {
       let tel = ""
       let setorV = ""
       let usuarioV = ""
+      let id_empresav = ""
       contatosArray.forEach(e => {
 
         tel = e.telefone
         setorV = e.setor
         usuarioV = e.usuario
+        id_empresav = e.id_empresa
       });
 
       console.log('passei', tel
@@ -1957,7 +2069,7 @@ export default {
       //this.playSound()
 
 
-      if ((setorV == setor || setor == 'admin') && (usuarioV == usuario || usuarioV == null || usuarioV == "" || usuarioV == "null" || typeof usuarioV === "undefined")) {
+      if ((setorV == setor || setor == 'admin') && id_empresav == this.id_empresa && (usuarioV == usuario || usuarioV == null || usuarioV == "" || usuarioV == "null" || typeof usuarioV === "undefined")) {
         this.playSound();
       } else {
         console.log('não passei pelo if');
@@ -1986,12 +2098,10 @@ export default {
       console.log("filtro", filtro)
 
       if (this.filtroValor == "") {
-        contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/null/${offset}`);
+        contatos = await api.get(`/buscarcontatos6/${this.tipo}/${this.usuario}/${estadoContato}/null/${offset}`);
       } else {
-        contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}/${offset}`);
+        contatos = await api.get(`/buscarcontatos6/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}/${offset}`);
       }
-
-
 
       let contatosArray = contatos.data.dados;
       console.log("Esse é o contato array", contatosArray);
@@ -2111,7 +2221,7 @@ export default {
 }
 
 .v-textarea textarea {
-  background-color: white !important;
+  background-color: #ffffffc2 !important;
 }
 
 .sidebar {
@@ -2191,6 +2301,8 @@ export default {
 
 .message-text {
   word-break: break-word;
+  white-space: pre-line;
+
 }
 
 .titulo {
@@ -2295,6 +2407,17 @@ export default {
   width: 59px;
   bottom: -56%;
   position: relative;
+}
+
+.date-divider {
+  text-align: center;
+  margin-left: 45%;
+  font-size: 13px;
+  color: #000000;
+  background: rgb(159 159 159 / 62%);
+  padding: 4px 10px;
+  border-radius: 10px;
+  display: inline-block;
 }
 
 .tema {

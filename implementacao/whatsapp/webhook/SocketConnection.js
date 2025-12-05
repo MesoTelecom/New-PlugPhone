@@ -24,7 +24,6 @@ async function emitirContatosAtualizados(io, data) {
 
   const estadosValidos = [
     'Novo',
-    'Aguardando Cliente',
     'Aguardando Atendimento',
     'Concluído',
   ];
@@ -52,7 +51,6 @@ async function emitirContatosAtualizados(io, data) {
   agrupados = {
     'Todos': contatosValor.dados,
     'Novo': [],
-    'Aguardando Cliente': [],
     'Aguardando Atendimento': [],
     'Concluído': []
   };
@@ -70,7 +68,16 @@ async function emitirContatosAtualizados(io, data) {
 let socketConnection = function (io) {
   ioGlobal = io;
   io.on("connection", async (socket) => {
-    //console.log("🟢 Usuário conectado:", socket.id);
+console.log("🟢 Usuário conectado:", socket.id);
+
+	  socket.on('disconnect', (reason) => {
+		  console.log("🔴 Usuário desconectado:", socket.id, "— Motivo:", reason);
+
+	  });
+
+	  socket.on("reconnect", attempt => {
+  console.log(`🔄 Reconnectou na tentativa ${attempt}:`, socket.id)
+});
 
     socket.on("create-message", async (msg) => {
       ////console.log("📩 Nova mensagem recebida:", msg);
@@ -112,7 +119,7 @@ let socketConnection = function (io) {
       ////console.log("data aqui no buscar contato", data)
       try {
         await emitirContatosAtualizados(io, data);
-        ////console.log("OLha a data dos contatos", data)
+     console.log("OLha a data dos contatos", data)
       } catch (error) {
         ////console.error("❌ Erro ao buscar contatos:", error);
       }
@@ -184,123 +191,139 @@ let socketConnection = function (io) {
 
     socket.on("buscar-quantidade-contatos", async (data) => {
       try {
-        ////console.log("📊 Buscando quantidade de contatos para:", data.estado);
-
         let qry;
 
-        ////console.log("Mama eu", data)
-
         if (data.tipo == 'admin') {
+
           if (data.valorTexto != '' && data.valorTexto != null) {
-            qry = `
-              SELECT estado, SUM(quantContatos) AS quantContatos FROM (
-              SELECT estado, COUNT(*) AS quantContatos
-              FROM meso_contatos
-              WHERE estado IS NOT NULL and nome like '%${data.valorTexto}%'
-              GROUP BY estado
 
-              UNION ALL
-              SELECT 'Todos', COUNT(*)
-              FROM meso_contatos
-              WHERE estado IS NOT NULL and nome like '%${data.valorTexto}%'
-              UNION ALL SELECT 'Novo', 0              
-              UNION ALL SELECT 'Aguardando Atendimento', 0
-              UNION ALL SELECT 'Concluído', 0
-              ) AS dados
-              GROUP BY estado
-              ORDER BY FIELD(estado, 'Todos', 'Novo', 'Aguardando Atendimento', 'Concluído');
-              `;
+            qry = `
+          SELECT estado, SUM(quantContatos) AS quantContatos FROM (
+            SELECT estado, COUNT(*) AS quantContatos
+            FROM meso_contatos
+            WHERE estado IS NOT NULL
+              AND estado != 'Aguardando Cliente'
+              AND nome LIKE '%${data.valorTexto}%'
+            GROUP BY estado
+
+            UNION ALL
+            SELECT 'Todos', COUNT(*)
+            FROM meso_contatos
+            WHERE estado IS NOT NULL
+              AND estado != 'Aguardando Cliente'
+              AND nome LIKE '%${data.valorTexto}%'
+
+            UNION ALL SELECT 'Novo', 0
+            UNION ALL SELECT 'Aguardando Atendimento', 0
+            UNION ALL SELECT 'Concluído', 0
+          ) AS dados
+          GROUP BY estado
+          ORDER BY FIELD(estado, 'Todos', 'Novo', 'Aguardando Atendimento', 'Concluído');
+        `;
+
           } else {
+
             qry = `
-              SELECT estado, SUM(quantContatos) AS quantContatos FROM (
-              SELECT estado, COUNT(*) AS quantContatos
-              FROM meso_contatos
-              WHERE estado IS NOT NULL
-              GROUP BY estado
+          SELECT estado, SUM(quantContatos) AS quantContatos FROM (
+            SELECT estado, COUNT(*) AS quantContatos
+            FROM meso_contatos
+            WHERE estado IS NOT NULL
+              AND estado != 'Aguardando Cliente'
+            GROUP BY estado
 
-              UNION ALL
-              SELECT 'Todos', COUNT(*)
-              FROM meso_contatos
-              WHERE estado IS NOT NULL
+            UNION ALL
+            SELECT 'Todos', COUNT(*)
+            FROM meso_contatos
+            WHERE estado IS NOT NULL
+              AND estado != 'Aguardando Cliente'
 
-              UNION ALL SELECT 'Novo', 0             
-              UNION ALL SELECT 'Aguardando Atendimento', 0
-              UNION ALL SELECT 'Concluído', 0
-              ) AS dados
-              GROUP BY estado
-              ORDER BY FIELD(estado, 'Todos', 'Novo', 'Aguardando Atendimento', 'Concluído');
-              `;
+            UNION ALL SELECT 'Novo', 0
+            UNION ALL SELECT 'Aguardando Atendimento', 0
+            UNION ALL SELECT 'Concluído', 0
+          ) AS dados
+          GROUP BY estado
+          ORDER BY FIELD(estado, 'Todos', 'Novo', 'Aguardando Atendimento', 'Concluído');
+        `;
           }
+
         } else {
+          // USUÁRIO
           if (data.valorTexto != '' && data.valorTexto != null) {
+
             qry = `
-                SELECT estado, SUM(quantContatos) AS quantContatos 
-                FROM (
-                  SELECT estado, COUNT(*) AS quantContatos
-                  FROM meso_contatos
-                  WHERE estado IS NOT NULL
-                    AND (usuario like '%${data.usuario}%' OR usuario IS NULL)
-                    ${data.tipo ? `AND setor = '${data.tipo}'` : ''}
-                    ${data.valorTexto ? `AND nome LIKE '%${data.valorTexto}%'` : ''}
-                  GROUP BY estado
+          SELECT estado, SUM(quantContatos) AS quantContatos 
+          FROM (
+            SELECT estado, COUNT(*) AS quantContatos
+            FROM meso_contatos
+            WHERE estado IS NOT NULL
+              AND estado != 'Aguardando Cliente'
+              AND (usuario LIKE '%${data.usuario}%' OR usuario IS NULL)
+              ${data.tipo ? `AND setor = '${data.tipo}'` : ''}
+              AND nome LIKE '%${data.valorTexto}%'
+            GROUP BY estado
 
-                  UNION ALL
-                  SELECT 'Todos', COUNT(*)
-                  FROM meso_contatos
-                  WHERE estado IS NOT NULL
-                    AND (usuario like '%${data.usuario}%' OR usuario IS NULL)
-                    ${data.tipo ? `AND setor = '${data.tipo}'` : ''}
-                    ${data.valorTexto ? `AND nome LIKE '%${data.valorTexto}%'` : ''}
+            UNION ALL
+            SELECT 'Todos', COUNT(*)
+            FROM meso_contatos
+            WHERE estado IS NOT NULL
+              AND estado != 'Aguardando Cliente'
+              AND (usuario LIKE '%${data.usuario}%' OR usuario IS NULL)
+              ${data.tipo ? `AND setor = '${data.tipo}'` : ''}
+              AND nome LIKE '%${data.valorTexto}%'
 
-                  UNION ALL SELECT 'Novo', 0                  
-                  UNION ALL SELECT 'Aguardando Atendimento', 0
-                  UNION ALL SELECT 'Concluído', 0
-                ) AS dados
-                GROUP BY estado
-                ORDER BY FIELD(estado, 'Todos', 'Novo', 'Aguardando Atendimento', 'Concluído');
-              `;
+            UNION ALL SELECT 'Novo', 0
+            UNION ALL SELECT 'Aguardando Atendimento', 0
+            UNION ALL SELECT 'Concluído', 0
+          ) AS dados
+          GROUP BY estado
+          ORDER BY FIELD(estado, 'Todos', 'Novo', 'Aguardando Atendimento', 'Concluído');
+        `;
 
           } else {
+
             qry = `
-                SELECT estado, SUM(quantContatos) AS quantContatos FROM (
-                SELECT estado, COUNT(*) AS quantContatos
-                FROM meso_contatos
-                WHERE estado IS NOT NULL
-                AND (usuario like '%${data.usuario}%' OR usuario IS NULL)
-                ${data.tipo ? `AND setor = '${data.tipo}'` : ''}
-                GROUP BY estado
+          SELECT estado, SUM(quantContatos) AS quantContatos 
+          FROM (
+            SELECT estado, COUNT(*) AS quantContatos
+            FROM meso_contatos
+            WHERE estado IS NOT NULL
+              AND estado != 'Aguardando Cliente'
+              AND (usuario LIKE '%${data.usuario}%' OR usuario IS NULL)
+              ${data.tipo ? `AND setor = '${data.tipo}'` : ''}
+            GROUP BY estado
 
-                UNION ALL
-                SELECT 'Todos', COUNT(*)
-                FROM meso_contatos
-                WHERE estado IS NOT NULL
-                AND (usuario like '%${data.usuario}%' OR usuario IS NULL)
-                ${data.tipo ? `AND setor = '${data.tipo}'` : ''}
+            UNION ALL
+            SELECT 'Todos', COUNT(*)
+            FROM meso_contatos
+            WHERE estado IS NOT NULL
+              AND estado != 'Aguardando Cliente'
+              AND (usuario LIKE '%${data.usuario}%' OR usuario IS NULL)
+              ${data.tipo ? `AND setor = '${data.tipo}'` : ''}
 
-                UNION ALL SELECT 'Novo', 0               
-                UNION ALL SELECT 'Aguardando Atendimento', 0
-                UNION ALL SELECT 'Concluído', 0
-                ) AS dados
-                GROUP BY estado
-                ORDER BY FIELD(estado, 'Todos', 'Novo', 'Aguardando Atendimento', 'Concluído');
-                `;
+            UNION ALL SELECT 'Novo', 0
+            UNION ALL SELECT 'Aguardando Atendimento', 0
+            UNION ALL SELECT 'Concluído', 0
+          ) AS dados
+          GROUP BY estado
+          ORDER BY FIELD(estado, 'Todos', 'Novo', 'Aguardando Atendimento', 'Concluído');
+        `;
           }
         }
-        //console.log('me mostra a data esquisita', data)
-        ////console.log('me mostra o select esquisito', qry)
-
 
         const quantContatos = await executaQry(qry);
-        //console.log("Oq retorna", qry)
         io.emit("quantidade-contatos", quantContatos.dados || []);
+
       } catch (error) {
-        ////console.error("❌ Erro ao buscar quantidade de contatos:", error);
+        console.error("❌ Erro ao buscar quantidade de contatos:", error);
       }
     });
+
   });
 };
 
 module.exports = { socketConnection, buscarMensagem, emitirContatosAtualizados };
+
+
 
 
 

@@ -10,8 +10,10 @@ export default new Vuex.Store({
       pin: '',
       tipo: '',
       tokenFirebase: '',
-      ramal: ''
+      ramal: '',
+      id_empresa: ''
     },
+    wppnum: "",
     gravacaoAtual: null,
     tokenFirebase: null,
 
@@ -25,10 +27,12 @@ export default new Vuex.Store({
   mutations: {
     setUsuario(state, pay) {
       state.usuario = pay
-
     },
     setGravacaoAtual(state, pay) {
       state.gravacaoAtual = pay
+    },
+    setWppnum(state, pay) {
+      state.wppnum = pay
     }
   },
   actions: {
@@ -37,6 +41,9 @@ export default new Vuex.Store({
     },
     insereGravacaoAtual(state, pay) {
       state.commit("setGravacaoAtual", pay)
+    },
+    insereWppnum(state, pay) {
+      state.commit("setWppnum", pay)
     }
   },
   modules: {
