@@ -890,7 +890,7 @@ export default {
       idsetinterval: null,
       apiWPurl: api.defaults.baseURL,
       name: "template_plugphone2",
-      wppnum: "",
+      wppnum: "0",
       ramal: "",
       items: [
         { title: 'Click Me' },
@@ -1186,68 +1186,61 @@ export default {
     },
 
     async addContato() {
+      // limpa tudo que não for número
+      this.novoNum = this.novoNum.replace(/\D/g, '')
 
-      if (this.novoNum.length > 12) {
+      const tamanho = this.novoNum.length
+
+      if (tamanho < 12 || tamanho > 13) {
         alert(
-          "O número informado possui mais de 12 dígitos.\nVerifique se não incluiu o dígito 9 após o DDD."
+          "Número inválido.\nUse:\n• 12 dígitos (55 + DDD + número)\n• 13 dígitos (55 + DDD + 9 + número)"
         )
-      } else if (this.novoNum.length < 12) {
-        alert(
-          "O número informado possui menos de 12 dígitos.\nVerifique se adicionou o código do país (55)."
-        )
-      } else {
-        let add = {
-          nome: this.novoNome,
-          telefone: this.novoNum,
-          setor: this.setorSelect,
-          email: this.novoEmail,
-          empresa: this.novoEmpresa,
-          idEmpresa: this.id_empresa
-
-        }
-        console.log('eu sou add', add)
-        let addContatoArray = await api.post(`/cadastrarcontato`, add)
-
-        console.log('eu sou o addContatoArray', addContatoArray)
-
-        alert(addContatoArray.data.mensagem)
-
-        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
-
-        this.openDialogContato = false
+        this.openDialogContato = true
+        return
       }
+
+      let add = {
+        nome: this.novoNome,
+        telefone: this.novoNum,
+        setor: this.setorSelect,
+        email: this.novoEmail,
+        empresa: this.novoEmpresa,
+        idEmpresa: this.id_empresa
+      }
+
+      await api.post(`/cadastrarcontato`, add)
+
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+      this.openDialogContato = false
     },
 
     async editaContato() {
-      console.log('preciso ouvir, preciso ouvir, que quer viver')
-      if (this.editaNum.length > 12) {
+      this.editaNum = this.editaNum.replace(/\D/g, '')
+      const tamanho = this.editaNum.length
+
+      if (tamanho < 12 || tamanho > 13) {
         alert(
-          "O número informado possui mais de 12 dígitos.\nVerifique se não incluiu o dígito 9 após o DDD."
+          "Número inválido.\nUse:\n• 12 dígitos (55 + DDD + número)\n• 13 dígitos (55 + DDD + 9 + número)"
         )
-      } else if (this.editaNum.length < 12) {
-        alert(
-          "O número informado possui menos de 12 dígitos.\nVerifique se adicionou o código do país (55)."
-        )
-      } else {
-        let edit = {
-          nome: this.editaNome,
-          telefone: this.editaNum,
-          setor: this.setorSelect,
-          email: this.editaEmail,
-          empresa: this.editaEmpresa,
-          idEmpresa: this.id_empresa
-
-        }
-        console.log('eu sou edit', edit)
-        let editContatoArray = await api.post(`/editarcontato`, edit)
-
-        console.log('eu sou o editContatoArray', editContatoArray)
-
-        this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
-
-        this.openDialogEdita = false
+        this.openDialogEdita = true
+        return
       }
+
+      let edit = {
+        nome: this.editaNome,
+        telefone: this.editaNum,
+        setor: this.setorSelect,
+        email: this.editaEmail,
+        empresa: this.editaEmpresa,
+        idEmpresa: this.id_empresa
+      }
+
+      await api.post(`/editarcontato`, edit)
+
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+      this.openDialogEdita = false
     },
+
 
     async logar() {
       console.log('this.ramal', this.ramal, this.tipo)
@@ -1467,8 +1460,9 @@ export default {
 
       } else {
         await api.get(`/atualizausuario/${this.usuario}/${this.wppnum}`)
-      }
+        await api.get(`/paraBot/${this.wppnum}/${this.id_empresa}`)
 
+      }
 
       let a = await api.get(`/lidamsg/${this.wppnum}`,);
 

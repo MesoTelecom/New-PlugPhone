@@ -50,14 +50,8 @@ export default {
         url: '/tmr'
       },
 
-      {
-        title: 'Interação WhatsApp',
-        text: 'Interação WhatsApp',
-        img: require('@/assets/interacaozap.png'),
-        url: '/grafico'
-      },
 
-      console.log('xoxotto')
+
     ],
     transparent: 'rgba(255, 255, 255, 0)',
   }),

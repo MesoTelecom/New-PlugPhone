@@ -103,7 +103,7 @@ class ExpressController {
     this.expressAppWrapper.post('/cadastrarcontato', async (req, res) => {
       const { nome, telefone, setor, email, empresa, idEmpresa } = req.body;
 
-      let existe = await executaQry(`select exists (select 1 from meso_contatos where telefone = '${telefone}') as existe;`)
+      let existe = await executaQry(`select exists (select 1 from meso_contatos where telefone = '${telefone}' and id_empresa ='${idEmpresa}') as existe;`)
 
       if (existe.dados[0].existe == 0) {
         const qry = `
@@ -152,6 +152,7 @@ class ExpressController {
   `;
 
       console.log('bumbum profundo', qry);
+
 
       let resultado = await executaQry(qry);
       console.log('só pra debug', resultado);
@@ -330,6 +331,14 @@ class ExpressController {
       let res1 = await executaQry(qry)
       res.json(res1)
     })
+    this.expressAppWrapper.get('/pegaTelEmpresa/:idEmpresa', async (req, res, next) => {
+      let id_empresa = req.params.idEmpresa
+      let qry = `select telefone from meso_empresas where id_empresa = '${id_empresa}'`
+      console.log('sou qry mealing', qry)
+      let res1 = await executaQry(qry)
+      res.json(res1)
+    })
+
 
     this.expressAppWrapper.post('/upload-document', async (req, res) => {
       //////console.log('oi')
@@ -506,7 +515,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'Bearer Seu Token'
+            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
           }
         });
 
@@ -553,7 +562,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'Bearer Seu Token'
+            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
           }
         });
 
@@ -598,14 +607,13 @@ class ExpressController {
       let url = req.body.url;
       let id = req.body.id;
       let extensao = req.body.extensao
-
       try {
         const response = await axios({
           method: 'get',
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'Bearer Seu Token'
+            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
           }
         });
 
@@ -1203,6 +1211,20 @@ WHERE telefone = '${telefone}'
 
     });
 
+
+    this.expressAppWrapper.post("/som-notificacao", async (req, res, next) => {
+      let som = req.body.som;
+      let usuario = req.body.usuario;
+
+      let qry = `update meso_usuariologin set somNotificacaoMobile = "${som}" where usuario like '%${usuario}%'`;
+      console.log("Mostrar tem som");
+      let res13 = await executaQry(qry);
+      res.json(res13);
+    });
+
+
+
+
     //teste MedPesq1---------------------------------------------------------------------------------------------------------------------------------------------------
     this.expressAppWrapper.get("/mediapesquisa1/:d1/:d2", async (req, res, next) => {
       let data1 = req.params.d1 + ' 00:00:00'
@@ -1233,7 +1255,7 @@ WHERE telefone = '${telefone}'
 
       let qry = ` select * from meso_mensagens_solicitante where telefone like "${telFormatado}" and wpnumber = '${wpnumber}'`;
 
-      //console.log('qry:', qry)
+      console.log('qry: chama papai', qry)
       let res3 = await executaQry(qry);
       res.json(res3);
       //console.log(res3);
@@ -1348,6 +1370,8 @@ WHERE telefone = '${telefone}'
 
     });
 
+
+
     this.expressAppWrapper.get("/mediatmasainte/:ramal/:d1/:d2", async (req, res, next) => {
       let ramal = req.params.ramal;
       let data1 = req.params.d1 + ' 00:00:00'
@@ -1420,6 +1444,7 @@ WHERE telefone = '${telefone}'
     });
     //Fim da campanha fila
     //Listar filas
+
     this.expressAppWrapper.get("/listafilastotais", async (req, res, next) => {
 
       let qry = `select extension, descr from queues_config `;
@@ -1664,10 +1689,10 @@ WHERE telefone = '${telefone}'
 
     //Circulo do painel principal Em Ligação cor Azul [como fazer o calculo?]
     //Na verdade o que eu fiz foi atendidas e não realtime do em ligação.... ;(
-    this.expressAppWrapper.get("/dashligacao", async (req, res, next) => {
-
-      let qry = `select distinct uniqueid1 from meso_operadores_em_ligacao `;
-      ////console.log(qry);
+    this.expressAppWrapper.get("/dashligacao/:id_empresa", async (req, res, next) => {
+      let id_empresa = req.params.id_empresa
+      let qry = `select status from meso_atendimentos where status = 'Em Andamento' and id_empresa = '${id_empresa}' `;
+      //console.log('sérginho groisma', qry);
 
 
       let res5 = await executaQry(qry);
@@ -1676,11 +1701,13 @@ WHERE telefone = '${telefone}'
 
     });
 
+
+
     //Circulo do painel principal Logados cor Verde
 
-    this.expressAppWrapper.get("/dashlogados", async (req, res, next) => {
-
-      let qry = `select distinct pin from meso_logado `;
+    this.expressAppWrapper.get("/dashlogados/:id_empresa", async (req, res, next) => {
+      let id_empresa = req.params.id_empresa
+      let qry = `select estado from meso_usuariologin where estado = 'logado' and id_empresa ='${id_empresa}'`;
       ////console.log(qry);
 
 
@@ -1692,11 +1719,11 @@ WHERE telefone = '${telefone}'
 
     //Circulo do painel principal Pausados cor Amarela
 
-    this.expressAppWrapper.get("/dashpausados", async (req, res, next) => {
+    this.expressAppWrapper.get("/dashpausados/:id_empresa", async (req, res, next) => {
+      let id_empresa = req.params.id_empresa
 
-      let qry = `select * from meso_pausado `;
+      let qry = `select * from meso_usuariologin where estado = 'pausado' and id_empresa ='${id_empresa}'`;
       ////console.log(qry);
-
 
       let res3 = await executaQry(qry);
       res.json(res3);
@@ -1704,20 +1731,123 @@ WHERE telefone = '${telefone}'
 
     });
 
-    this.expressAppWrapper.get("/dashdeslogados", async (req, res, next) => {
-
-      let qry = `select * from users `;
+    this.expressAppWrapper.get("/dashdeslogados/:id_empresa", async (req, res, next) => {
+      let id_empresa = req.params.id_empresa
+      let qry = `select * from meso_usuariologin where estado = 'deslogado' and id_empresa ='${id_empresa}'`;
       ////console.log(qry);
       /*select *  from meso_logado msl
       left join meso_operadores mso on msl.pin = mso.pin
       where mso.id is not null
       */
 
-      let res4 = await executaQry2(qry);
+      let res4 = await executaQry(qry);
       res.json(res4);
       ////console.log(res4);
 
     });
+
+    this.expressAppWrapper.get("/esperaMsg/:id_empresa", async (req, res, next) => {
+      let id_empresa = req.params.id_empresa
+      let qry = `select estado from meso_usuariologin where estado = 'logado' and id_empresa ='${id_empresa}'`;
+      ////console.log(qry);
+
+
+      let res2 = await executaQry(qry);
+      res.json(res2);
+      ////console.log(res2);
+
+    });
+
+
+
+    this.expressAppWrapper.get("/totalMsg/:id_empresa/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1
+      let data2 = req.params.d2
+      let id_empresa = req.params.id_empresa
+      let qry = `select * from meso_mensagens_solicitante where id_empresa = '${id_empresa}' and datetime between '${data1}' and '${data2}' `;
+      console.log('TotalMsg', qry);
+
+      let res30 = await executaQry(qry);
+      res.json(res30);
+      ////console.log(res30);
+
+    });
+
+    this.expressAppWrapper.get("/msgAndamento/:id_empresa/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let id_empresa = req.params.id_empresa
+      let qry = `select * from meso_atendimentos where id_empresa = '${id_empresa}' and data_inicio <= '${data1}' and data_inicio >= '${data2}' `;
+      console.log('2 players', qry);
+
+      let res30 = await executaQry(qry);
+      res.json(res30);
+      ////console.log(res30);
+
+    });
+
+    this.expressAppWrapper.get("/aguardandoAtendimento/:id_empresa/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let id_empresa = req.params.id_empresa
+      let qry = `select * from meso_contatos where  estado = 'Aguardando Atendimento' and id_empresa = '${id_empresa}'`;
+      console.log('2 players', qry);
+
+      let res30 = await executaQry(qry);
+      res.json(res30);
+      ////console.log(res30);
+
+    });
+
+    this.expressAppWrapper.get("/concluidoAtendimento/:id_empresa/:d1/:d2", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00'
+      let data2 = req.params.d2 + ' 23:59:59'
+      let id_empresa = req.params.id_empresa
+      let qry = `select * from meso_contatos where  estado = 'Concluído' and id_empresa = '${id_empresa}'`;
+      console.log('4 players', qry);
+
+      let res30 = await executaQry(qry);
+      res.json(res30);
+      ////console.log(res30);
+
+    });
+
+    this.expressAppWrapper.get('/tmrGeral/:d1/:d2/:telefone', async (req, res, next) => {
+      let data1 = req.params.d1 + " 00:00:00";
+      let data2 = req.params.d2 + " 23:59:59";
+      let telefone = req.params.telefone;
+
+      let qry = `
+    SELECT 
+        AVG(
+            TIME_TO_SEC(
+                TIMEDIFF(r.resposta_datetime, r.cliente_datetime)
+            )
+        ) / 60 AS tmr_min
+    FROM (
+        SELECT 
+            c.id AS cliente_id,
+            c.datetime AS cliente_datetime,
+            MIN(a.datetime) AS resposta_datetime
+        FROM meso_mensagens_solicitante c
+        LEFT JOIN meso_mensagens_solicitante a
+            ON a.telefone = c.telefone
+            AND a.datetime > c.datetime
+            AND a.wpnumber = ${telefone}
+            AND a.datetime BETWEEN '${data1}' AND '${data2}'
+        WHERE 
+            c.agent IS NULL
+            AND c.wpnumber = ${telefone}
+            AND c.datetime BETWEEN '${data1}' AND '${data2}'
+        GROUP BY c.id, c.datetime
+    ) r
+    WHERE r.resposta_datetime IS NOT NULL;
+  `;
+
+      let resultado = await executaQry(qry);
+      res.json(resultado);
+    });
+
 
     this.expressAppWrapper.get("/fluxohora/:d1", async (req, res, next) => {
       let data1 = req.params.d1
@@ -2165,15 +2295,170 @@ WHERE telefone = '${telefone}'
       ////console.log(tudo1)
     })
 
-    this.expressAppWrapper.get('/detalhezap/:d1/:d2', async (req, res, next) => {
+    this.expressAppWrapper.get('/detalhezap/:d1/:d2/:idEmpresa', async (req, res, next) => {
       let data1 = req.params.d1 + " 00:00:00"
       let data2 = req.params.d2 + " 23:59:59"
-      let qry = `select u.usuario, m.credor,m.processo,o.estado,date_format(o.dataInicio,'%d-%m-%Y %H:%i:%S') as dataInicio,date_format(o.dataFim,'%d-%m-%Y %H:%i:%S') as dataFim,p.Platarforma from meso_usuariologin as u inner join meso_mealing as m on (u.id = m.idAgente) inner join meso_oportunidade as o on (o.idMealing = m.idMealing) inner join meso_plataforma as p on (p.idPlatarforma = o.idPlataforma) where o.dataInicio >= '${data1}' and o.dataFim <= '${data2}'`
+      let id_empresa = req.params.idEmpresa
+      let qry = `select * from meso_atendimentos where data_inicio >= '${data1}' and data_inicio <= '${data2}' and id_empresa = '${id_empresa}'`
       ////console.log(qry)
       let res1 = await executaQry(qry)
       res.json(res1)
       ////console.log(res1)
     })
+
+
+    this.expressAppWrapper.get('/TotalTempResp/:d1/:d2/:usuario/:telefone', async (req, res, next) => {
+      let data1 = req.params.d1 + " 00:00:00";
+      let data2 = req.params.d2 + " 23:59:59";
+      let usuario = req.params.usuario;
+      let telefone = req.params.telefone;
+
+      let qry = `
+        SELECT 
+            SUM(TIME_TO_SEC(TIMEDIFF(r.resposta_datetime, r.cliente_datetime))) / 60 
+            AS TempResp
+        FROM (
+            SELECT 
+                c.id AS cliente_id,
+                c.datetime AS cliente_datetime,
+                MIN(a.datetime) AS resposta_datetime
+            FROM meso_mensagens_solicitante c
+            LEFT JOIN meso_mensagens_solicitante a
+                ON a.telefone = c.telefone
+                AND a.datetime > c.datetime
+                AND a.agent = '${usuario}'
+                AND a.wpnumber = ${telefone}
+                AND a.datetime BETWEEN '${data1}' AND '${data2}'
+            WHERE 
+                c.agent IS NULL
+                AND c.wpnumber = ${telefone}
+                AND c.datetime BETWEEN '${data1}' AND '${data2}'
+            GROUP BY c.id, c.datetime
+        ) r
+        WHERE r.resposta_datetime IS NOT NULL;
+    `;
+
+      let resultado = await executaQry(qry);
+      res.json(resultado);
+    });
+
+
+    this.expressAppWrapper.get('/tmr/:d1/:d2/:usuario/:telefone', async (req, res, next) => {
+      let data1 = req.params.d1 + " 00:00:00";
+      let data2 = req.params.d2 + " 23:59:59";
+      let usuario = req.params.usuario;
+      let telefone = req.params.telefone;
+
+      let qry = `
+        SELECT 
+    AVG(
+        TIME_TO_SEC(
+            TIMEDIFF(r.resposta_datetime, r.cliente_datetime)
+        )
+    ) / 60 AS tmr_min
+FROM (
+    SELECT 
+        c.id AS cliente_id,
+        c.datetime AS cliente_datetime,
+        MIN(a.datetime) AS resposta_datetime
+    FROM meso_mensagens_solicitante c
+    LEFT JOIN meso_mensagens_solicitante a
+        ON a.telefone = c.telefone
+        AND a.datetime > c.datetime
+        AND a.agent = '${usuario}'
+        AND a.wpnumber = ${telefone}
+        AND a.datetime BETWEEN '${data1}' AND '${data2}'
+    WHERE 
+        c.agent IS NULL
+        AND c.wpnumber = ${telefone}
+        AND c.datetime BETWEEN '${data1}' AND '${data2}'
+    GROUP BY c.id, c.datetime
+) r
+WHERE r.resposta_datetime IS NOT NULL;
+
+    `;
+
+      let resultado = await executaQry(qry);
+      res.json(resultado);
+    });
+
+
+
+    this.expressAppWrapper.get('/tmrMinimo/:d1/:d2/:usuario/:telefone', async (req, res, next) => {
+      let data1 = req.params.d1 + " 00:00:00";
+      let data2 = req.params.d2 + " 23:59:59";
+      let usuario = req.params.usuario;
+      let telefone = req.params.telefone;
+
+      let qry = `
+    SELECT 
+        MIN(
+            TIME_TO_SEC(
+                TIMEDIFF(r.resposta_datetime, r.cliente_datetime)
+            )
+        ) / 60.0 AS min_tempo_resposta_min
+    FROM (
+        SELECT 
+            c.id AS cliente_id,
+            c.datetime AS cliente_datetime,
+            MIN(a.datetime) AS resposta_datetime
+        FROM meso_mensagens_solicitante c
+        LEFT JOIN meso_mensagens_solicitante a
+            ON a.telefone = c.telefone
+            AND a.datetime > c.datetime
+            AND a.agent = '${usuario}'
+            AND a.wpnumber = '${telefone}'
+            AND a.datetime BETWEEN '${data1}' AND '${data2}'
+        WHERE 
+            c.agent IS NULL
+            AND c.wpnumber = '${telefone}'
+            AND c.datetime BETWEEN '${data1}' AND '${data2}'
+        GROUP BY c.id, c.datetime
+    ) r
+    WHERE r.resposta_datetime IS NOT NULL;
+  `;
+
+      let resultado = await executaQry(qry);
+      res.json(resultado);
+    });
+
+    this.expressAppWrapper.get('/tmrMaximo/:d1/:d2/:usuario/:telefone', async (req, res, next) => {
+      let data1 = req.params.d1 + " 00:00:00";
+      let data2 = req.params.d2 + " 23:59:59";
+      let usuario = req.params.usuario;
+      let telefone = req.params.telefone;
+
+      let qry = `
+    SELECT 
+        MAX(
+            TIME_TO_SEC(
+                TIMEDIFF(r.resposta_datetime, r.cliente_datetime)
+            )
+        ) / 60.0 AS max_min
+    FROM (
+        SELECT 
+            c.id AS cliente_id,
+            c.datetime AS cliente_datetime,
+            MIN(a.datetime) AS resposta_datetime
+        FROM meso_mensagens_solicitante c
+        LEFT JOIN meso_mensagens_solicitante a
+            ON a.telefone = c.telefone
+            AND a.datetime > c.datetime
+            AND a.agent = '${usuario}'
+            AND a.wpnumber = '${telefone}'
+            AND a.datetime BETWEEN '${data1}' AND '${data2}'
+        WHERE 
+            c.agent IS NULL
+            AND c.wpnumber = '${telefone}'
+            AND c.datetime BETWEEN '${data1}' AND '${data2}'
+        GROUP BY c.id, c.datetime
+    ) r
+    WHERE r.resposta_datetime IS NOT NULL;
+  `;
+
+      let resultado = await executaQry(qry);
+      res.json(resultado);
+    });
 
     this.expressAppWrapper.get('/detalhezapespecialista/:d1/:d2', async (req, res, next) => {
       let data1 = req.params.d1 + " 00:00:00"
@@ -2316,14 +2601,19 @@ WHERE telefone = '${telefone}'
 
 
 
-
     this.expressAppWrapper.get("/mediatma/:fila/:d1/:d2/:ramal", async (req, res, next) => {
       let filacompleta = req.params.fila;
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let ramal = req.params.ramal
-      let qry = `select avg(talktime) as mediatma from meso_agent_complete where dataHora > '${data1}' and dataHora < '${data2}' and fila = '${filacompleta}'
-      and membername like '%${ramal}%' `;
+      let qry = `SELECT 
+  AVG(duracao) AS mediatma
+FROM meso_detalhe
+WHERE estado = 'atendida'
+  AND fila = '${filacompleta}'
+  AND teleatendente = '${ramal}'
+  AND datahora BETWEEN '${data1}' AND '${data2}';
+`;
       console.log(qry);
 
       let res39 = await executaQry(qry);
@@ -2332,13 +2622,105 @@ WHERE telefone = '${telefone}'
 
     });
 
+    this.expressAppWrapper.get("/mediatmazap/:d1/:d2/:usuario/:idEmpresa", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00';
+      let data2 = req.params.d2 + ' 23:59:59';
+      let usuario = req.params.usuario;
+      let id_empresa = req.params.idEmpresa
+
+      let qry = `
+        SELECT AVG(TIME_TO_SEC(TIMEDIFF(data_fim, data_inicio))) AS tma_segundos
+        FROM meso_atendimentos
+        WHERE agente = '${usuario}'
+        AND data_inicio >= '${data1}'
+        AND data_inicio <= '${data2}'
+        AND id_empresa = '${id_empresa}'
+    `;
+
+      console.log(qry);
+
+      let resultado = await executaQry(qry);
+      res.json(resultado);
+    });
+
+    this.expressAppWrapper.get("/quantMsg/:d1/:d2/:usuario/:telefone", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00';
+      let data2 = req.params.d2 + ' 23:59:59';
+      let usuario = req.params.usuario;
+      let telefone = req.params.telefone
+
+      let qry = `
+SELECT COUNT(*) AS quantMsg
+FROM meso_mensagens_solicitante
+WHERE datetime BETWEEN '${data1}' AND '${data2}'
+  AND agent = '${usuario}' and wpnumber = '${telefone}';
+    `;
+
+      console.log(qry);
+
+      let resultado = await executaQry(qry);
+      res.json(resultado);
+    });
+
+    this.expressAppWrapper.get("/tempoMsg/:d1/:d2/:usuario/:idEmpresa", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00';
+      let data2 = req.params.d2 + ' 23:59:59';
+      let usuario = req.params.usuario;
+      let id_empresa = req.params.idEmpresa
+
+      let qry = `
+SELECT SEC_TO_TIME(
+         SUM(
+           TIME_TO_SEC(TIMEDIFF(data_fim, data_inicio))
+         )
+       ) AS tempoMsg
+FROM meso_atendimentos
+WHERE data_inicio BETWEEN '${data1}' AND '${data2}'
+  AND agente = '${usuario}'
+  AND data_fim IS NOT NULL and id_empresa='${id_empresa}';
+
+    `;
+
+
+
+      console.log(qry);
+
+      let resultado = await executaQry(qry);
+      res.json(resultado);
+    });
+
+    this.expressAppWrapper.get("/maxZap/:d1/:d2/:usuario/:idEmpresa", async (req, res, next) => {
+      let data1 = req.params.d1 + ' 00:00:00';
+      let data2 = req.params.d2 + ' 23:59:59';
+      let usuario = req.params.usuario;
+      let id_empresa = req.params.idEmpresa
+      let qry = `
+SELECT MAX(TIMEDIFF(data_fim, data_inicio)) AS MaxAtendimentos
+FROM meso_atendimentos
+WHERE data_inicio BETWEEN '${data1}' AND '${data2}'
+  AND agente = '${usuario}' and data_fim is not null and id_empresa = '${id_empresa}';
+    `;
+
+
+
+      console.log(qry);
+
+      let resultado = await executaQry(qry);
+      res.json(resultado);
+    });
+
     this.expressAppWrapper.get("/totalchamadastma/:fila/:d1/:d2/:ramal", async (req, res, next) => {
       let filacompleta = req.params.fila;
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let ramal = req.params.ramal
-      let qry = `select * from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'
-      and membername like '%${ramal}%' `;
+      let qry = `SELECT COUNT(*) AS total
+FROM meso_agent_complete
+WHERE datahora BETWEEN '${data1}' AND '${data2}'
+  AND fila = '${filacompleta}'
+  AND membername = '${ramal}'
+  AND reason IN ('caller', 'agent');
+`;
       ////console.log(qry);
 
       let res40 = await executaQry(qry);
@@ -2417,8 +2799,13 @@ WHERE calldate >= '${data1}' AND calldate <= '${data2}';
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
       let ramal = req.params.ramal
-      let qry = `select max(talktime) as duracaomaxima from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}'
-      and membername like '%${ramal}%' `;
+      let qry = `SELECT MAX(talktime) AS duracaomaxima
+FROM meso_agent_complete
+WHERE datahora BETWEEN '${data1}' AND '${data2}'
+  AND fila = '${filacompleta}'
+  AND membername = '${ramal}'
+  AND talktime > 0;
+`;
       ////console.log(qry);
 
       let res42 = await executaQry(qry);
@@ -2812,19 +3199,30 @@ WHERE calldate >= '${data1}' AND calldate <= '${data2}';
     //Fim service----------------------------------------------------------------------------------------------------------------------------------------------
     //Inicio tme-----------------------------------------------------------------------------------------------------------------------------------------------
 
-    this.expressAppWrapper.get("/somaespera/:fila/:d1/:d2/", async (req, res, next) => {
-      let filacompleta = req.params.fila;
-      let data1 = req.params.d1 + ' 00:00:00'
-      let data2 = req.params.d2 + ' 23:59:59'
+    this.expressAppWrapper.get("/somaespera/:fila/:d1/:d2", async (req, res, next) => {
+      const filacompleta = req.params.fila;
+      const data1 = req.params.d1 + " 00:00:00";
+      const data2 = req.params.d2 + " 23:59:59";
 
-      let qry = `select sum(holdtime) as somaespera from meso_agent_complete where datahora > '${data1}' and datahora < '${data2}' and fila = '${filacompleta}' `;
-      ////console.log(qry);
+      const qry = `
+    SELECT 
+      SUM(holdtime) AS somaespera
+    FROM (
+      SELECT 
+        uniqueid,
+        MAX(holdtime) AS holdtime
+      FROM meso_detalhe
+      WHERE datahora BETWEEN '${data1}' AND '${data2}'
+        AND fila = '${filacompleta}'
+        AND holdtime IS NOT NULL
+      GROUP BY uniqueid
+    ) t
+  `;
 
-      let res43 = await executaQry(qry);
-      res.json(res43);
-      ////console.log(res43);
-
+      const resultado = await executaQry(qry);
+      res.json(resultado);
     });
+
 
     this.expressAppWrapper.get("/somasainte/:ramal/:d1/:d2/", async (req, res, next) => {
       let ramal = req.params.ramal;
@@ -2946,6 +3344,30 @@ WHERE calldate >= '${data1}' AND calldate <= '${data2}';
       let res1 = await executaQry(qry);
       res.json(res1);
       ////console.log(res1);
+    })
+
+    this.expressAppWrapper.post("/enviar-email-erro", async (req, res, next) => {
+      console.log("Ai entrei no sendEmail")
+      try {
+        const { message, error, stack, platform, route } = req.body;
+
+
+
+        await transporter.sendMail({
+          from: `"App Monitor" <matheus@mesotelecom.com.br>`,
+          to: "plugsoftwareltda@gmail.com", // ex: dev@meuapp.com
+          subject: "🔥 Erro no App",
+          text: `Mensagem: ${message}\n\nErro:\n${error}\n\nStack:\n${stack}\n\nPlataforma: ${platform}\n\nrota: ${route}`,
+
+        });
+
+
+        res.status(200).json({ ok: true });
+        console.log("Ai sai do sendEmail")
+      } catch (e) {
+        console.error(e);
+        res.status(500).json({ ok: false, message: "Falha ao enviar email" });
+      }
     })
 
     //FIM TME----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -3163,9 +3585,9 @@ WHERE calldate >= '${data1}' AND calldate <= '${data2}';
         // 6. HTTP OK
         // ────────────────────────────────────────────────────────────
 
-        let qry2 = `update users set estado = 'logado', fila ='${fila}' where extension = '${numeroRamal}'`
-
-        await executaQry2(qry2)
+        let qry2 = `update meso_usuariologin set estado = 'logado', fila ='${fila}' where ramal = '${numeroRamal}'`
+        console.log('venha aqui', qry2)
+        await executaQry(qry2)
         let qry3 = `insert into logs (user,ramal, fila, motivo, datahora)values ('PJSIP/${numeroRamal}','PJSIP/${numeroRamal}','${fila}','Login', now())`
         console.log('talvez seja minha culpa', qry3)
         await executaQry(qry3)
@@ -3239,8 +3661,9 @@ WHERE calldate >= '${data1}' AND calldate <= '${data2}';
         // 6. HTTP OK
         // ────────────────────────────────────────────────────────────
 
-        let qry2 = `update users set estado = 'deslogado' where extension = '${numeroRamal}'`
-        await executaQry2(qry2)
+        let qry2 = `update meso_usuariologin set estado = 'deslogado' where ramal = '${numeroRamal}'`
+        console.log('SORRIA! :D', qry2)
+        await executaQry(qry2)
 
         let qry3 = `insert into logs (user,ramal, fila, motivo, datahora)values ('PJSIP/${numeroRamal}','PJSIP/${numeroRamal}','${fila}','Logout', now())`
         console.log('talvez seja minha culpa', qry3)
@@ -3318,10 +3741,10 @@ WHERE calldate >= '${data1}' AND calldate <= '${data2}';
       //let data1 = req.params.d1 + ' 00:00:00'
       //let data2 = req.params.d2 + ' 23:59:59'
 
-      let qry = `SELECT * FROM users ORDER BY FIELD(estado, 'em ligação', 'logado', 'pausado', 'deslogado');`;
+      let qry = `SELECT * FROM meso_usuariologin ORDER BY FIELD(estado, 'em ligação', 'logado', 'pausado', 'deslogado');`;
       ////console.log(qry);
 
-      let res36 = await executaQry2(qry);
+      let res36 = await executaQry(qry);
       res.json(res36);
       ////console.log(res36);
 
@@ -3773,6 +4196,24 @@ WHERE calldate >= '${data1}' AND calldate <= '${data2}';
         let qry = `
         select * from meso_usuariologin where tipo = '${tipo}' and id_empresa = ${id_empresa}
         `;
+
+        console.log('veio do nada', qry)
+        let res27 = await executaQry(qry);
+        res.json(res27);
+      } catch (e) {
+        ////console.log(e);
+      }
+    });
+
+    this.expressAppWrapper.get("/listausuariorelat/:idEmpresa", async (req, res) => {
+      let id_empresa = req.params.idEmpresa
+
+      try {
+        let qry = `
+        select * from meso_usuariologin where id_empresa = ${id_empresa}
+        `;
+
+        console.log('veio do nada', qry)
         let res27 = await executaQry(qry);
         res.json(res27);
       } catch (e) {
@@ -3825,6 +4266,14 @@ WHERE calldate >= '${data1}' AND calldate <= '${data2}';
       } catch (e) {
         ////console.log(e);
       }
+    });
+
+    this.expressAppWrapper.get("/buscar-preferencia-notificacao/:usuario", async (req, res, next) => {
+      let usuario = req.params.usuario
+      let qry = `select somNotificacaoMobile from meso_usuariologin where usuario like '%${usuario}%'`;
+      console.log("qry do som da notificacao", qry);
+      let res1 = await executaQry(qry)
+      res.json(res1);
     });
 
 
@@ -4206,7 +4655,7 @@ WHERE calldate >= '${data1}' AND calldate <= '${data2}';
       let idEmpresa = req.params.idEmpresa
 
       let qry = `select * from meso_contatos where telefone = '${telefone}' and id_empresa = '${idEmpresa}'`
-      //console.log('sou qry mealing', qry)
+      console.log('sou qry mealing', qry)
       let res1 = await executaQry(qry)
       res.json(res1)
     })

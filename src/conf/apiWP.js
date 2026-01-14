@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export const apiWP = axios.create({
+  //baseURL: `https://lab.whatsapp.plugphone.cloud:3333`, 
   baseURL: `https://meso.plugphone.cloud:3333`,
   headers: {
     "Access-Control-Allow-Origin": "*",

@@ -10,15 +10,24 @@ const fs = require("fs");
 const cors = require("cors");
 const axios = require("axios");
 const { executaQry } = require('/meso/whatsapp/webhook/db');
-const { send, sendImage, sendVideo, sendAudio, gerenciarAtendimento, sendDocument, sendTemplate, download, sendTemplateMenu, reciveMediaLink, verificaPalavrao, audioGpt } = require('./methods');
+const { send, sendImage, sendVideo, sendAudio, normalizaTextoWhatsApp, gerenciarAtendimento, sendDocument, sendTemplate, download, sendTemplateMenu, reciveMediaLink, verificaPalavrao, audioGpt, precisaDeHumano } = require('./methods');
 const { emitMensagem, emitImage, emitAudio, emitDocument, emitMensagem2 } = require("./emit");
-const { sendToNia } = require("./NiaBot/src/niaService.js");
+const { sendToNia } = require("./llama_bot/services/nia-service.js");
 const { Socket } = require("socket.io");
 const app = express().use(body_parser.json());
 const porta = 3333;
 const admin = require('firebase-admin');
 const bodyParser = require('body-parser');
 const { plugBot } = require("./botPlugPhone/plugbot.service.js");
+
+const { Ollama } = require("ollama");
+
+const ollama = new Ollama({
+    host: "https://ollama.com",
+    headers: {
+        Authorization: `Bearer ${process.env.OLLAMA_API_KEY}`,
+    },
+});
 
 
 
@@ -213,16 +222,42 @@ app.post("/webhooks", async (req, res) => {
 
                     const verIA = await executaQry(`SELECT atendimento_ai FROM meso_contatos WHERE telefone = '${waId}'`);
                     const iaAtiva = verIA.dados[0]?.atendimento_ai == 1;
+                    const precisaHumano = precisaDeHumano(msg);
+
+                    console.log("Precisa mostrar isso urgente")
+
+                    if (iaAtiva && precisaHumano) {
+                        // handoff
+                        await executaQry(`
+                            UPDATE meso_contatos
+                            SET atendimento_ai = 0
+                            WHERE telefone = '${waId}' AND id_empresa = '${idEmpresa}'
+                        `);
+
+                        await send(
+                            waId,
+                            "Para evitar qualquer desencontro de informações, vou te direcionar agora para um atendente humano.",
+                            "Bot-PlugPhone",
+                            res,
+                            wpp_id,
+                            telEmpresa
+                        );
+
+                        return res.sendStatus(200);
+                    }
+
+                    console.log("Oq tem nessa merda", iaAtiva, iaPodeResponder)
+
 
                     if (iaAtiva && iaPodeResponder) {
 
                         console.log('🤖 IA ativada para', waId);
 
                         let buscaThread = await executaQry(`
-SELECT thread_id 
-FROM meso_contatos 
-WHERE telefone = '${waId}' and id_empresa = '${idEmpresa}'
-    `);
+                        SELECT thread_id 
+                        FROM meso_contatos 
+                        WHERE telefone = '${waId}' and id_empresa = '${idEmpresa}'
+                            `);
 
                         let threadId = buscaThread.dados[0]?.thread_id || null;
 
@@ -242,42 +277,85 @@ WHERE telefone = '${waId}' and id_empresa = '${idEmpresa}'
 
                         // Registrar mensagem
                         let qry55 = `
-        INSERT INTO meso_mensagens_solicitante 
-        (nome, whatsappid, mensagem, telefone, wpnumber, type, visualizacao, message_id, id_empresa) 
-        VALUES ('${nome}', '${waId}', '${msg}', '${waId}','${telEmpresa}', '${type}', 'not read', '${messageId}', '${idEmpresa}');
-    `;
+                                INSERT INTO meso_mensagens_solicitante 
+                                (nome, whatsappid, mensagem, telefone, wpnumber, type, visualizacao, message_id, id_empresa) 
+                                VALUES ('${nome}', '${waId}', '${msg}', '${waId}','${telEmpresa}', '${type}', 'not read', '${messageId}', '${idEmpresa}');
+                            `;
 
                         console.log('teyrubitou', qry55)
                         await executaQry(qry55);
 
                         // Enviar para NIA
-                        const { reply, threadId: novoThread } = await sendToNia({
-                            message: msg,
-                            threadId
-                        });
-                        console.log('sessão nostalgia', reply)
+                        // const { reply, threadId: novoThread } = await sendToNia({
+                        //     message: msg,
+                        //     threadId
+                        // });
+                        // console.log('sessão nostalgia', reply)
                         // Atualizar thread
-                        if (!threadId && novoThread) {
-                            await executaQry(`
-            UPDATE meso_contatos 
-            SET thread_id = '${novoThread}' 
-            WHERE telefone = '${waId}'
-        `);
+                        console.log("Entrou nesse caralho")
+
+                        console.log("me mostra a api key 4.0", process.env.OLLAMA_API_KEY)
+                        const resposta = await sendToNia({
+                            messageUser: msg,
+                            threadId: `thread-${waId}}`,
+                            ollama: ollama,
+                        });
+                        // const resposta = await sendToPalavrao({
+                        //     messageUser: "Ah tomar banho",
+                        // });
+
+                        let respostaFinal = normalizaTextoWhatsApp(resposta);
+
+                        console.log("RESPOSTA FINAL:", respostaFinal);
+
+                        console.log("Para de falar palavrão animal");
+                        console.log(
+                            "Eita porra mostra aqui",
+                            waId,
+                            respostaFinal,
+                            "Bot-PlugPhone",
+                            res,
+                            wpp_id,
+                            telEmpresa
+                        );
+
+                        if (waId === '553199285573' || waId === '553189738409') {
+                            await send(
+                                waId,
+                                respostaFinal,
+                                "Bot-PlugPhone",
+                                res,
+                                wpp_id,
+                                telEmpresa
+                            );
                         }
 
+
+
+                        if (!threadId && novoThread) {
+                            await executaQry(`
+                                UPDATE meso_contatos 
+                                SET thread_id = '${novoThread}' 
+                                WHERE telefone = '${waId}'
+                            `);
+                            console.log("Entrou aqui? 1")
+                        }
+                        console.log("A vai tomar no c#")
                         // Finalizar IA se identificar término
                         if (reply.includes("concluídas") || reply.includes("Perfeito")) {
                             await executaQry(`
-            UPDATE meso_contatos 
-            SET atendimento_ai = 0 
-            WHERE telefone = '${waId}'
-        `);
+                                UPDATE meso_contatos 
+                                SET atendimento_ai = 0 
+                                WHERE telefone = '${waId}'
+                            `);
+                            console.log("Entrou aqui? 2")
                         }
 
                         // *** AQUI FALTAVA! ***
                         //                                await send(to, body, nome, res, wpp_id, wpnumber)
 
-                        await send(waId, reply, "Bot-PlugPhone", res, wpp_id, telEmpresa);
+
+
                         return res.sendStatus(200);
                     }
 
@@ -754,10 +832,12 @@ WHERE NOT EXISTS (
                     console.log('é o fim?', qry)
                     await executaQry(qry);
 
+                    console.log('passei da query')
+                    console.log('id da imagem', msg)
                     // PEGA URL DA IMAGEM
                     let a = await api.get(`/pegaURL/${msg}`);
                     let url = a.data.url;
-
+                    console.log('eu sou a URL', url)
                     let bodyImage = {
                         "url": url,
                         "id": msg
@@ -767,7 +847,7 @@ WHERE NOT EXISTS (
 
                     // PEGA BUFFER DA IMAGEM CONVERTIDA
                     let geraMidia = await api.get(`/get-image/${msg}.jpeg`, { responseType: 'arraybuffer' });
-
+                    console.log('passei pelo get image', geraMidia)
                     if (geraMidia.status === 200) {
                         const imageBuffer = Buffer.from(geraMidia.data, 'binary');
                         const base64Image = `data:image/jpeg;base64,${imageBuffer.toString('base64')}`;
@@ -1053,30 +1133,30 @@ WHERE NOT EXISTS (
             }
 
             else if (tudo.entry[0].changes[0].value.messages[0].type == 'document') {
-                //////console.log('Eu sou o audio pae')
+                console.log('Eu sou o documento né pae')
                 try {
-                    mensagem = entry.changes[0].value.messages[0]
-                    produto = entry.changes[0].value
+                    console.log("entrei aqui")
 
-                    ////console.log('teste produto', produto.value)
+                    //console.log('teste produto', produto.value)
                     ////// console.log(mensagem, 'recebi')
-                    //////console.log('maioria', tudo.entry[0].changes[0].value.messages[0])
-                    //////console.log('eu sou tudo antes do if', tudo.entry[0].changes[0].value)
-                    type = tudo.entry[0].changes[0].value.messages[0].document.mime_type
-                    msg = tudo.entry[0].changes[0].value.messages[0].document.id
-                    nome = tudo.entry[0].changes[0].value.contacts[0].profile.name
-                    waId = tudo.entry[0].changes[0].value.contacts[0].wa_id
+                    //console.log('maioria', tudo.entry[0].changes[0].value.messages[0])
+                    //console.log('eu sou tudo antes do if', tudo.entry[0].changes[0].value)
+                    let type = tudo.entry[0].changes[0].value.messages[0].document.mime_type
+                    let msg = tudo.entry[0].changes[0].value.messages[0].document.id
+                    let nome = tudo.entry[0].changes[0].value.contacts[0].profile.name
+                    let waId = tudo.entry[0].changes[0].value.contacts[0].wa_id
+                    let telEmpresa = tudo.entry[0].changes[0].value.metadata.display_phone_number
 
                     let fileName = tudo.entry[0].changes[0].value.messages[0].document.filename; // ex: "contrato.v1.final.pdf"
                     let extensao = fileName.substring(fileName.lastIndexOf(".") + 1);
-                    qry = `insert into meso_mensagens_solicitante (nome, whatsappid, mensagem, telefone, wpnumber, type ) VALUES ('${nome}', '${waId}','https://meso.plugphone.cloud:4444/midia/${msg}.${extensao}','${waId}','${telEmpresa}','${type}');`
-                    //////console.log('Satoru gojo', qry)
-                    executaQry(qry)
+                    let qry = `insert into meso_mensagens_solicitante (nome, whatsappid, mensagem, telefone, wpnumber, type ) VALUES ('${nome}', '${waId}','https://meso.plugphone.cloud:4444/midia/${msg}.${extensao}','${waId}','${telEmpresa}','${type}');`
+                    console.log('Satoru gojo', qry)
+                    await executaQry(qry)
 
                     let a = await api.get(`/pegaURL/${msg}`);
-                    //////console.log(a.data);
+                    console.log(a.data);
                     let url = a.data.url;
-                    ////console.log('MÃE SOLTEIRA', url)
+                    console.log('MÃE SOLTEIRA', url)
 
                     let bodyImage = {
                         "url": url,
@@ -1084,7 +1164,9 @@ WHERE NOT EXISTS (
                         "extensao": extensao
                     };
                     let qry4 = `update meso_contatos set estado = 'Aguardando Atendimento', ultimamsg = 'documento' where telefone like '%${waId}%' and id_empresa = '${idEmpresa}';`
+                    console.log('query4', qry4)
                     await executaQry(qry4)
+
                     await api.post(`/geraDocument/`, bodyImage);
                     emitMensagem(io, nome, `Link do documento: \nhttps://meso.plugphone.cloud:4444/midia/${msg}.${extensao}`, waId)
 
@@ -1099,7 +1181,7 @@ WHERE NOT EXISTS (
                         minute: '2-digit',
                         second: '2-digit',
                     }).format(agora);
-                    ////console.log('minha msg', msg)
+                    console.log('minha msg', msg)
 
                     io.emit('receive-message', [
                         waId,
@@ -1115,16 +1197,17 @@ WHERE NOT EXISTS (
                     //   if (entry.changes[0].value.statuses[0].status != 'read') {
                     //     mensagem = entry.changes[0].value.statuses[0].conversation
 
-                    //////console.log('teste se e aqui', mensagem)
+                    // console.log('teste se e aqui', mensagem)
+                    console.log('chatino heim', error)
 
                 }
             }
 
         } else {
-            ////////////console.log('mensagem enviada')
+            console.log('mensagem enviada')
         }
     } else {
-        //console.log('entrei no ELSE')
+        console.log('entrei no ELSE')
         let mensagem = tudo.entry[0].changes[0].value.messages[0];
         let produto = tudo.entry[0].changes[0].value;
 
@@ -1460,7 +1543,6 @@ app.post("/senddocument", async (req, res) => {
 
     ////console.log(`teste do send document, \nto${to},\n id:${id},\n nomeArquivo ${filename},\nusuario ${usuario}`)
 
-
     sendDocument(to, id, filename, usuario, res)
 })
 app.get("/gerarprotocolo/:status", async (req, res, next) => {
@@ -1692,114 +1774,98 @@ let pegatokenfire = async function (mensagem, nome, usuario, setor, telefone, io
 
 
 let pegatokenfireMobile = async function (mensagem, nome, usuario, setor, telefone) {
+
+    console.log(
+        "mensagem:", mensagem, typeof mensagem,
+        "nome:", nome, typeof nome,
+        "usuario:", usuario, typeof usuario,
+        "setor:", setor, typeof setor,
+        "telefone:", telefone, typeof telefone,
+    );
+
     try {
-        // 1. Buscar tokens do banco
         let qry = `
-            SELECT tokenMobile 
-            FROM meso_usuariologin 
-            WHERE usuario LIKE '%${usuario}%' 
-               OR tipo = '${setor}' 
-               OR tipo = 'admin';
-`;
+      SELECT tokenMobile, somNotificacaoMobile
+      FROM meso_usuariologin 
+      WHERE usuario LIKE '%${usuario}%' 
+         OR tipo = '${setor}' 
+         OR tipo = 'admin';
+    `;
 
         let resultado = await executaQry(qry);
         console.log('🔍 Consulta executada:', qry);
 
-        if (!Array.isArray(resultado.dados) || resultado.dados.length === 0) {
-            ////console.log('⚠️ Nenhum token encontrado');
-            return res.sendStatus(200);
-            ;
+        if (!resultado?.dados?.length) {
+            console.log("⚠️ Nenhum token encontrado");
+            return;
         }
 
-        // 2. Coletar e filtrar tokens válidos
         let tokens = [];
-        resultado.dados.forEach(({ token, tokenMobile }) => {
-            if (token && token.trim() !== '') tokens.push(token.trim());
-            if (tokenMobile && tokenMobile.trim() !== '') tokens.push(tokenMobile.trim());
+
+        resultado.dados.forEach(item => {
+            if (item.tokenMobile && item.tokenMobile.trim() !== '') {
+                tokens.push({
+                    token: item.tokenMobile.trim(),
+                    audio: item.somNotificacaoMobile || "sim", // default sim
+                });
+            }
         });
 
-        tokens = [...new Set(tokens)]; // remover duplicados
-
-        if (tokens.length === 0) {
-            ////console.log('⚠️ Lista final de tokens está vazia');
-            return res.sendStatus(200);
-            ;
+        if (!tokens.length) {
+            console.log("⚠️ Lista final de tokens vazia");
+            return;
         }
 
-        const MAX_TOKENS = 500;
+        const messages = tokens.map(item => {
+            const audioFlag = String(item.audio ?? "sim"); // "sim" / "não"
 
-        // 3. Enviar notificações em lotes
-        for (let i = 0; i < tokens.length; i += MAX_TOKENS) {
-            const tokenBatch = tokens.slice(i, i + MAX_TOKENS);
-            console.log("Olha meus tokens aqui", tokenBatch)
-            const multicastMessage = {
+            return {
+                token: item.token,
                 notification: {
-                    title: nome,
-                    body: mensagem,
+                    title: String(nome ?? "Nova mensagem"),
+                    body: String(mensagem ?? ""),
                 },
                 data: {
-                    nome: nome,
-                    telefone: telefone,
-                    usuario: usuario,
+                    nome: String(nome ?? ""),
+                    telefone: String(telefone ?? ""),
+                    usuario: String(usuario ?? ""),
                 },
                 android: {
                     priority: 'high',
                     notification: {
-                        sound: 'notification.wav',
-                        channelId: 'custom_sound_channel',
+                        channelId: audioFlag === "SIM"
+                            ? "custom_sound_channel"
+                            : "custom_sound_channel_silent",
                     },
                 },
                 apns: {
-                    headers: {
-                        'apns-priority': '10',
-                    },
                     payload: {
                         aps: {
-                            sound: 'notification.wav',
-                            'content-available': 1, // <- mantém o recebimento do data
+                            sound: "notification.wav",
+                            'content-available': 1,
                         },
                     },
                 },
-                tokens: tokenBatch,
             };
+        });
 
+        const response = await admin.messaging().sendEach(messages);
 
-            const response = await admin.messaging().sendEachForMulticast(multicastMessage);
+        const successCount = response.responses.filter(r => r.success).length;
+        const failureCount = response.responses.filter(r => !r.success).length;
 
-            console.log(`✅ Enviado lote de ${tokenBatch.length} tokens - Sucesso: ${response.successCount}, Falha: ${response.failureCount} `);
-            console.log("Minha responser", response)
+        console.log(`✅ Enviado ${messages.length} notificações — Sucesso: ${successCount}, Falha: ${failureCount}`);
 
-            // 4. Tratar falhas
-            if (response.failureCount > 0) {
-                await Promise.all(response.responses.map(async (res, idx) => {
-                    if (!res.success) {
-                        const failedToken = tokenBatch[idx];
-                        const errCode = res.error?.code || 'unknown';
-                        const errMsg = res.error?.message || 'Mensagem desconhecida';
-
-                        console.warn(`⚠️ Falha no token: ${failedToken}`);
-                        console.warn(`   ↳ Código do erro: ${errCode}`);
-                        console.warn(`   ↳ Detalhes: ${errMsg}`);
-
-                        if (errCode === 'messaging/registration-token-not-registered') {
-                            console.log(`🗑️ Limpando token inválido: ${failedToken}`);
-
-                            let removeQry = `
-                                UPDATE meso_usuariologin 
-                                SET token = CASE WHEN token = '${failedToken}' THEN '' ELSE token END,
-                                    tokenMobile = CASE WHEN tokenMobile = '${failedToken}' THEN '' ELSE tokenMobile END
-                                WHERE token = '${failedToken}' OR tokenMobile = '${failedToken}';
-                            `;
-                            await executaQry(removeQry);
-                        }
-                    }
-                }));
+        response.responses.forEach((res, idx) => {
+            if (!res.success) {
+                console.warn(`⚠️ Falha no token: ${messages[idx].token}`);
+                console.warn(`   ↳ Código do erro: ${res.error?.code}`);
+                console.warn(`   ↳ Detalhes: ${res.error?.message}`);
             }
+        });
 
-        }
     } catch (error) {
         console.error("🔥 Erro geral ao enviar notificações:", error.message);
         console.error("📄 Detalhes completos:", error);
     }
 };
-

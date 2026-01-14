@@ -8,8 +8,8 @@
 
         <!--Saída do Período da API-->
         <input type="date" class="datest" v-model="d2" required />
-        <v-select :items="items" label="Matheus" v-model="analista" class="filtro"></v-select>
-        <v-btn class="botaoA" @click="tmazap()"> Consultar </v-btn>
+        <v-select :items="items" label="Escolha seu usuário" v-model="analista" class="filtro"></v-select>
+        <v-btn class="botaoA" @click="exibir()"> Consultar </v-btn>
 
         <router-link to="./menuwhastapp" class="linkp">
           <v-btn dark class="botaoSair">voltar</v-btn>
@@ -35,29 +35,36 @@ import Footer from "../components/footer.vue";
 
 export default {
   async beforeMount() {
-    this.carregar();
+    let usuario = JSON.parse(localStorage.getItem('usu'));
+    this.id_empresa = usuario.id_empresa
+    this.tipo = usuario.tipo;
+
+    this.listar();
+
+
+    //this.carregar();
   },
   data() {
     return {
-      d1: '2024-09-22',
-      d2: '2024-09-22',
-      fila: '',
+      d1: "",
+      d2: "",
+      analista: "",
+      pin: '',
+      id_empresa: 0,
+      ramal: "",
+      tipo: "",
       search: "",
       headers: [
-        { text: "Total de Tempo de Resposta (min)", value: "soma" },
-        { text: "TMR (min)", value: "media" },
-        { text: "Mínimo Resposta (min)", value: "minimo" },
-        { text: "Máximo Resposta (min)", value: "maximo" },
-        { text: "Total de Mensagens", value: "realtotalchamadas" },
+        { text: "Total de Tempo de Resposta (min)", value: "tempoTotal" },
+        { text: "TMR (min)", value: "tmr" },
+        { text: "Mínimo Resposta (min)", value: "tmrMinimo" },
+        { text: "Máximo Resposta (min)", value: "tmrMaximo" },
       ],
-      dados: [{
-        soma: 69.18,
-        media: 1.15,
-        minimo: 0.67,
-        maximo: 1.57,
-        realtotalchamadas: 60,
-      }],
       items: [],
+      items2: [],
+      ramalmanda: [],
+      dadosparatratar: [],
+      dados: [],
     };
   },
   components: {
@@ -66,17 +73,59 @@ export default {
   },
 
   methods: {
-    carregar: async function () {
-
+    listar: async function () {
+      this.items = []
+      // console.log(this.fila)
+      // console.log(filareal, pinreal);
       //Lista filas
-      let listafila = await api.get(`/listafilastotais`);
+      let listafila = await api.get(`/listausuariorelat/${this.id_empresa}`);
       // let entrajoin = join.data.dados;
-      //console.log(listafila);
+      console.log(listafila);
       let listatotalfilas = listafila.data.dados;
-      //console.log('Lista as filas',listatotalfilas);
-      this.items = listatotalfilas
+      console.log('Lista as filas', listatotalfilas);
+      let nome = [];
+      //let nomefila = [];
+      listatotalfilas.forEach((d) => {
+        // nomefila = d.descr;
+        nome = d.usuario;
+        console.log('nome da fila:', nome);
+        // this.listafila = [nomefila];
+        //this.items = nomefila;
+        this.items.push({
+          text: `${d.usuario}`,
+          token: `${d.token}`,
+          tokenM: `${d.tokenMobile}`,       // o que aparece no select
+          value: d.nome // o valor que será capturado no v-model
+
+          //          value: d.id_agencia // o valor que será capturado no v-model
+        });
+      });
+
+      //Listando os agentes para o filtro
+
 
     },
+    async exibir() {
+
+      const telEmpresaRes = await api.get(`pegaTelEmpresa/${this.id_empresa}`);
+      const telefone = telEmpresaRes.data.dados[0].telefone;
+
+      const nome = this.analista;
+
+      const totalRes = await api.get(`/TotalTempResp/${this.d1}/${this.d2}/${nome}/${telefone}`);
+      const tmrRes = await api.get(`/tmr/${this.d1}/${this.d2}/${nome}/${telefone}`);
+      const minRes = await api.get(`/tmrMinimo/${this.d1}/${this.d2}/${nome}/${telefone}`);
+      const maxRes = await api.get(`/tmrMaximo/${this.d1}/${this.d2}/${nome}/${telefone}`);
+
+      this.dados = [{
+        tempoTotal: Number(totalRes.data.dados[0].TempResp ?? 0).toFixed(2),
+        tmr: Number(tmrRes.data.dados[0].tmr_min ?? 0).toFixed(2),
+        tmrMinimo: Number(minRes.data.dados[0].min_tempo_resposta_min ?? 0).toFixed(2),
+        tmrMaximo: Number(maxRes.data.dados[0].max_min ?? 0).toFixed(2),
+      }];
+    }
+    ,
+
     saveCSV() {
 
       this.filename = "PlugPhone TME Tempo Médio de Espera";

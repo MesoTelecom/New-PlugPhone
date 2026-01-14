@@ -1,25 +1,20 @@
 <template>
   <div class="limiter">
     <Navbar />
-    <v-data-table
-      :headers="headers"
-      :items="dados"
-      sort-by="calories"
-      class="elevation-1"
-    >
-    
+    <v-data-table :headers="headers" :items="dados" sort-by="calories" class="elevation-1">
+
       <template v-slot:top>
-        
+
         <v-toolbar flat>
           <v-toolbar-title>Realtime dos Agentes</v-toolbar-title>
 
-       
+
           <v-divider class="mx-4" inset vertical></v-divider>
-          
+
           <v-spacer></v-spacer>
-           <router-link to="./menurealtime" class="linkp">
-          <v-btn dark class="botaoSair">voltar</v-btn>
-        </router-link>
+          <router-link to="./menurealtime" class="linkp">
+            <v-btn dark class="botaoSair">voltar</v-btn>
+          </router-link>
           <v-dialog v-model="dialog" max-width="500px">
             <v-card>
               <v-card-title>
@@ -30,10 +25,7 @@
                 <v-container>
                   <v-row>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="editedItem.extension"
-                        label="Editar ramal"
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.extension" label="Editar ramal"></v-text-field>
                     </v-col>
                   </v-row>
                 </v-container>
@@ -56,20 +48,14 @@
               </v-card-title>
 
               <v-card-text>
-                 <v-container>
+                <v-container>
                   <v-row>
-                    
+
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="editedItem.extension"
-                        label="Editar ramal"
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.extension" label="Editar ramal"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="editedItem.fila"
-                        label="Editar fila"
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.fila" label="Editar fila"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4"> </v-col>
                   </v-row>
@@ -94,18 +80,12 @@
               <v-card-text>
                 <v-container>
                   <v-row>
-                    
+
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="editedItem.extension"
-                        label="Editar ramal"
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.extension" label="Editar ramal"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="editedItem.fila"
-                        label="Editar fila"
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.fila" label="Editar fila"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4"> </v-col>
                   </v-row>
@@ -131,18 +111,12 @@
               <v-card-text>
                 <v-container>
                   <v-row>
-                    
+
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="editedItem.extension"
-                        label="Editar ramal"
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.extension" label="Editar ramal"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="editedItem.fila"
-                        label="Editar fila"
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.fila" label="Editar fila"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4"> </v-col>
                   </v-row>
@@ -168,18 +142,12 @@
               <v-card-text>
                 <v-container>
                   <v-row>
-                    
+
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="editedItem.extension"
-                        label="Editar ramal"
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.extension" label="Editar ramal"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field
-                        v-model="editedItem.fila"
-                        label="Editar fila"
-                      ></v-text-field>
+                      <v-text-field v-model="editedItem.fila" label="Editar fila"></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4"> </v-col>
                   </v-row>
@@ -198,17 +166,11 @@
 
           <v-dialog v-model="dialogDelete" max-width="500px">
             <v-card>
-              <v-card-title class="text-h5"
-                >Tem certeza que deseja excluir?</v-card-title
-              >
+              <v-card-title class="text-h5">Tem certeza que deseja excluir?</v-card-title>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="closeDelete"
-                  >Cancel</v-btn
-                >
-                <v-btn color="blue darken-1" text @click="deleteItemConfirm"
-                  >OK</v-btn
-                >
+                <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+                <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
                 <v-spacer></v-spacer>
               </v-card-actions>
             </v-card>
@@ -230,7 +192,7 @@
         </v-icon>
       </template>
 
-      
+
       <template v-slot:[`item.estado`]="{ item }">
         <v-chip :color="getColor(item.estado)" dark>
           {{ item.estado }}
@@ -250,21 +212,21 @@ export default {
   async beforeMount() {
     //const { setIntervalAsync } = require("set-interval-async/legacy");
     this.exibir();
-        console.log('eu sou idsetinterval Before mount',this.idsetinterval)
+    console.log('eu sou idsetinterval Before mount', this.idsetinterval)
 
     this.idsetinterval = setInterval(() => this.exibir(), 5000);
-    
+
   },
 
-  async beforeUnmount(){
-    console.log('eu sou idsetinterval',this.idsetinterval)
+  async beforeUnmount() {
+    console.log('eu sou idsetinterval', this.idsetinterval)
     clearInterval(this.idsetinterval)
     this.idsetinterval = 0
-    
+
   },
   async mounted() {
     ////console.log(this.$store.state.token)
-    setTimeout(()=>{location.reload()}, 60000)
+    setTimeout(() => { location.reload() }, 60000)
   },
   name: "HelloWord",
   data: () => ({
@@ -276,32 +238,32 @@ export default {
     dialogPausaOut: false,
 
     dialogDelete: false,
-    
+
     headers: [
-{
-text: "Fila",
-align: "start",
-sortable: false,
-value: "fila",
-},
-{ text: "Ramal", value: "extension" },
-{ text: "Agente", value: "name" },
-{ text: "Status", value: "estado" },
-{ text: "Total de Chamadas da Ultima Sessão", value: "totaliga" },
-{ text: "Total de Chamadas Sainte da Ultima Sessão", value: "totaligasainte" },
-{ text: "Total de Login", value: "totalloga" },
-{
-text: "Logar | Deslogar | Pausar | Remover pausa",
-value: "actions",
-sortable: false,
-},
-],
+      {
+        text: "Fila",
+        align: "start",
+        sortable: false,
+        value: "fila",
+      },
+      { text: "Ramal", value: "ramal" },
+      { text: "Agente", value: "usuario" },
+      { text: "Status", value: "estado" },
+      { text: "Total de Chamadas da Ultima Sessão", value: "totaliga" },
+      { text: "Total de Chamadas Sainte da Ultima Sessão", value: "totaligasainte" },
+      { text: "Total de Login", value: "totaloga" },
+      {
+        text: "Logar | Deslogar | Pausar | Remover pausa",
+        value: "actions",
+        sortable: false,
+      },
+    ],
 
     desserts: [],
     dados: [],
     pin: '',
     editedIndex: -1,
-   editedItem: {
+    editedItem: {
       id: "",
       pin: "",
       extension: "",
@@ -319,7 +281,7 @@ sortable: false,
     Footer,
   },
   computed: {
-     formTitle() {
+    formTitle() {
       return this.editedIndex === -1 ? "Novo Script" : "Editar Script";
     },
     formTitleLogin() {
@@ -337,7 +299,7 @@ sortable: false,
   },
 
   watch: {
-       dialog(val) {
+    dialog(val) {
       val || this.close();
     },
 
@@ -356,7 +318,7 @@ sortable: false,
     dialogDelete(val) {
       val || this.closeDelete();
     },
-    },
+  },
   created() {
   },
 
@@ -371,7 +333,7 @@ sortable: false,
       this.dados = a.data.dados;
       console.log(this.dados)
     },
-        verificachamada: async function () {
+    verificachamada: async function () {
       let ramal = this.$store.state.usuario.ramal;
       //console.log(ramal);
 
@@ -408,19 +370,19 @@ sortable: false,
         //console.log("em pausa");
       }
     },
-     getColor (estado) {
-        if (estado == 'deslogado') return 'red'
-        else if (estado == 'pausado') return 'orange'
-        else if (estado == 'em ligacao') return 'blue'
-        else if (estado == 'em ligacao sainte') return 'blue'
-        else return 'green'
-      },
-    editItem (item) {
-        this.editedIndex = this.desserts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialog = true
-      },
- editItemLogin(item) {
+    getColor(estado) {
+      if (estado == 'deslogado') return 'red'
+      else if (estado == 'pausado') return 'orange'
+      else if (estado == 'em ligacao') return 'blue'
+      else if (estado == 'em ligacao sainte') return 'blue'
+      else return 'green'
+    },
+    editItem(item) {
+      this.editedIndex = this.desserts.indexOf(item)
+      this.editedItem = Object.assign({}, item)
+      this.dialog = true
+    },
+    editItemLogin(item) {
       this.editedIndex = this.desserts.indexOf(item);
       this.editedItem = Object.assign({}, item);
       this.dialogLogin = true;
@@ -459,9 +421,9 @@ sortable: false,
       this.closeDelete();
     },
 
-     
 
-      close() {
+
+    close() {
       this.dialog = false;
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem);
@@ -505,11 +467,11 @@ sortable: false,
       });
     },
 
-       logar: async function () {
+    logar: async function () {
       let res;
 
       let res2;
-      
+
       let res3;
 
       let res4;
@@ -542,26 +504,27 @@ sortable: false,
       let res;
       let res2;
       let res3;
-        //edita
-        //console.log('Item editado',this.editedItem)
-        res = await api.post("/deslogarpainel", this.editedItem);
-              
-        res2 = await api.post("/estadoperadordesloga", this.editedItem);
+      //edita
+      //console.log('Item editado',this.editedItem)
+      res = await api.post("/deslogarpainel", this.editedItem);
+
+      res2 = await api.post("/estadoperadordesloga", this.editedItem);
 
 
-         res2 = await api.post("/deslogaestadorfila", this.editedItem);
-              
+      res2 = await api.post("/deslogaestadorfila", this.editedItem);
 
-        res3 = await api.post("/logsdeslogar", this.editedItem);
-              this.closeLogout();
 
-        if (res.data.msg == "erro" || res2.data.msg == "erro" || res3.data.msg == "erro") {
-          window.alert("Ocorreu um erro code 1!");
-        } else {
+      res3 = await api.post("/logsdeslogar", this.editedItem);
+      this.closeLogout();
+
+      if (res.data.msg == "erro" || res2.data.msg == "erro" || res3.data.msg == "erro") {
+        window.alert("Ocorreu um erro code 1!");
+      } else {
         Object.assign(this.desserts[this.editedIndex], this.editedItem);
-        }},
+      }
+    },
 
-        pausar: async function () {
+    pausar: async function () {
       let res;
       let res2;
       let res3;
@@ -571,7 +534,7 @@ sortable: false,
       res = await api.post("/pausarpainelrt", this.editedItem);
 
 
-       res2 = await api.post("/pausarestado", this.editedItem);
+      res2 = await api.post("/pausarestado", this.editedItem);
 
 
 
@@ -584,7 +547,7 @@ sortable: false,
         res.data.msg == "erro" ||
         res2.data.msg == "erro" ||
         res3.data.msg == "erro" ||
-        res4.data.msg == "erro" 
+        res4.data.msg == "erro"
 
       ) {
         window.alert("Ocorreu um erro code 1!");
@@ -602,7 +565,7 @@ sortable: false,
       res = await api.post("/despausarpainelrt", this.editedItem);
 
 
-       res2 = await api.post("/estadoperador", this.editedItem);
+      res2 = await api.post("/estadoperador", this.editedItem);
 
 
       res3 = await api.post("/logsdespausarrt", this.editedItem);
@@ -613,7 +576,7 @@ sortable: false,
       if (
         res.data.msg == "erro" ||
         res2.data.msg == "erro" ||
-        res3.data.msg == "erro" 
+        res3.data.msg == "erro"
       ) {
         window.alert("Ocorreu um erro code 1!");
       } else {
@@ -629,9 +592,9 @@ sortable: false,
       }
       this.closePausaOut();
     },
-    },
-  
-  
+  },
+
+
 };
 </script>
 
@@ -652,15 +615,18 @@ html {
   height: 100%;
   font-family: sans-serif;
 }
+
 .botaoSair {
   margin-left: 1%;
   background-color: green !important;
   text-decoration: none !important;
 }
+
 .linkp {
   margin-left: 2%;
   text-decoration: none;
 }
+
 /* ------------------------------------ */
 a {
   margin: 0px;
@@ -669,9 +635,11 @@ a {
   -o-transition: all 0.4s;
   -moz-transition: all 0.4s;
 }
+
 .botaoA {
   margin-left: 1%;
 }
+
 .datest {
   border-style: solid !important;
   display: inline;
@@ -691,9 +659,11 @@ a:focus {
 a:hover {
   text-decoration: none;
 }
+
 .cardform {
   background-color: #61a5e8;
 }
+
 /* ------------------------------------ */
 h1,
 h2,
@@ -724,8 +694,7 @@ textarea {
 }
 
 textarea:focus,
-input:focus {
-}
+input:focus {}
 
 /* ------------------------------------ */
 button {
@@ -821,6 +790,7 @@ iframe {
 #campaignMonitoringApplication table {
   font-size: 10pt;
 }
+
 div.neo-module-content {
   background-size: 100%;
   background-repeat: no-repeat;
@@ -835,9 +805,11 @@ div.registro {
   background-color: #ffffff;
   border: 1px solid #999999;
 }
+
 div.registro table {
   width: 100%;
 }
+
 .testeB {
   box-shadow: 0px 0px 19px -7px #060607;
   background: linear-gradient(to bottom, #243e57 5%, #4779ac 100%);
@@ -854,29 +826,35 @@ table.titulo {
   background-color: #61a5e8;
   height: 32px;
 }
-table.titulo > tbody > tr > td {
+
+table.titulo>tbody>tr>td {
   padding: 6px;
 }
+
 div.llamadas {
   overflow-y: auto;
   /*width: 100%;*/
   background-color: #243e57;
   border: 1px solid #999999;
 }
+
 div.llamadas table {
   width: 100%;
   border-spacing: 0;
   border-collapse: collapse;
 }
-div.llamadas table > tbody > tr:hover {
+
+div.llamadas table>tbody>tr:hover {
   background-color: #61caef;
   color: black;
 }
-div.llamadas table > tbody > tr > td {
+
+div.llamadas table>tbody>tr>td {
   padding: 6px;
   color: #ffffff;
   border-bottom: 1px #b6b6b6 solid;
 }
+
 .reciente {
   font-weight: bold;
 }
@@ -1006,6 +984,7 @@ div.llamadas table > tbody > tr > td {
     padding-top: 16px;
     padding-bottom: 16px;
   }
+
   .row .cell:nth-child(1) {
     padding-left: 30px;
   }
@@ -1024,6 +1003,7 @@ div.llamadas table > tbody > tr > td {
     width: 100% !important;
   }
 }
+
 #campaignMonitoringApplication {
   font-size: 10pt;
 }
@@ -1031,6 +1011,7 @@ div.llamadas table > tbody > tr > td {
 #campaignMonitoringApplication table {
   font-size: 10pt;
 }
+
 div.neo-module-content {
   background-size: 100%;
   background-repeat: no-repeat;
@@ -1045,9 +1026,11 @@ div.registro {
   background-color: #ffffff;
   border: 1px solid #999999;
 }
+
 div.registro table {
   width: 100%;
 }
+
 .testeB {
   box-shadow: 0px 0px 19px -7px #060607;
   background: linear-gradient(to bottom, #243e57 5%, #4779ac 100%);
@@ -1064,29 +1047,35 @@ table.titulo {
   background-color: #61a5e8;
   height: 32px;
 }
-table.titulo > tbody > tr > td {
+
+table.titulo>tbody>tr>td {
   padding: 6px;
 }
+
 div.llamadas {
   overflow-y: auto;
   /*width: 100%;*/
   background-color: #243e57;
   border: 1px solid #999999;
 }
+
 div.llamadas table {
   width: 100%;
   border-spacing: 0;
   border-collapse: collapse;
 }
-div.llamadas table > tbody > tr:hover {
+
+div.llamadas table>tbody>tr:hover {
   background-color: #61caef;
   color: black;
 }
-div.llamadas table > tbody > tr > td {
+
+div.llamadas table>tbody>tr>td {
   padding: 6px;
   color: #ffffff;
   border-bottom: 1px #b6b6b6 solid;
 }
+
 .reciente {
   font-weight: bold;
 }

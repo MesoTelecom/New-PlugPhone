@@ -43,6 +43,9 @@
 
         </v-col>
       </v-row>
+      <br>
+      <br>
+      <hr>
 
     </v-container>
 
@@ -50,12 +53,13 @@
    top: -12%;width: 66%;position: relative;
 ">
       <v-col cols="12" sm="6" md="3">
-        <v-select :items="items" label="Informe a fila" v-model="fila2"></v-select>
-
-        <v-btn color="blue darken-1" text @click="exibir2" style="top: -45%;    right: 30%;"> Consultar </v-btn>
-
+        <br>
+        <br>
+        <br>
+        <br>
       </v-col>
     </div>
+
     <v-container style="margin-top: -380px; padding: 136px">
       <v-row>
         <v-col cols="12" sm="12">
@@ -107,8 +111,15 @@ import Footer from "../components/footer.vue";
 
 export default {
   async beforeMount() {
+
     //const { setIntervalAsync } = require("set-interval-async/legacy");
+    let usuario = JSON.parse(localStorage.getItem('usu'));
+    this.tipo = usuario.tipo;
+    this.usuario = usuario.usuario + "-PlugPhone"
+    this.ramal = usuario.ramal
+    this.id_empresa = usuario.id_empresa
     this.exibir();
+
     //console.log("eu sou idsetinterval Before mount", this.idsetinterval);
 
     this.idsetinterval = setInterval(() => this.exibir(), 5000);
@@ -136,8 +147,12 @@ export default {
   data: () => ({
     idsetinterval: null,
     idsetinterval2: null,
-    fila: "",
+    fila: "200",
     fila2: "",
+    tipo: "",
+    usuario: "",
+    ramal: "",
+    id_empresa: "",
     items: [],
     lists: [
       {
@@ -357,9 +372,9 @@ export default {
         let temposegundosA = d.mediaANNA;
         //console.log("Eu sou o Edu:", temposegundosA);
         ////console.log('Eu sou o Edu A:', temposegundosB);
-        let tma = temposegundosA / 60;
-        //console.log("Eu sou o TMA do Lucas:", tma);
+        let tma = (Number(temposegundosA) || 0) / 60;
         this.lists[5].count = tma.toFixed(2);
+
       });
 
       //Setima bolinha TME Atendidas
@@ -420,8 +435,9 @@ export default {
     //------------------------------------------------------------------------------------------------------------------------------
     exibir2: async function () {
       //Segunda bolinha do painel das filas
-
-      let join = await api.get(`listajoin/${this.fila2}`);
+      const telEmpresaRes = await api.get(`pegaTelEmpresa/${this.id_empresa}`);
+      const telefone = telEmpresaRes.data.dados[0].telefone;
+      let join = await api.get(`esperaMsg/${this.id_empresa}`);
       // let entrajoin = join.data.dados;
       //console.log(join);
       this.lists2[1].count = join.data.dados.length;
@@ -429,7 +445,7 @@ export default {
       //Primeira bolinha do painel das filas
 
       let total = await api.get(
-        `listajointotal/${this.fila2
+        `totalMsg/${this.id_empresa
         }/${this.PastDateTime()}/${this.currentDateTime()}`
       );
       let entrajointotal = total.data.dados;
@@ -438,7 +454,7 @@ export default {
 
       //Terceira bolinha de chamadas conectadas na fila, isto é, aquelas chamadas que estão em curso
 
-      let conectadofila = await api.get(`filaconectada/${this.fila2}/${this.PastDateTime()}/${this.currentDateTime()}`);
+      let conectadofila = await api.get(`msgAndamento/${this.id_empresa}/${this.PastDateTime()}/${this.currentDateTime()}`);
       // let entrajoin = join.data.dados;
       let conectadatotal = conectadofila.data.dados;
       console.log(conectadatotal);
@@ -446,7 +462,7 @@ export default {
 
       //Quarta bolinha de chamadas da fila - Abandonadas do dia
       let abandonadasfila = await api.get(
-        `filasabandonadas/${this.fila2
+        `aguardandoAtendimento/${this.id_empresa
         }/${this.PastDateTime()}/${this.currentDateTime()}`
       );
       let abandonadastotal = abandonadasfila.data.dados;
@@ -454,33 +470,34 @@ export default {
       this.lists2[3].count = abandonadasfila.data.dados.length;
 
       //Quinta bolinha chamadas atendidas na fila
-      let tudofila = total.data.dados.length;
-      let tudoabandonofila = abandonadasfila.data.dados.length;
-      let atendidas = tudofila - tudoabandonofila;
+      let concluidasArray = await api.get(`concluidoAtendimento/${this.id_empresa
+        }/${this.PastDateTime()}/${this.currentDateTime()}`)
+      console.log(concluidasArray)
+
+      let atendidas = abandonadasfila.data.dados.length;
+
       this.lists2[4].count = atendidas;
 
       //Sexta bolinha tma
-      let tmafila = await api.get(
-        `tmafilas/${this.fila2
-        }/${this.PastDateTime()}/${this.currentDateTime()}`
+      let tmrGeral = await api.get(
+        `tmrGeral/${this.PastDateTime()}/${this.currentDateTime()}/${telefone
+        }`
       );
-      //console.log("primeiro:", tmafila);
-      let tmarealfila = tmafila.data.dados;
-      //console.log("Opa eu sou o edu array completo:", tmarealfila);
+      //console.log("primeiro:", tmrGeral);
+      let tmrGeralFila = tmrGeral.data.dados;
+      //console.log("Opa eu sou o edu array completo:", tmrGeralFila);
 
-      tmarealfila.forEach((d) => {
-        let temposegundosA = d.mediaANNA;
+      tmrGeralFila.forEach((d) => {
         //console.log("Eu sou o Edu:", temposegundosA);
         ////console.log('Eu sou o Edu A:', temposegundosB);
-        let tma = temposegundosA / 60;
-        //console.log("Eu sou o TMA do Lucas:", tma);
-        this.lists2[5].count = tma.toFixed(2);
+        let tmr = Number(d.tmr_min).toFixed(2);
+        console.log("Eu sou o TMA do Lucas:", tmr);
+        this.lists2[6].count = tmr
       });
 
       //Setima bolinha TME Atendidas
       let tmefila = await api.get(
-        `tmefilas/${this.fila2
-        }/${this.PastDateTime()}/${this.currentDateTime()}`
+        `tmefilas/${this.fila}/${this.PastDateTime()}/${this.currentDateTime()}`
       );
       //console.log("primeiro:", tmefila);
       let tmerealfila = tmefila.data.dados;
@@ -492,7 +509,7 @@ export default {
         ////console.log('Eu sou o Edu A:', temposegundosB);
         let tme = temposegundosB / 60;
         //console.log("Eu sou o TME do Lucas:", tme);
-        this.lists2[6].count = tme.toFixed(2);
+        this.lists2[5].count = tme.toFixed(2);
       });
 
       //Oitava bolinha TME do abandono
@@ -550,7 +567,7 @@ export default {
       }
     },
     alarme: async function () {
-      if (this.lists[1].count >= 2) {
+      if (this.lists[1].count >= 5) {
 
         setTimeout(() => { this.playSound(); }, 3000);
         console.log('oi')
@@ -560,13 +577,13 @@ export default {
         this.lists[1].icon = 'mdi mdi-phone-log'
       }
 
-      if (this.lists2[1].count >= 2) {
+      if (this.lists2[1].count >= 8) {
         console.log('tudobem?')
         setTimeout(() => { this.playSound(); }, 3000);
         this.lists2[1].icon = 'mdi mdi-alert'
       } else {
         this.sound = "";
-        this.lists2[1].icon = 'mdi mdi-phone-log'
+        this.lists2[1].icon = 'mdi-message-text-clock-outline'
       }
     },
   },
@@ -653,6 +670,10 @@ export default {
 }
 
 .mdi-phone-log {
+  color: orange !important;
+}
+
+.mdi-message-text-clock-outline {
   color: orange !important;
 }
 

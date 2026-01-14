@@ -8,8 +8,8 @@
 
             <!--Saída do Período da API-->
             <input type="date" class="datest" v-model="d2" required />
-            <v-select :items="items" label="Matheus" v-model="analista" class="filtro"></v-select>
-            <v-btn class="botaoA" @click="tmazap()"> Consultar </v-btn>
+            <v-select :items="items" label="Escolha seu usuário" v-model="analista" class="filtro"></v-select>
+            <v-btn class="botaoA" @click="exibir()"> Consultar </v-btn>
 
             <router-link to="./menuwhastapp" class="linkp">
                 <v-btn dark class="botaoSair">voltar</v-btn>
@@ -36,7 +36,13 @@ import Footer from "../components/footer.vue";
 
 export default {
     async beforeMount() {
+        let usuario = JSON.parse(localStorage.getItem('usu'));
+        this.tipo = usuario.tipo;
+        this.id_empresa = usuario.id_empresa
         this.listarAnalista();
+        this.listar();
+
+
     },
 
     components: {
@@ -46,14 +52,13 @@ export default {
 
     data() {
         return {
-            d1: "2024-09-26",
-
-            d2: "2024-09-26",
-
+            d1: "",
+            d2: "",
             analista: "",
             pin: '',
-
+            id_empresa: 0,
             ramal: "",
+            tipo: "",
 
             search: "",
             headers: [
@@ -61,22 +66,16 @@ export default {
                     text: "Nome do Agente",
                     align: "start",
                     filterable: false,
-                    value: "nomeAgente",
+                    value: "nome",
                 },
 
-                { text: "Plataforma", value: "plataforma" },
-                { text: "Quant Mensagem", value: "quantidade" },
-                { text: "Tempo em Mensagem", value: "tempo" },
-                { text: "Media Tempo", value: "mediaTempo" },
-                { text: "Maxima Duração", value: "maximaDuracao" },
+                { text: "Quant Mensagem", value: "quantMsg" },
+                { text: "Tempo em Mensagem", value: "tempoMsg" },
+                { text: "Media Tempo", value: "tmaMinutos" },
+                { text: "Maxima Duração", value: "maxZap" },
             ],
             dados: [{
-                nomeAgente: "Matheus",
-                plataforma: "Whatsapp",
-                quantidade: 50,
-                tempo: "03:00:00",
-                mediaTempo: "00:15:00",
-                maximaDuracao: "00:30:00"
+
             }],
             items: [],
             items2: [],
@@ -86,48 +85,91 @@ export default {
     },
 
     methods: {
-        tmazap: async function () {
-            let tudo = await api.get(`/tmazap/${this.analista}/${this.d1}/${this.d2}`)
-            console.log('Sou o tma zap', tudo)
+        listar: async function () {
+            this.items = []
+            // console.log(this.fila)
+            // console.log(filareal, pinreal);
+            //Lista filas
+            let listafila = await api.get(`/listausuariorelat/${this.id_empresa}`);
+            // let entrajoin = join.data.dados;
+            console.log(listafila);
+            let listatotalfilas = listafila.data.dados;
+            console.log('Lista as filas', listatotalfilas);
+            let nome = [];
+            //let nomefila = [];
+            listatotalfilas.forEach((d) => {
+                // nomefila = d.descr;
+                nome = d.usuario;
+                console.log('nome da fila:', nome);
+                // this.listafila = [nomefila];
+                //this.items = nomefila;
+                this.items.push({
+                    text: `${d.usuario}`,
+                    token: `${d.token}`,
+                    tokenM: `${d.tokenMobile}`,       // o que aparece no select
+                    value: d.nome // o valor que será capturado no v-model
 
-            let nomeAgente
-            if (tudo.data.telefone.nome == null) {
-                nomeAgente = tudo.data.whastzap.nome
-            } else if (tudo.data.whastzap.nome == null) {
-                nomeAgente = tudo.data.telefone.nome
-            }
-            let plataforma = []
-            plataforma.push(tudo.data.telefone.plataforma, tudo.data.whastzap.plataforma)
-            let quantidade = []
-            quantidade.push(tudo.data.telefone.quantidade, tudo.data.whastzap.quantidade)
-            let tempo = []
-            tempo.push(tudo.data.telefone.tempo, tudo.data.whastzap.tempo)
-            let mediaTempo = []
-            mediaTempo.push(tudo.data.telefone.media / 60, tudo.data.whastzap.media / 60)
-            let maximaDuracao = []
-            maximaDuracao.push(tudo.data.telefone.maxDuracao / 60, tudo.data.whastzap.maxDuracao / 60)
+                    //          value: d.id_agencia // o valor que será capturado no v-model
+                });
+            });
 
-            this.dados = [
-                {
-                    nomeAgente,
-                    plataforma: plataforma[0],
-                    quantidade: quantidade[0],
-                    tempo: tempo[0],
-                    mediaTempo: mediaTempo[0].toFixed(2),
-                    maximaDuracao: maximaDuracao[0].toFixed(2)
-                },
-                {
-                    nomeAgente,
-                    plataforma: plataforma[1],
-                    quantidade: quantidade[1],
-                    tempo: tempo[1],
-                    mediaTempo: mediaTempo[1].toFixed(2),
-                    maximaDuracao: maximaDuracao[1].toFixed(2)
-                }
-            ]
+            //Listando os agentes para o filtro
 
-            console.log('eu sou dados', this.dados)
+
         },
+
+        exibir: async function () {
+            console.log(this.d1, this.d2)
+            console.log('extra-terrestre', this.id_empresa)
+
+            let telEmpresaArray = await api.get(`pegaTelEmpresa/${this.id_empresa}`)
+
+            let telefone = telEmpresaArray.data.dados[0].telefone
+            console.log('vamos maria', telefone)
+            let nome = this.analista
+            let mediatma = await api.get(
+                `/mediatmazap/${this.d1}/${this.d2}/${nome}/${this.id_empresa}`
+            );
+            console.log("resposta api", mediatma);
+            let realtma = mediatma.data.dados;
+            console.log("Eu sou o TMA do front haha", realtma);
+
+            let tmaSegundos = 0;
+
+            realtma.forEach((d) => {
+                tmaSegundos = d.tma_segundos;
+            });
+
+            let tmaMinutos = (tmaSegundos / 60).toFixed(2);
+
+            console.log("TMA em minutos:", tmaMinutos);
+
+            let quantMsgArray = await api.get(
+                `/quantMsg/${this.d1}/${this.d2}/${nome}/${telefone}`
+            );
+
+            console.log('quantMsgArray', quantMsgArray)
+            let quantMsg = quantMsgArray.data.dados[0].quantMsg
+
+            let tempoMsgArray = await api.get(
+                `/tempoMsg/${this.d1}/${this.d2}/${nome}/${this.id_empresa}`
+            );
+
+
+            console.log('tempoMsg', tempoMsgArray)
+            let tempoMsg = tempoMsgArray.data.dados[0].tempoMsg
+
+            let maxAtendimento = await api.get(
+                `/maxZap/${this.d1}/${this.d2}/${nome}/${this.id_empresa}`
+            );
+
+
+            console.log('maxAtendimento', maxAtendimento)
+            let maxZap = maxAtendimento.data.dados[0].MaxAtendimentos
+
+            this.dados = [{ nome, tmaMinutos, quantMsg, tempoMsg, maxZap }]
+        },
+
         listarAnalista: async function () {
             let listaAnalista = await api.get(`/listaanalista`);
             console.log(listaAnalista);

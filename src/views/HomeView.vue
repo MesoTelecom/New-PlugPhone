@@ -128,8 +128,22 @@ export default {
     },
 
     goToEBS() {
+      //Produção Meso------------------------------
+      ///*
       const appId = "7397712986921789";
       const configId = "473643052180048";
+      //*/
+      //-------------------------------------------
+      /*
+      //LabPlugPhone-------------------------------
+      const appId = "2345944319087956";
+      const configId = "1542847690310028";
+      */
+      //-------------------------------------------
+
+
+
+
 
       const signupUrl = `https://business.facebook.com/messaging/whatsapp/onboard/?app_id=${appId}&config_id=${configId}`;
 

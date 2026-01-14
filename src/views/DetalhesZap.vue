@@ -45,17 +45,19 @@ import Footer from "../components/footer.vue";
 
 export default {
   async beforeMount() {
-    let a = await api.get("/datalhesligacoes");
-    console.log(a.data.dados);
-    this.dados = a.data.dados;
+
+    let usuario = JSON.parse(localStorage.getItem('usu'));
+    this.id_empresa = usuario.id_empresa
+
+
   },
   name: "HelloWord",
 
   data() {
     return {
-      d1: "2024-09-24",
-
-      d2: "2024-09-24",
+      d1: "",
+      id_empresa: 0,
+      d2: "",
       search: "",
       whatsapp: [],
       telefone: [],
@@ -64,51 +66,23 @@ export default {
           text: "Nome do agente",
           align: "start",
           filterable: false,
-          value: "usuario",
+          value: "agente",
         },
-        { text: "Nome Cliente", value: "credor" },
+        { text: "Agente Transferido", value: "agenteTransferido" },
         { text: "Estado", value: "estado" },
+        { text: "Telefone", value: "telefone" },
+
         { text: "Data Inicio", value: "dataInicio" },
         { text: "Data Fim", value: "dataFim" },
-        { text: "Plataforma", value: "plataforma" },
-        {
-          text: "Visualizar",
-          value: "actions",
-          sortable: false
-        },
+        { text: "Plataforma", value: "canal" },
+
       ],
 
       dados: [
-        {
-          usuario: "Matheus Avelino",
-          credor: "João Silva",
-          estado: "Em Atendimento",
-          dataInicio: "24-09-2024 09:56:52",
-          dataFim: "",
-          plataforma: "Whatsapp",
-        },
-        {
-          usuario: "Lucas Alves",
-          credor: "Ricardo Tavares",
-          estado: "Finalizado",
-          dataInicio: "24-09-2024 12:28:52",
-          dataFim: "24-09-2024 12:40:00",
-          plataforma: "Telefone",
-        },
-        {
-          usuario: "Marcelo Santo",
-          credor: "Luana Ferreira",
-          estado: "Em Andamento",
-          dataInicio: "24-09-2024 13:32:53",
-          dataFim: "",
-          plataforma: "Whatsapp",
-        },
+
       ],
       items: [
-        { title: "Fila PMMG 190" },
-        { title: "Fila Samu" },
-        { title: "Fila Bombeiros" },
-        { title: "Fila Civil" },
+
       ],
       estado: [{ text: "Todos" }, { text: "Entrante" }, { text: "Sainte" }],
       Agentes: [{ text: "Agent-007" }],
@@ -136,24 +110,29 @@ export default {
       }
     },
     exibir: async function () {
-      let geral = await api.get(`/detalhezap/${this.d1}/${this.d2}`)
+      console.log(this.id_empresa)
+      let geral = await api.get(`/detalhezap/${this.d1}/${this.d2}/${this.id_empresa}`)
       let geralDados = geral.data.dados
       console.log('aqui', geralDados)
       geralDados.forEach(e => {
 
-        let usuario = e.usuario
-        let credor = e.credor
+        let agente = e.agente
+        let agenteTransferido = e.agenteTransferido
+        let canal = e.canal
         let processo = e.processo
-        let estado = e.estado
-        let dataInicio = e.dataInicio
-        let dataFim = e.dataFim
+        let telefone = e.telefone
+        let estado = e.status
+        let dataInicio = e.data_inicio
+        let dataFim = e.data_fim
         let plataforma = e.Platarforma
 
         this.dados.push({
-          usuario: usuario,
-          credor: credor,
+          agente: agente,
+          agenteTransferido: agenteTransferido,
+          canal: canal,
           processo: processo,
           estado: estado,
+          telefone: telefone,
           // 2024-04-52
           dataInicio: dataInicio,
           dataFim: dataFim,

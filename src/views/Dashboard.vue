@@ -67,6 +67,16 @@ export default {
   name: "DashboardPrincipal",
   async beforeMount() {
     //const { setIntervalAsync } = require("set-interval-async/legacy");
+    let usuario = JSON.parse(localStorage.getItem('usu'));
+    this.tipo = usuario.tipo;
+    this.usuario = usuario.usuario + "-PlugPhone"
+    this.ramal = usuario.ramal
+    this.id_empresa = usuario.id_empresa
+
+    console.log('Giovanni', this.tipo,
+      this.usuario,
+      this.ramal,
+      this.id_empresa,)
   },
 
   async mounted() {
@@ -98,6 +108,11 @@ export default {
     idsetinterval2: null,
     idsetinterval3: null,
     chartData1: [],
+    tipo: "",
+    usuario: "",
+    ramal: "",
+    id_empresa: "",
+
     dataGrafico: [],
     chartOptions1: {
       title: "Fluxo de ligações por hora",
@@ -179,7 +194,7 @@ export default {
       {
         id: 4,
         icon: "fa fa-phone-square",
-        title: "Em ligação",
+        title: "Contatos em Andamento",
         count: 0,
       },
     ],
@@ -291,34 +306,34 @@ export default {
 
     realtime: async function () {
       ////console.log('JWT AQUI: ',localStorage.getItem("jwt"))
-      let liga = await api.get("dashligacao");
+      let liga = await api.get(`dashligacao/${this.id_empresa}`);
 
       ////console.log(liga.data.dados);
       this.lists[3].count = liga.data.dados.length;
       //////console.log(realliga);
       //this.ligacao.push([realliga]);
 
-      let loga = await api.get("dashlogados");
+      let loga = await api.get(`dashlogados/${this.id_empresa}`);
 
       ////console.log(loga.data.dados);
       this.lists[0].count = loga.data.dados.length;
       ////   //console.log(realloga);
       // this.logado.push([realloga]);
 
-      let pausa = await api.get("dashpausados");
+      let pausa = await api.get(`dashpausados/${this.id_empresa}`);
 
       ////console.log(pausa.data.dados);
       this.lists[2].count = pausa.data.dados.length;
       //////console.log(realpausa);
       //this.logado.push([realpausa]);
-      let deslogado = await api.get("dashdeslogados");
+      let deslogado = await api.get(`dashdeslogados/${this.id_empresa}`);
 
       ////console.log(pausa.data.dados);
       // this.lists[1].count = deslogado.data.dados.length;
       let todosoperadores = deslogado.data.dados.length;
       ////console.log(todosoperadores);
 
-      let logados = await api.get("dashlogados");
+      let logados = await api.get(`dashlogados/${this.id_empresa}`);
       let logadosonline = logados.data.dados.length;
 
       let deslogadosoperadores;
