@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { executaQry } = require("../banco/bd");
+const csv = require('csv-parser');
+
 const { executaQry2 } = require("../banco/db2");
 const { geraToken } = require("./jwt/jwt");
 const { send, sendImage, sendVideo, sendAudio, sendDocument, sendTemplate, download, test, getImage, getAudio, getDocument, reciveMediaLink, geraMedia, sendGpt, verificaPalavrao, sendAutenticacao } = require('/meso/whatsapp/webhook/methods.js');
@@ -69,6 +71,77 @@ class ExpressController {
         cb(new Error('Arquivo de imagem inválido. Apenas JPG, JPEG, PNG e GIF são permitidos.'), false);
       }
     };
+    let uploadArquivo = function () {
+      const uploadPath = path.join(__dirname, 'documentos')
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      const storage = multer.diskStorage({
+        destination: function (req, file, cb) {
+          cb(null, uploadPath)
+        },
+        filename: function (req, file, cb) {
+          cb(null, file.originalname)
+
+        }
+      })
+      return multer({ storage: storage })
+    }
+    let lerCsv = async function (fileName) {
+      const filePath = path.join(__dirname, 'documentos', fileName);
+      const results = [];
+
+      return new Promise((resolve, reject) => {
+        fs.createReadStream(filePath)
+          .pipe(csv())
+          .on('data', (data) => results.push(data))
+          .on('end', () => {
+            resolve(results);
+          })
+          .on('error', (error) => {
+            reject(error);
+          });
+      });
+    };
+
+
+    let terminou = false;
+
+    //    const upload = uploadArquivo();
+    let inserirCsv = async (resultadoCsv, usuario, res) => {
+
+      let idEmpresaArray = await executaQry(`SELECT id_empresa FROM meso_usuariologin WHERE usuario = '${usuario}'`);
+      console.log(`SELECT id_empresa FROM meso_usuariologin WHERE usuario = '${usuario}'`)
+      let idEmpresa = idEmpresaArray.dados[0].id_empresa;
+      console.log('amo códigos', idEmpresa)
+      let qry2 = `select wpp_id, telefone from meso_empresas where id_empresa = '${idEmpresa}'`
+      console.log('me ensinou a beber', qry2)
+      let wpp = await executaQry(qry2)
+      let wpp_id = wpp.dados[0].wpp_id
+      let wpnumber = wpp.dados[0].telefone
+      console.log('whatsapp id', wpp_id)
+
+      for (const e of resultadoCsv) {
+
+        console.log('acerto garantido', e.telefone, 'template_plugphone', e.nome, e.nomeMedico, wpp_id, wpnumber)
+
+        sendTemplate(e.telefone, 'template_plugphone', e.nome, e.nomeMedico, res, wpp_id, wpnumber)
+        let qry = `
+  INSERT INTO meso_contatos (telefone, ultimamsg, datahora,  nome, id_empresa)
+  SELECT '${e.telefone}', 'template_plugphone2', NOW(),  '${e.nomeMedico}', ${idEmpresa}
+  FROM DUAL
+  WHERE NOT EXISTS (
+    SELECT 1 
+    FROM meso_contatos 
+    WHERE telefone = '${e.telefone}'
+      AND id_empresa = ${idEmpresa}
+  )
+`;
+        await executaQry(qry);
+
+        console.log('inseriu na meso_contatos', qry);
+      }
+    }
 
     this.expressAppWrapper.post('/resetaToken', async (req, res, next) => {
       let usuario = req.body.usuario
@@ -306,6 +379,28 @@ class ExpressController {
       }
     });
 
+    this.expressAppWrapper.get('/get-document/:id', async (req, res) => {
+      let id = req.params.id;
+
+      if (!id) {
+        return res.status(400).send('ID do documento não fornecido.');
+      }
+
+      const filePath = path.join(__dirname, 'uploads', id);
+
+      try {
+        await fs.promises.access(filePath, fs.constants.F_OK);
+
+        // força download (e mantém o nome)
+        res.setHeader('Content-Disposition', `attachment; filename="${id}"`);
+
+        return res.sendFile(filePath);
+      } catch (err) {
+        return res.status(404).send('Documento não encontrado.');
+      }
+    });
+
+
 
 
     this.expressAppWrapper.post('/upload-document', uploadDocument.single('file'), async (req, res) => {
@@ -373,6 +468,27 @@ class ExpressController {
 
     });
 
+
+
+    const uploadArquivoCsv = uploadArquivo();
+
+    this.expressAppWrapper.app.post('/upload', uploadArquivoCsv.single('file'), async (req, res) => {
+      let usuario = req.body.usuario
+      console.log('Olha o usuario aqui gente', usuario)
+      //console.log('Arquivo recebido');
+      const file = req.file;
+      if (!file) {
+        return res.status(400).send('Nenhum arquivo enviado');
+      }
+      try {
+        const dadosCsv = await lerCsv(file.originalname);
+        await inserirCsv(dadosCsv, usuario, res);
+        res.send('Arquivo recebido e salvo com sucesso');
+      } catch (error) {
+        console.error('Erro ao processar o arquivo:', error);
+        res.status(500).send('Erro ao processar o arquivo');
+      }
+    });
 
     // Rota para upload de áudio
     this.expressAppWrapper.post('/upload-audio', uploadAudio.single('audio'), async (req, res) => {
@@ -515,7 +631,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
+            'Authorization': 'Bearer SEU TOKEN AQUI'
           }
         });
 
@@ -562,7 +678,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
+            'Authorization': 'Bearer SEU TOKEN AQUI'
           }
         });
 
@@ -613,7 +729,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
+            'Authorization': 'Bearer SEU TOKEN AQUI'
           }
         });
 
@@ -1114,42 +1230,41 @@ WHERE telefone = '${telefone}'
 
     })
 
-    this.expressAppWrapper.get("/buscarcontatos6/:tipo/:usuario/:estado/:filtro/:offset", async (req, res, next) => {
+    this.expressAppWrapper.get("/buscarcontatos6/:tipo/:usuario/:estado/:filtro/:offset", async (req, res) => {
       let { tipo, usuario, estado, filtro, offset } = req.params;
 
       if (!offset || offset === 'undefined') offset = 0;
 
-      // Busca id da empresa do usuário
-      let idEmpresaArray = await executaQry(`SELECT id_empresa FROM meso_usuariologin WHERE usuario = '${usuario}'`);
-      let idEmpresa = idEmpresaArray.dados[0].id_empresa;
+      let idEmpresaArray = await executaQry(`
+    SELECT id_empresa FROM meso_usuariologin WHERE usuario = '${usuario}'
+  `);
+
+      let idEmpresa = idEmpresaArray.dados?.[0]?.id_empresa;
+
+      console.log('eu sou o idEmpresa', idEmpresa);
+      if (!idEmpresa) {
+        return res.json({ dados: [], msg: "Usuário não tem id_empresa" });
+      }
 
       let where = [`id_empresa = '${idEmpresa}'`];
 
-      // Usuário comum => filtra apenas dele
       if (tipo !== "admin" && tipo !== "Técnico") {
         where.push(`(usuario LIKE '%${usuario}%' OR usuario IS NULL)`);
         where.push(`setor = '${tipo}'`);
       }
 
-      // Técnico => vê tudo do setor técnico
       if (tipo === "Técnico") {
         where.push(`setor = 'Técnico'`);
       }
 
-      // Admin => vê tudo da empresa, sem filtro extra
-      // (não precisa adicionar nada)
-
-      // Filtro de estado
       if (estado !== "Todos") {
         where.push(`estado = '${estado}'`);
       }
 
-      // Filtro de texto
       if (filtro !== "null") {
         where.push(`(nome LIKE '%${filtro}%' OR telefone LIKE '%${filtro}%' OR email LIKE '%${filtro}%')`);
       }
 
-      // Query final
       let qry = `
     SELECT * FROM meso_contatos
     ${where.length ? "WHERE " + where.join(" AND ") : ""}
@@ -1157,11 +1272,13 @@ WHERE telefone = '${telefone}'
     LIMIT 100 OFFSET ${offset}
   `;
 
+
       console.log("QUERY FINAL:", qry);
 
       let resultado = await executaQry(qry);
       return res.json(resultado);
     });
+
 
     this.expressAppWrapper.get("/buscarcontatomealing/:usuario/:tipo/", async (req, res, next) => {
       let qry
@@ -1238,28 +1355,55 @@ WHERE telefone = '${telefone}'
     });
 
     this.expressAppWrapper.post("/reciveMsg", async (req, res, next) => {
+      try {
+        let telefone = req.body.telefone;
+        let telFormatado = telefone;
+        let id_empresa = req.body.idEmpresa;
 
-      let telefone = req.body.telefone
-      let telFormatado = telefone
-      let id_empresa = req.body.idEmpresa
+        // 1) Pega o wpnumber da empresa
+        let qry55 = `select telefone, empresa from meso_empresas where id_empresa = '${id_empresa}'`;
+        console.log("Consulta da empresa:", qry55);
+        let empresa = await executaQry(qry55);
 
+        console.log("Dados da empresa:", empresa);
+        if (!empresa?.dados?.length) {
+          return res.json({ ok: false, msg: "Empresa não encontrada" });
+        }
 
-      let qry55 = `select telefone from meso_empresas where id_empresa = '${id_empresa}'`
-      console.log('me ensinou a beber', qry55)
-      let wpp = await executaQry(qry55)
-      let wpnumber = wpp.dados[0].telefone
+        let wpnumber = empresa.dados[0].telefone;
+        let nomeEmpresa = empresa.dados[0].empresa || "Empresa";
 
+        // 2) Busca mensagens do contato naquela empresa
+        let qry = `
+      select * 
+      from meso_mensagens_solicitante 
+      where telefone like "${telFormatado}" 
+      and wpnumber = '${wpnumber}'
+    `;
 
-      if (telefone.length == 13) {
+        let res3 = await executaQry(qry);
+
+        // 3) Troca "cgPhone" pelo nome da empresa
+        if (res3?.dados?.length) {
+          res3.dados = res3.dados.map((m) => {
+            if (m.nome && m.nome.includes("-PlugPhone")) {
+              m.nome = m.nome.replace("-PlugPhone", `-${nomeEmpresa}`);
+            }
+
+            if (m.agent && m.agent.includes("-PlugPhone")) {
+              m.agent = m.agent.replace("-PlugPhone", `-${nomeEmpresa}`);
+            }
+
+            return m;
+          });
+        }
+
+        return res.json(res3);
+
+      } catch (err) {
+        console.log("Erro no /reciveMsg:", err);
+        return res.json({ ok: false, msg: "Erro interno no servidor" });
       }
-
-      let qry = ` select * from meso_mensagens_solicitante where telefone like "${telFormatado}" and wpnumber = '${wpnumber}'`;
-
-      console.log('qry: chama papai', qry)
-      let res3 = await executaQry(qry);
-      res.json(res3);
-      //console.log(res3);
-
     });
 
     this.expressAppWrapper.get("/mediapesquisaconta/:d1/:d2", async (req, res, next) => {
@@ -1939,20 +2083,24 @@ WHERE telefone = '${telefone}'
       }
     });
     //Login-------------------------------------------------------------------------------------
-
-
     this.expressAppWrapper.post("/loginconfere2", async (req, res) => {
       res.header("Access-Control-Allow-Origin", "*");
-      res.header("Access-Control-Allow-Headers", "Origin, X-Request-Width, Content-Type, Accept");
+      res.header(
+        "Access-Control-Allow-Headers",
+        "Origin, X-Request-Width, Content-Type, Accept"
+      );
 
       const usuario = req.body.login;
       const senha = req.body.senha;
       const codigo = req.body.codigo;
 
-      console.log('🔔 /loginconfere ->', { usuario, codigoProvided: !!codigo });
+      console.log("Iniciando /loginconfere2", { usuario, senha, codigo });
+      console.log("🔔 /loginconfere2 ->", { usuario, codigoProvided: !!codigo });
 
       try {
-        // 1) Verifica usuário e senha (interpolado - conforme tu pediu)
+        // ===============================
+        // 1) Valida usuário e senha
+        // ===============================
         const qryLogin = `
       SELECT *
       FROM meso_usuariologin
@@ -1960,82 +2108,105 @@ WHERE telefone = '${telefone}'
         AND senha = MD5('${senha}')
       LIMIT 1;
     `;
+        console.log("Consulta de login:", qryLogin);
+
         const resLogin = await executaQry(qryLogin);
+
         if (!resLogin.dados || resLogin.dados.length === 0) {
-          console.log('❌ Usuário/senha inválidos');
+          console.log("❌ Usuário/senha inválidos");
           return res.status(401).json({ erro: "Usuario ou senha incorretos." });
         }
+
         const user = resLogin.dados[0];
 
-        // 2) Exige que o código seja enviado
+        // ===============================
+        // 2) Código 2FA obrigatório (pra TODOS)  ❌ DESATIVADO
+        // ===============================
+        /*
         if (!codigo) {
           return res.status(400).json({ erro: "Código 2FA obrigatório." });
         }
+        */
 
-        // 3) Verifica código 2FA — só aceita se código corresponder, não usado e não expirado
+        // ===============================
+        // 3) Valida 2FA (pra TODOS) ❌ DESATIVADO
+        // ===============================
+        /*
         const qryCodigoValido = `
-      SELECT id_dois_fatores, telefone, codigo, criado_em, expira_em, usado
-      FROM meso_dois_fatores
-      WHERE id_usuario = ${user.id}
-        AND codigo = '${codigo}'
-        AND usado = 0
-        AND expira_em > NOW()
-      ORDER BY criado_em DESC
-      LIMIT 1;
-    `;
+          SELECT id_dois_fatores, telefone, codigo, criado_em, expira_em, usado
+          FROM meso_dois_fatores
+          WHERE id_usuario = ${user.id}
+            AND codigo = '${codigo}'
+            AND usado = 0
+            AND expira_em > NOW()
+          ORDER BY criado_em DESC
+          LIMIT 1;
+        `;
         const resCodigoValido = await executaQry(qryCodigoValido);
-
+    
         if (!resCodigoValido.dados || resCodigoValido.dados.length === 0) {
-          // Diferencia pra mensagens mais informativas (opcional)
-          // Busca o último registro do usuário pra saber por que falhou
+          // Busca último código pra mensagem mais precisa
           const qryUltimo = `
-        SELECT id_dois_fatores, codigo, criado_em, expira_em, usado
-        FROM meso_dois_fatores
-        WHERE id_usuario = ${user.id}
-        ORDER BY criado_em DESC
-        LIMIT 1;
-      `;
+            SELECT id_dois_fatores, codigo, criado_em, expira_em, usado
+            FROM meso_dois_fatores
+            WHERE id_usuario = ${user.id}
+            ORDER BY criado_em DESC
+            LIMIT 1;
+          `;
           const resUltimo = await executaQry(qryUltimo);
-
+    
           if (!resUltimo.dados || resUltimo.dados.length === 0) {
-            return res.status(400).json({ erro: "Nenhum código cadastrado. Gere um novo código 2FA." });
+            return res
+              .status(400)
+              .json({ erro: "Nenhum código cadastrado. Gere um novo código 2FA." });
           }
-
+    
           const rec = resUltimo.dados[0];
-          if (rec.usado == 1) return res.status(400).json({ erro: "Código já usado. Gere um novo." });
-          if (new Date(rec.expira_em) <= new Date()) return res.status(400).json({ erro: "Código expirado. Gere um novo." });
-
-          // Se chegou aqui, provavelmente o código digitado está incorreto
+    
+          if (rec.usado == 1)
+            return res.status(400).json({ erro: "Código já usado. Gere um novo." });
+    
+          if (new Date(rec.expira_em) <= new Date())
+            return res.status(400).json({ erro: "Código expirado. Gere um novo." });
+    
           return res.status(400).json({ erro: "Código inválido." });
         }
+        */
 
-        // 4) Marca o código como usado (prevenir replay)
+        // ===============================
+        // 4) Marca código como usado ❌ DESATIVADO
+        // ===============================
+        /*
         const idDois = resCodigoValido.dados[0].id_dois_fatores;
         const qryMarcaUsado = `
-      UPDATE meso_dois_fatores
-      SET usado = 1
-      WHERE id_dois_fatores = ${idDois};
-    `;
+          UPDATE meso_dois_fatores
+          SET usado = 1
+          WHERE id_dois_fatores = ${idDois};
+        `;
         await executaQry(qryMarcaUsado);
+        */
 
-        // 5) Gera token e retorna dados do login (só após código válido)
-        const token = geraToken(user.usuario); // tua função existente
-        const tipo = user.tipo;
-        const usuario2 = user.id;
-        const idPermissao = user.id_permissao;
-        const ramal = user.ramal;
-        const telefone = user.telefone;
-        const id_empresa = user.id_empresa
+        // ===============================
+        // 5) Login final
+        // ===============================
+        const token = geraToken(user.usuario);
 
-        console.log('✅ Login 2FA ok', { usuario2, telefone });
-        return res.json({ token, tipo, usuario2, idPermissao, ramal, telefone, id_empresa });
+        console.log("✅ Login ok (2FA DESATIVADO)", { usuario: user.usuario });
 
+        return res.json({
+          token,
+          tipo: user.tipo,
+          usuario2: user.id,
+          idPermissao: user.id_permissao,
+          ramal: user.ramal,
+          telefone: user.telefone,
+          id_empresa: user.id_empresa,
+        });
       } catch (e) {
-        console.error('Erro em /loginconfere:', e);
-        return res.status(500).json({ erro: 'Erro interno' });
+        console.error("❌ Erro em /loginconfere2:", e);
+        return res.status(500).json({ erro: "Erro interno." });
       }
     });
-
 
 
 
@@ -2055,66 +2226,6 @@ WHERE telefone = '${telefone}'
       res.json({ message: 'Áudio recebido com sucesso!', filePath: filePath });
     });
 
-    let uploadArquivo = function () {
-      const uploadPath = path.join(__dirname, 'documentos')
-      if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
-      }
-      const storage = multer.diskStorage({
-        destination: function (req, file, cb) {
-          cb(null, uploadPath)
-        },
-        filename: function (req, file, cb) {
-          cb(null, file.originalname)
-
-        }
-      })
-      return multer({ storage: storage })
-    }
-    let lerCsv = async function (fileName) {
-      const filePath = path.join(__dirname, 'documentos', fileName);
-      const results = [];
-
-      return new Promise((resolve, reject) => {
-        fs.createReadStream(filePath)
-          .pipe(csv())
-          .on('data', (data) => results.push(data))
-          .on('end', () => {
-            resolve(results);
-          })
-          .on('error', (error) => {
-            reject(error);
-          });
-      });
-    };
-
-
-    let terminou = false;
-
-    //    const upload = uploadArquivo();
-    let inserirCsv = async (resultadoCsv, usuario) => {
-      for (const e of resultadoCsv) {
-        // Primeira query para inserir em meso_mealing
-        ////console.log(e.Telefone)
-        let qry = `INSERT INTO meso_mealing VALUES (0, '${e.Ano}', '${e.Orgao}', '${e.Processo}', '${e.Liquidacao}', '${e.Valorface}', '${e.Credor}', '${e.Documento}', '${e.Idade}', '${e.Renda}', '${e.Tipo}', '${e.Telefone}', (SELECT id FROM meso_usuariologin WHERE usuario = '${usuario}'), NOW())`;
-
-        ////console.log('eu sou inserir csv', qry);
-        await executaQry(qry);
-
-        // Adicionando um delay de 1 segundo
-
-        // Segunda query para inserir em meso_oportunidade
-        /*let qry1 = `INSERT INTO meso_oportunidade (telefone, idAgente, idMealing) 
-                    VALUES ('${e.Telefone}', 
-                    (SELECT id FROM meso_usuariologin WHERE usuario = '${usuario}'), 
-                    (SELECT idMealing FROM meso_mealing WHERE processo = '${e.Processo}' ORDER BY idMealing DESC LIMIT 1))`;
-        
-        await executaQry(qry1);*/
-      }
-    }
-
-
-
     /*
     idMealing INT(11) NOT NULL AUTO_INCREMENT,
     ano
@@ -2131,8 +2242,6 @@ WHERE telefone = '${telefone}'
     idAgente
     
     */
-
-
     this.expressAppWrapper.get('/oportunidade/:processo/:plataforma', async (req, res, next) => {
 
       let processo = req.params.processo
@@ -3346,6 +3455,25 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       ////console.log(res1);
     })
 
+    this.expressAppWrapper.get("/empresa/:id_empresa", async (req, res) => {
+      try {
+        const id_empresa = req.params.id_empresa;
+
+        const qry = `
+      SELECT empresa
+      FROM meso_empresas
+      WHERE id_empresa = '${id_empresa}'
+      LIMIT 1
+    `;
+
+        const result = await executaQry(qry);
+        return res.json(result);
+
+      } catch (err) {
+        return res.status(500).json({ erro: "Erro interno" });
+      }
+    });
+
     this.expressAppWrapper.post("/enviar-email-erro", async (req, res, next) => {
       console.log("Ai entrei no sendEmail")
       try {
@@ -3482,8 +3610,6 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       }
     }
     )
-
-
 
     this.expressAppWrapper.get("/ligar/:ramal/:telefone", async (req, res) => {
       //let dataini = req.params.d1;
@@ -3741,7 +3867,7 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       //let data1 = req.params.d1 + ' 00:00:00'
       //let data2 = req.params.d2 + ' 23:59:59'
 
-      let qry = `SELECT * FROM meso_usuariologin ORDER BY FIELD(estado, 'em ligação', 'logado', 'pausado', 'deslogado');`;
+      let qry = `SELECT * FROM meso_usuariologin where id_empresa = 5 ORDER BY FIELD(estado, 'em ligação', 'logado', 'pausado', 'deslogado');`;
       ////console.log(qry);
 
       let res36 = await executaQry(qry);
@@ -4188,6 +4314,21 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       }
     });
 
+    this.expressAppWrapper.get("/listausuario1/:id_empresa", async (req, res) => {
+      //let dataini = req.params.d1;
+      // let datafim = req.params.d2;
+      let id_empresa = req.params.id_empresa
+      try {
+        let qry = `
+        select * from meso_usuariologin where id_empresa = ${id_empresa}
+        `;
+        let res27 = await executaQry(qry);
+        res.json(res27);
+      } catch (e) {
+        ////console.log(e);
+      }
+    });
+
     this.expressAppWrapper.get("/listausuariotipo/:tipo/:idEmpresa", async (req, res) => {
       let tipo = req.params.tipo
       let id_empresa = req.params.idEmpresa
@@ -4220,17 +4361,20 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
         ////console.log(e);
       }
     });
-
     this.expressAppWrapper.post("/insereusuario", async (req, res, next) => {
-      let usuario = req.body.usuario + "-PlugPhone";
+      let usuario = req.body.usuario + "";
       let senha = req.body.senha;
       let tipo = req.body.tipo;
+      let id_empresa = req.body.id_empresa;
+
+      console.log('dados do novo usuario', usuario, senha, tipo, id_empresa);
 
       try {
         let qry = `
-      INSERT INTO meso_usuariologin(usuario, senha, tipo)
-      VALUES ('${usuario}', MD5('${senha}'), '${tipo}')
+      INSERT INTO meso_usuariologin(usuario, senha, tipo, id_empresa)
+      VALUES ('${usuario}', MD5('${senha}'), '${tipo}', ${id_empresa})
     `;
+        console.log('qry do insert', qry);
 
         let resultado = await executaQry(qry);
         console.log('caveira na sala da faculdade', resultado);
@@ -4605,7 +4749,6 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       }
     })
       */
-
     this.expressAppWrapper.post("/gera-codigo", async (req, res) => {
       let usuario = req.body.usuario
       let telefone = req.body.telefone;
@@ -4616,7 +4759,7 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       const pegaId = `
       SELECT id_empresa 
       FROM meso_usuariologin 
-      WHERE usuario = '${usuario}-PlugPhone'
+      WHERE usuario = '${usuario}'
     `;
 
       let idEmpresa = await executaQry(pegaId)
@@ -4633,9 +4776,12 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
 
 
       let codigoValidoArray = await executaQry(`SELECT usado, expira_em < NOW() AS expirado FROM meso_dois_fatores WHERE telefone = '${telefone}' ORDER BY id_dois_fatores DESC LIMIT 1;`)
-
+      console.log('oq tem aqui?', codigoValidoArray)
       let usado = codigoValidoArray.dados[0].usado
       let expirado = codigoValidoArray.dados[0].expirado
+
+      console.log('life is a waterfall', usado,
+        expirado)
 
       if (usado == 1 || expirado == 1) {
         let qry = `update meso_dois_fatores set codigo = '${codigo}',criado_em = now(), expira_em = DATE_ADD(NOW(), INTERVAL 5 MINUTE), usado = 0 where telefone = '${telefone}'`
@@ -4648,7 +4794,6 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
         res.status(200).json("Código já utilizado ou já expirado");
       }
     })
-
 
     this.expressAppWrapper.get('/buscarmealing/:telefone/:idEmpresa', async (req, res, next) => {
       let telefone = req.params.telefone
@@ -4720,6 +4865,7 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
         });
       }
     });
+
 
 
     this.expressAppWrapper.get("/estadoMealing/:processo/:atendeu/:reagendar/:interesse/:negociar/:observacao", async (req, res, next) => {

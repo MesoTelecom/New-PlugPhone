@@ -218,11 +218,19 @@ app.post("/webhooks", async (req, res) => {
                     let wpp_id = whatId.dados[0].wpp_id
 
                     // 👉 verifica IA
-
-
                     const verIA = await executaQry(`SELECT atendimento_ai FROM meso_contatos WHERE telefone = '${waId}'`);
                     const iaAtiva = verIA.dados[0]?.atendimento_ai == 1;
                     const precisaHumano = precisaDeHumano(msg);
+
+                    const emp = await executaQry(`
+  SELECT empresa
+  FROM meso_empresas
+  WHERE id_empresa = '${idEmpresa}'
+  LIMIT 1
+`);
+
+                    const nomeEmpresa = emp?.dados?.[0]?.empresa || "PlugPhone";
+                    const botName = `Bot-${nomeEmpresa}`;
 
                     console.log("Precisa mostrar isso urgente")
 
@@ -237,7 +245,7 @@ app.post("/webhooks", async (req, res) => {
                         await send(
                             waId,
                             "Para evitar qualquer desencontro de informações, vou te direcionar agora para um atendente humano.",
-                            "Bot-PlugPhone",
+                            botName,
                             res,
                             wpp_id,
                             telEmpresa
@@ -271,7 +279,7 @@ app.post("/webhooks", async (req, res) => {
 
                         if (querHumano) {
                             await executaQry(`UPDATE meso_contatos SET atendimento_ai = 0 WHERE telefone = '${waId}'`);
-                            await send(waId, "Certo, vou te transferir para um de nossos atendentes. Um momento...", "Bot-PlugPhone", wpp_id, telEmpresa);
+                            await send(waId, "Certo, vou te transferir para um de nossos atendentes. Um momento...", botName, wpp_id, telEmpresa);
                             return res.sendStatus(200);
                         }
 
@@ -313,7 +321,7 @@ app.post("/webhooks", async (req, res) => {
                             "Eita porra mostra aqui",
                             waId,
                             respostaFinal,
-                            "Bot-PlugPhone",
+                            botName,
                             res,
                             wpp_id,
                             telEmpresa
@@ -323,7 +331,7 @@ app.post("/webhooks", async (req, res) => {
                             await send(
                                 waId,
                                 respostaFinal,
-                                "Bot-PlugPhone",
+                                botName,
                                 res,
                                 wpp_id,
                                 telEmpresa

@@ -33,7 +33,8 @@
           font-size: 40px;
           color: white;">mdi-account</v-icon>
           <v-text-field label="Digite seu usuário" name="usuario" type="text" v-model="usuario"
-            class="custom-text-field" solo />
+            class="custom-text-field" solo placeholder="Nome-Sua_Empresa" />
+
         </v-row>
 
         <v-row style="    width: 72%;
@@ -49,7 +50,7 @@
         <div class="text-center" style="width: 100%">
           <br>
 
-          <v-btn rounded @click="geraVerificacao()" color="#61a5e8" class="centralizado"
+          <v-btn rounded @click="login()" color="#61a5e8" class="centralizado"
             style="color: white;    margin-bottom: 1px;margin-left: 20px;">Próximo</v-btn>
 
           <br>
@@ -107,25 +108,95 @@ export default {
     openDialogAuth: false,
     codigo: "",
     error: false,
-    telefone: ""
+    telefone: "",
+
+    usuarioCompleto: "",  // novo
+    id_empresa: null,     // novo
+    empresa: ""
   }),
   methods: {
 
     async geraVerificacao() {
-      let pegaTelefoneArray = await api.get(`pegaTelefone/${this.usuario}-PlugPhone`)
-      console.log('eu sou o telearray', pegaTelefoneArray)
-      this.telefone = pegaTelefoneArray.data.dados[0].telefone
-      console.log('bate foge bate foge', this.telefone)
+      try {
+        const erro = this.validaUsuarioEmpresa();
+        if (erro) {
+          alert(erro);
+          return;
+        }
 
-      let authBody = {
-        "usuario": `${this.usuario}`,
-        "telefone": this.telefone
+        this.usuarioCompleto = this.usuario;
+
+        let dados = await api.get(`/pegaTelefone/${this.usuarioCompleto}`);
+
+        if (!dados.data?.dados?.length) {
+          alert("Usuário não encontrado!");
+          return;
+        }
+
+        this.telefone = dados.data.dados[0].telefone;
+
+        let authBody = {
+          usuario: this.usuarioCompleto,
+          telefone: this.telefone
+        };
+
+        await api.post(`/gera-codigo`, authBody);
+
+        this.openDialogAuth = true;
+
+      } catch (err) {
+        console.log("Erro geraVerificacao:", err);
+        alert("Erro ao gerar código.");
       }
-      let geraCódigo = await api.post(`/gera-codigo `, authBody)
-      console.log(geraCódigo)
-
-      this.openDialogAuth = true
     },
+
+
+    validaUsuarioEmpresa() {
+      const u = (this.usuario || "").trim();
+
+      if (!u) return "Digite seu usuário.";
+
+      if (u.includes(" ")) {
+        return "Não pode ter espaço. Use '_' no lugar. Ex: Nome-Sua_Empresa";
+      }
+
+      if (!u.includes("-")) {
+        return "Use o padrão Nome-Sua_Empresa. Ex: Nome-Sua_Empresa";
+      }
+
+      if (u.startsWith("-") || u.endsWith("-")) {
+        return "Formato inválido. Ex: Nome-Sua_Empresa";
+      }
+
+      const partes = u.split("-");
+
+      if (partes.length !== 2) {
+        return "Use somente um '-' no formato Nome-Sua_Empresa. Ex: Nome-Sua_Empresa";
+      }
+
+      const nome = partes[0];
+      const empresa = partes[1];
+
+      if (!nome || nome.length < 2) {
+        return "Nome inválido. Ex: Nome-Sua_Empresa";
+      }
+
+      if (!empresa || empresa.length < 2) {
+        return "Empresa inválida. Ex: Nome-Sua_Empresa";
+      }
+
+      if (empresa.includes("__")) {
+        return "Empresa inválida (muitos '_'). Ex: Nome-Sua_Empresa";
+      }
+
+      // opcional: exigir underline na empresa
+      // if (!empresa.includes("_")) {
+      //   return "Use '_' no nome da empresa. Ex: Nome-Sua_Empresa";
+      // }
+
+      return null;
+    },
+
 
     goToEBS() {
       //Produção Meso------------------------------
@@ -153,38 +224,44 @@ export default {
 
     async login() {
       try {
-        //localStorage.removeItem( "jwt");
         this.error = false;
+
+        const erro = this.validaUsuarioEmpresa();
+        if (erro) {
+          alert(erro);
+          return;
+        }
+
         let res = await api.post("loginconfere2/", {
-          login: this.usuario + "-PlugPhone",
+          login: this.usuarioCompleto || this.usuario, // agora já vem Nome-Sua_Empresa
           senha: this.senha,
           codigo: this.codigo
         });
+
         console.log('dificil heim kkkk', res.data)
+
         if (res.data && res.data.token) {
-          //console.log('res',res.data.token)
           this.$store.state.token = res.data.token;
           this.$store.state.logado = res.data.tipo;
           this.$store.state.adm = res.data.tipo == "admin";
 
           this.$store.state.ramal = res.data.ramal;
           this.$store.state.id_empresa = res.data.id_empresa;
+
           let usu = {
-            usuario: this.usuario,
+            usuario: this.usuario, // salva completo
             pin: res.data.token,
             tipo: res.data.tipo,
             ramal: res.data.ramal,
             id_empresa: res.data.id_empresa
           };
 
-          console.log('usuario de java credo', usu)
-          this.$store.dispatch('insereUsuario', usu)
+          this.$store.dispatch('insereUsuario', usu);
           localStorage.setItem("usu", JSON.stringify(usu));
           sessionStorage.setItem("jwt", this.$store.state.token);
           sessionStorage.setItem("lastActivity", Date.now());
-          api.defaults.headers.common[
-            "x-access-token"
-          ] = this.$store.state.token;
+
+          api.defaults.headers.common["x-access-token"] = this.$store.state.token;
 
           if (res.data.tipo == "Técnico" || res.data.tipo == 'Comercial' || res.data.tipo == 'Financeiro' || res.data.tipo == 'admin') {
             this.$router.push("dashboard");
@@ -193,19 +270,17 @@ export default {
         } else {
           this.error = true;
         }
+
         if (res.data.tipo == "vendedor") {
           sessionStorage.setItem("jwt", this.$store.state.token);
           sessionStorage.setItem("lastActivity", Date.now());
-          api.defaults.headers.common[
-            "x-access-token"
-          ] = this.$store.state.token;
-
+          api.defaults.headers.common["x-access-token"] = this.$store.state.token;
           this.$router.push("estoque");
-
         }
-        //// console.log(res.data.dados[0]);
+
       } catch (e) {
-        //// console.log("err", e);
+        console.log("Erro login:", e);
+        this.error = true;
       }
     },
   },

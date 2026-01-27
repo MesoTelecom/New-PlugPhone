@@ -23,28 +23,25 @@
               <v-card-title>
                 <span class="text-h5">{{ formTitle }}</span>
               </v-card-title>
-
               <v-card-text>
                 <v-container>
                   <v-row>
-                    <v-col cols="12" sm="6" md="4">
+                    <v-col cols="6" sm="6" md="12">
                       <v-text-field style="width: 100% !important;" v-model="editedItem.usuario"
-                        label="Nome do Usuário"></v-text-field>
+                        label="Nome do Usuário-Sua_Empresa"></v-text-field>
                     </v-col>
-                    <v-col cols="12" sm="6" md="4">
+                    <v-col cols="12" sm="6" md="12">
                       <v-text-field style="width: 100% !important;" v-model="editedItem.senha"
                         label="Digite a nova senha" type="password"></v-text-field>
                     </v-col>
-                    <v-col cols="12" sm="6" md="4">
+
+                    <v-col cols="12" sm="6" md="12">
                       <v-select style="width: 100% !important;" label="Select"
                         :items="['Técnico', 'Comercial', 'Financeiro', 'admin']" v-model="editedItem.tipo"></v-select>
                     </v-col>
                   </v-row>
                 </v-container>
               </v-card-text>
-
-
-
               <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="blue darken-1" text @click="close">
@@ -75,18 +72,37 @@
         <v-btn color="primary" @click="initialize"> Reset </v-btn>
       </template>
     </v-data-table>
-
     <Footer />
   </div>
 </template>
-
 <script>
 import { api } from "@/conf/api";
 import Navbar from "../components/Navbar";
 import Footer from "../components/footer.vue";
 import verificaAcesso from "../acess/verificaAcessoEspecialistaMixin"
 export default {
+
+  async beforeMount() {
+    let usuario = JSON.parse(localStorage.getItem('usu'));
+    console.log('top 3', usuario)
+    this.tipo = usuario.tipo;
+    this.usuario = usuario.usuario
+    this.ramal = usuario.ramal
+    this.id_empresa = usuario.id_empresa
+    this.editedItem.id_empresa = this.id_empresa
+
+    let emp = await api.get(`/empresa/${this.id_empresa}`);
+    this.empresa = emp.data.dados[0].empresa;
+    console.log('empresa, eu sou empresa', this.empresa)
+    this.editedItem.usuario = "-" + this.empresa
+
+
+    this.initialize();
+
+  },
+
   mixins: [verificaAcesso],
+
   data: () => ({
     dialog: false,
     dialogDelete: false,
@@ -102,19 +118,28 @@ export default {
     ],
 
     desserts: [],
+    empresa: "",
     editedIndex: -1,
     editedItem: {
       id: "",
       usuario: "",
       senha: "",
       tipo: "",
+      telefone: "",
+      id_empresa: ""
     },
     defaultItem: {
       id: "",
       usuario: "",
       senha: "",
       tipo: "",
+      telefone: "",
+      id_empresa: ""
     },
+    tipo: "",
+    usuario: "",
+    ramal: "",
+    id_empresa: "",
   }),
   components: {
     Navbar,
@@ -136,12 +161,11 @@ export default {
   },
 
   created() {
-    this.initialize();
   },
 
   methods: {
     async initialize() {
-      let res = await api.get("listausuario");
+      let res = await api.get(`listausuario1/${this.id_empresa}`);
       //console.log(res.data.dados);
       this.desserts = res.data.dados;
     },
@@ -198,17 +222,18 @@ export default {
           window.alert("Ocorreu um erro code 1!");
         } else {
           Object.assign(this.desserts[this.editedIndex], this.editedItem);
-          document.location.reload(true)
+          //document.location.reload(true)
         }
         //// console.log(this.editedItem);
       } else {
         //inclui
+        console.log('editedItem', this.editedItem);
         res = await api.post("insereusuario", this.editedItem);
         if (res.data.msg == "erro") {
           window.alert("Ocorreu um erro - code 2!");
         } else {
           this.desserts.push(this.editedItem);
-          document.location.reload(true);
+          // document.location.reload(true);
 
         }
         //// console.log(this.editedItem);

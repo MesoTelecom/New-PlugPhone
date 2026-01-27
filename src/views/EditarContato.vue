@@ -112,6 +112,7 @@ export default {
       campanha: "",
       ultimamsg: "",
       id_agencia: "",
+      id_empresa: ""
 
     },
     defaultItem: {
@@ -121,6 +122,7 @@ export default {
       campanha: "",
       ultimamsg: "",
       id_agencia: "",
+      id_empresa: ""
 
 
     },

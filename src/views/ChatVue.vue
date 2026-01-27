@@ -8,26 +8,27 @@
 ">
         <v-row>
           <img src="../assets/plugphone.png" class="avatar">
+
           <div style="margin-top: 6%;
     position: relative;
     left: 16%;">
-            <v-btn icon color="black" @click="deslogar" style="left: 20%; font-size: 24px; margin-bottom: -4%;">
+
+            <v-btn icon color="black" @click="deslogar" style="left: 120%; font-size: 24px; margin-bottom: -4%;">
               <v-icon>mdi-arrow-left</v-icon>
             </v-btn>
           </div>
-          <v-icon @click="openDialogContato = true" style="       margin-top: 3%;
-    left: 20%;
-    font-size: 169%;
-    margin-bottom: -1%;
-    color: black;
-" id="clerico">
-            mdi-plus
-          </v-icon>
+
           <!--<v-icon @click="OpenDialogGLPI = true" class="imageIcon"
             style="    left: 71%;font-size: 169%; margin-bottom: -1%;">
             mdi-help-circle
           </v-icon>
           -->
+          <br>
+          <br>
+          <div style="position: relative;
+    left: 40%;">
+            <b> {{ usuario }} </b>
+          </div>
         </v-row>
         <v-row class="cabecalhoNovo">
 
@@ -80,7 +81,14 @@
             </template>
             <span>Concluídos</span>
           </v-tooltip>
-
+          <v-icon @click="openDialogContato = true" style="       margin-top: 1%;
+    font-size: 169%;
+    margin-bottom: 0%;
+    left: 7%;
+    color: black;
+" id="clerico">
+            mdi-plus
+          </v-icon>
         </v-row>
 
         <br>
@@ -178,6 +186,7 @@
             <v-col cols="12" md="12" style="padding: 0%;">
               <div class="messages gradient-bg" ref="messages"
                 style="margin-left: 4%;margin-right: 2%;max-height: 80vh;overflow-y: auto;">
+
                 <div v-for="(message, index) in messages" :key="index">
 
                   <!-- ✅ bloco da data -->
@@ -187,46 +196,80 @@
 
                   <!-- ✅ sua mensagem normal -->
                   <div :class="{
-                    'message-requester': !message.sender.includes('-PlugPhone'),
-                    'message-agent': message.sender.includes('-PlugPhone'),
+                    'message-requester': !isAgent(message.sender),
+                    'message-agent': isAgent(message.sender),
                   }">
 
                     <div :class="{
-                      buttonSender: !message.sender.includes('-PlugPhone'),
-                      button: message.sender.includes('-PlugPhone'),
-                    }" :style="{ 'text-align': message.sender.includes('-PlugPhone') ? 'end' : 'start' }">
+                      buttonSender: !isAgent(message.sender),
+                      button: isAgent(message.sender),
+                    }" :style="{ 'text-align': isAgent(message.sender) ? 'end' : 'start' }">
+
                       <span :class="{
-                        tituloSender: !message.sender.includes('-PlugPhone'),
-                        titulo: message.sender.includes('-PlugPhone'),
+                        tituloSender: !isAgent(message.sender),
+                        titulo: isAgent(message.sender),
                       }">
                         <div><b id="tituloMsg">{{ message.sender }}:</b></div>
                       </span>
+
                       <span class="message-text">
+
+                        <!-- IMAGEM -->
                         <span v-if="message.isImage">
-                          <img :src="message.text" alt="Imagem" style="max-width: 100%; height: auto;" />
+                          <div class="media-wrap">
+                            <img :src="message.text" alt="Imagem" class="chat-media"
+                              :class="{ 'media-selected': selectedMedia === message.text }"
+                              @click="openMedia(message.text, 'image')" />
+
+                            <v-icon class="media-zoom-icon" color="white">
+                              mdi-magnify-plus-outline
+                            </v-icon>
+                          </div>
                           <br />
-
-
                         </span>
+
+                        <!-- AUDIO -->
                         <span v-else-if="message.isAudio">
                           <audio controls>
                             <source :src="message.text" type="audio/mpeg" />
                             Seu navegador não suporta o elemento de áudio.
                           </audio>
                         </span>
+
+                        <span v-else-if="message.isDocument">
+                          <div class="doc-card" @click="downloadFile(message.text)">
+                            <v-icon class="doc-icon">mdi-file-document-outline</v-icon>
+
+                            <div class="doc-info">
+                              <div class="doc-name">{{ message.fileName }}</div>
+                              <div class="doc-sub">Clique para abrir</div>
+                            </div>
+
+                            <v-icon class="doc-download">mdi-open-in-new</v-icon>
+                          </div>
+                        </span>
+
+
+
+                        <!-- TEXTO NORMAL -->
                         <span v-else>
                           {{ message.text }} <br />
-
-
                         </span>
-                        <div :style="{ 'text-align': message.sender.includes('-PlugPhone') ? 'end' : 'start' }"><data
-                            style="font-size: 12px; color: #ffffff">{{ formatTime(message.datetime) }}</data>
+
+                        <div :style="{ 'text-align': isAgent(message.sender) ? 'end' : 'start' }">
+                          <data style="font-size: 12px; color: #ffffff">
+                            {{ formatTime(message.datetime) }}
+                          </data>
                         </div>
+
                       </span>
+
+
                     </div>
                   </div>
                 </div>
               </div>
+
             </v-col>
           </v-row>
 
@@ -473,9 +516,7 @@
           <v-card-text>
             <v-text-field v-model="novoNome" label="Digite o nome do seu contato"></v-text-field>
           </v-card-text>
-
           <v-card-text>
-
             <v-text-field v-model="novoNum" label="Número com DDD"
               hint="Ex: 553187654321 (sem o 9 após o DDD)"></v-text-field>
           </v-card-text>
@@ -547,9 +588,7 @@
         </v-card>
       </v-dialog>
 
-
       <!--<v-icon @click="openDialog = true" class="imageIcon" style="left: 95%">mdi-image</v-icon>  -->
-
 
       <v-dialog v-model="openDialog1" max-width="500px" persistent>
         <v-card class="dialogo1">
@@ -756,7 +795,33 @@
         </v-card>
       </v-dialog>
     </div>
+    <v-dialog v-model="mediaDialog" max-width="900px">
+      <v-card style="background: #111;">
+        <v-card-title style="color: white; display: flex; justify-content: space-between;">
+          <span>Visualização</span>
+
+          <v-btn icon @click="mediaDialog = false">
+            <v-icon color="white">mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <v-card-text>
+          <div v-if="mediaType === 'image'" style="text-align: center;">
+            <img :src="mediaSrc" style="max-width: 100%; max-height: 70vh; border-radius: 14px;" />
+          </div>
+
+          <div v-else-if="mediaType === 'audio'">
+            <audio controls autoplay style="width: 100%;">
+              <source :src="mediaSrc" type="audio/mpeg" />
+              Seu navegador não suporta o elemento de áudio.
+            </audio>
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
   </div>
+
 </template>
 
 <script>
@@ -784,7 +849,7 @@ export default {
     this.buscaCidadao();
     let usuario = JSON.parse(localStorage.getItem('usu'));
     this.tipo = usuario.tipo;
-    this.usuario = usuario.usuario + "-PlugPhone"
+    this.usuario = usuario.usuario
     this.ramal = usuario.ramal
     this.id_empresa = usuario.id_empresa
     //this.idsetinterval = setInterval(() => this.buscarContato(), 5000);
@@ -796,7 +861,9 @@ export default {
       this.$router.push("/");
       return;
     }
-
+    let emp = await api.get(`/empresa/${this.id_empresa}`);
+    this.empresa = emp.data.dados[0].empresa;
+    console.log('empresa, eu sou empresa', this.empresa)
   },
 
   async enviaChamado() {
@@ -859,6 +926,7 @@ export default {
 
       ],
       messages: [],
+      empresa: "",
       dialogDetalhes: false,
       id_empresa: "",
       offset: 0,
@@ -920,6 +988,11 @@ export default {
         "#ff4700"
       ],
       whatsapp: "whatsapp",
+      mediaDialog: false,
+      mediaSrc: "",
+      mediaType: "",
+      selectedMedia: null,
+
       usuarioSelect: "",
       novoEmpresa: "",
       novoEmail: "",
@@ -1136,6 +1209,21 @@ export default {
           return 'grey'
       }
     },
+    openMedia(src, type) {
+      this.selectedMedia = src;
+      this.mediaSrc = src;
+      this.mediaType = type;
+      this.mediaDialog = true;
+    },
+    downloadFile(url, filename) {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename || `documento_${Date.now()}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    },
+
 
     getEstadoColor(estado) {
       const cores = {
@@ -1147,9 +1235,16 @@ export default {
       return cores[estado] || "#BFC4CA";   // Cinza default
     },
 
+
+
     randomColor() {
       const index = Math.floor(Math.random() * this.colors.length);
       return this.colors[index];
+    },
+
+    isAgent(sender) {
+      if (!sender || !this.empresa) return false;
+      return sender.endsWith(`-${this.empresa}`);
     },
 
     listar: async function (tipo) {
@@ -1449,86 +1544,143 @@ export default {
     },
 
     async receiveMessage() {
+      console.log("MAIS FACIL DE ACHAR", this.usuario);
 
-
-      console.log('MAIS FACIL DE ACHAR', this.usuario);
-
-
-      if (this.tipo == 'admin') {
-        console.log('admin não atualiza usuario')
-        await api.get(`/paraBot/${this.wppnum}/${this.id_empresa}`)
-
+      if (this.tipo == "admin") {
+        console.log("admin não atualiza usuario");
+        await api.get(`/paraBot/${this.wppnum}/${this.id_empresa}`);
       } else {
-        await api.get(`/atualizausuario/${this.usuario}/${this.wppnum}`)
-        await api.get(`/paraBot/${this.wppnum}/${this.id_empresa}`)
-
+        await api.get(`/atualizausuario/${this.usuario}/${this.wppnum}`);
+        await api.get(`/paraBot/${this.wppnum}/${this.id_empresa}`);
       }
 
-      let a = await api.get(`/lidamsg/${this.wppnum}`,);
+      let a = await api.get(`/lidamsg/${this.wppnum}`);
+      console.log("eu sou o A Só que lido kkkkkkk", a);
 
-      console.log('eu sou o A Só que lido kkkkkkk', a)
-
-      console.log('eu sou o selected contact do receiveMessage', this.selectedContact, this.wppnum);
-      console
+      console.log(
+        "eu sou o selected contact do receiveMessage",
+        this.selectedContact,
+        this.wppnum
+      );
 
       let msg = { telefone: this.wppnum, idEmpresa: this.id_empresa };
-      console.log('eu sou o wppnum', this.wppnum);
+      console.log("eu sou o wppnum", this.wppnum);
+
       this.buscarCliente();
 
       let response = await api.post("/reciveMsg", msg);
       let receivedMessages = response.data.dados;
 
-      console.log('Mensagens recebidas:', receivedMessages); // Verifique todas as mensagens
+      console.log("Mensagens recebidas:", receivedMessages);
 
-      // Armazena todas as mensagens temporariamente antes de adicionar ao chat
       let allMessages = [];
 
       for (let message of receivedMessages) {
-        console.log('Mensagem:', message); // Verifique cada mensagem
+        console.log("Mensagem:", message);
 
-        if (message.type === 'image') {
-          // Processa imagens
+        const fixedDate = message.datetime
+          ? new Date(message.datetime.replace(" ", "T"))
+          : new Date();
+
+        // ===== IMAGEM =====
+        if (message.type === "image") {
           try {
-            let imageResponse = await api.get(`/get-image/${message.mensagem}`, { responseType: 'blob' });
+            let imageResponse = await api.get(`/get-image/${message.mensagem}`, {
+              responseType: "blob",
+            });
+
             let imageUrl = URL.createObjectURL(imageResponse.data);
-            const fixedDate = message.datetime
-              ? new Date(message.datetime.replace(" ", "T"))
-              : new Date();
-            allMessages.push({ text: imageUrl, datetime: fixedDate.toISOString(), sender: message.nome, isImage: true });
+
+            allMessages.push({
+              text: imageUrl,
+              datetime: fixedDate.toISOString(),
+              sender: message.nome,
+              isImage: true,
+              isAudio: false,
+              isDocument: false,
+            });
           } catch (err) {
-            console.error('Erro ao buscar imagem:', err);
+            console.error("Erro ao buscar imagem:", err);
+
+            allMessages.push({
+              text: message.mensagem,
+              datetime: fixedDate.toISOString(),
+              sender: message.nome,
+              isImage: false,
+              isAudio: false,
+              isDocument: false,
+            });
           }
-        } else if (message.type === 'audio' || message.mensagem.endsWith('.mp3')) {
-          console.log('Processando áudio...');
+        }
+
+        // ===== AUDIO =====
+        else if (message.type === "audio" || (message.mensagem || "").endsWith(".mp3")) {
+          console.log("Processando áudio...");
           try {
-            let audioResponse = await api.get(`/get-audio/${message.mensagem}`, { responseType: 'blob' });
+            let audioResponse = await api.get(`/get-audio/${message.mensagem}`, {
+              responseType: "blob",
+            });
+
             let audioUrl = URL.createObjectURL(audioResponse.data);
-            const fixedDate = message.datetime
-              ? new Date(message.datetime.replace(" ", "T"))
-              : new Date();
-            allMessages.push({ text: audioUrl, datetime: fixedDate.toISOString(), sender: message.nome, isAudio: true });
+
+            allMessages.push({
+              text: audioUrl,
+              datetime: fixedDate.toISOString(),
+              sender: message.nome,
+              isImage: false,
+              isAudio: true,
+              isDocument: false,
+            });
           } catch (err) {
-            console.error('Erro ao buscar áudio:', err);
+            console.error("Erro ao buscar áudio:", err);
+
+            allMessages.push({
+              text: message.mensagem,
+              datetime: fixedDate.toISOString(),
+              sender: message.nome,
+              isImage: false,
+              isAudio: false,
+              isDocument: false,
+            });
           }
-        } else {
-          const fixedDate = message.datetime
-            ? new Date(message.datetime.replace(" ", "T"))
-            : new Date();
-          allMessages.push({ text: message.mensagem, datetime: fixedDate.toISOString(), sender: message.nome, isImage: false, isAudio: false });
+        }
+
+        // ===== DOCUMENTO =====
+        else if (message.type === "document") {
+          const url = message.mensagem;
+          const fileName = url.split("/").pop(); // pega só o nome do arquivo
+
+          allMessages.push({
+            text: url,               // URL direta
+            fileName: fileName,      // nome correto
+            datetime: fixedDate.toISOString(),
+            sender: message.nome,
+            isImage: false,
+            isAudio: false,
+            isDocument: true,
+          });
         }
 
 
+        // ===== TEXTO NORMAL =====
+        else {
+          allMessages.push({
+            text: message.mensagem,
+            datetime: fixedDate.toISOString(),
+            sender: message.nome,
+            isImage: false,
+            isAudio: false,
+            isDocument: false,
+          });
+        }
       }
-      console.log(allMessages)
 
-      // Adiciona todas as mensagens ao estado de uma só vez
+      console.log("allMessages final:", allMessages);
+
       this.messages.push(...allMessages);
-
       this.scrollToBottom();
+    },
 
-
-    }
-    ,
 
     formatTime(dateString) {
       if (!dateString) return "";
@@ -1609,7 +1761,7 @@ export default {
       this.atendimentos = atendimentoArray.data.dados
       console.log('Tecnologia', this.atendimentos)
       console.log(template)
-      this.messages.push({ text: "Olá, tudo bem? \nAqui é da equipe da Meso Telecom. \nEstamos entrando em contato para tratar de um assunto referente ao seu atendimento. Podemos conversar por aqui?", sender: this.usuario });
+      this.messages.push({ text: 'Template enviado: "boas_vindas_plugphone"', sender: this.usuario });
     },
     async enviarMealing() {
       this.openDialogLigacao = false
@@ -1850,7 +2002,7 @@ export default {
 
       // Monta com PlugPhone
       let nomeFormatado = usuario.usuario.charAt(0).toUpperCase() + usuario.usuario.slice(1);
-      this.usuario = nomeFormatado + "-PlugPhone";
+      this.usuario = nomeFormatado;
 
       console.log('eu sou o this.usuario SATORU GOJO', this.usuario);
     },
@@ -2124,9 +2276,9 @@ export default {
         console.log("filtro", filtro)
 
         if (this.filtroValor == "") {
-          contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/null/${offset}`);
+          contatos = await api.get(`/buscarcontatos6/${this.tipo}/${this.usuario}/${estadoContato}/null/${offset}`);
         } else {
-          contatos = await api.get(`/buscarcontatos4/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}/${offset}`);
+          contatos = await api.get(`/buscarcontatos6/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}/${offset}`);
         }
 
 
@@ -2235,7 +2387,7 @@ export default {
 
 .cabecalhoNovo {
   text-align: center;
-  width: 100%;
+  width: 105%;
   margin-left: 3px;
   align-content: center;
   margin-top: 30px !important;
@@ -2525,10 +2677,14 @@ export default {
 
 .botaoEstado {
   height: 25px !important;
-  margin-left: 2% !important;
   color: #000000 !important;
   background-color: #f5f5f5 !important;
-  width: 23%;
+  width: auto;
+  /* 🔥 aqui */
+  padding: 0 10px !important;
+  /* controla o tamanho real */
+  min-width: unset !important;
+  /* garante que não herda */
   box-shadow: none !important;
   text-transform: none !important;
   font-size: 10px !important;
@@ -2663,5 +2819,175 @@ export default {
 
 .searchField .v-text-field .v-field__input::placeholder {
   color: #A8A8A8 !important;
+}
+
+/* ===== MIDIAS CLICAVEIS / DESTACAVEIS ===== */
+
+.chat-media {
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.chat-media:hover {
+  transform: scale(1.01);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+.chat-media:active {
+  transform: scale(0.99);
+}
+
+/* container da imagem pra poder ter ícone de zoom */
+.media-wrap {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+/* ícone "ampliar" no canto */
+.media-zoom-icon {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 999px;
+  padding: 6px;
+}
+
+/* áudio destacável */
+/* .chat-audio {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.chat-audio:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+} */
+
+/* quando estiver selecionado */
+.media-selected {
+  border-color: rgba(97, 165, 232, 0.9) !important;
+  box-shadow: 0 0 0 3px rgba(97, 165, 232, 0.25) !important;
+}
+
+/* ===== MIDIAS CLICAVEIS / DESTACAVEIS ===== */
+
+.chat-media {
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.chat-media:hover {
+  transform: scale(1.01);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+.chat-media:active {
+  transform: scale(0.99);
+}
+
+.media-wrap {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.media-zoom-icon {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 999px;
+  padding: 6px;
+}
+
+.chat-audio {
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.chat-audio:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.media-selected {
+  border-color: rgba(97, 165, 232, 0.9) !important;
+  box-shadow: 0 0 0 3px rgba(97, 165, 232, 0.25) !important;
+}
+
+.doc-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  max-width: 320px;
+  /* 🔥 limite do balão */
+  width: fit-content;
+  box-sizing: border-box;
+
+  padding: 10px 14px;
+  border-radius: 14px;
+  cursor: pointer;
+
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+
+
+.doc-card:hover {
+  transform: scale(1.01);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.doc-icon {
+  color: white;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.doc-download {
+  color: white;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+
+.doc-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-name {
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.doc-sub {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
 }
 </style>

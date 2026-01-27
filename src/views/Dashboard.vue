@@ -329,20 +329,10 @@ export default {
       let deslogado = await api.get(`dashdeslogados/${this.id_empresa}`);
 
       ////console.log(pausa.data.dados);
-      // this.lists[1].count = deslogado.data.dados.length;
-      let todosoperadores = deslogado.data.dados.length;
-      ////console.log(todosoperadores);
+      this.lists[1].count = deslogado.data.dados.length;
 
-      let logados = await api.get(`dashlogados/${this.id_empresa}`);
-      let logadosonline = logados.data.dados.length;
 
-      let deslogadosoperadores;
-      deslogadosoperadores = todosoperadores - logadosonline;
-      ////console.log("Teste anna: ", loga);
-      ////console.log("Todos operadores online",loga);
-      //onsole.log("Todos operadores deslogados",deslogadosoperadores);
-      //this.logado.push([realpausa]);
-      this.lists[1].count = deslogadosoperadores;
+
     },
     reload: function () {
       setInterval(document.location.reload(true), 5000);

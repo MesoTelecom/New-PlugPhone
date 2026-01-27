@@ -8,10 +8,20 @@ globalThis.File = require("node:buffer").File;
 const { OpenAI } = require('openai/client.js');
 
 let send = async function (to, body, nome, res, wpp_id, wpnumber) {
-  console.log(to, body, nome)
+  console.log('chuchu beleza', to, body, nome)
 
+  let bodyLimpo = body || "";
 
-  let bodyLimpo = body.replace(/.*-PlugPhone\s*/, "");
+  const nomeEscapado = nome.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // remove "NOME:" no começo
+  bodyLimpo = bodyLimpo.replace(new RegExp(`^${nomeEscapado}:\\s*`, "i"), "");
+
+  // remove "NOME" sozinho na primeira linha (se repetir)
+  bodyLimpo = bodyLimpo.replace(new RegExp(`^${nomeEscapado}\\s*\\n?`, "i"), "");
+
+  // trim final
+  bodyLimpo = bodyLimpo.trim();
 
   console.log('me ache aqui ', bodyLimpo)
 
@@ -19,7 +29,7 @@ let send = async function (to, body, nome, res, wpp_id, wpnumber) {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
-      'Authorization': "Bearer Seu Token"
+      'Authorization': "Bearer SEU TOKEN"
     },
     body: JSON.stringify({
       "messaging_product": "whatsapp", // Adicione o messaging_product aqui
@@ -62,6 +72,37 @@ let send = async function (to, body, nome, res, wpp_id, wpnumber) {
 
 }
 
+function precisaDeHumano(msg) {
+  const texto = msg.toLowerCase();
+
+  let score = 0;
+
+  const sinais = [
+    "não entendi",
+    "nao entendi",
+    "que cliente",
+    "do nada",
+    "pq",
+    "por que",
+    "porque",
+    "vocês",
+    "essa ia",
+    "robô",
+    "confuso",
+    "nada a ver"
+  ];
+
+  sinais.forEach(s => {
+    if (texto.includes(s)) score++;
+  });
+
+  if (texto.length < 15) score++; // msg seca
+  if ((texto.match(/\?/g) || []).length >= 2) score++;
+
+  return score >= 2;
+}
+
+
 let sendGpt = async function (mensagem) {
   const axios = require('axios');
 
@@ -80,7 +121,7 @@ let sendGpt = async function (mensagem) {
     url: 'https://api.openai.com/v1/chat/completions',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer Seu Token GPT',
+      'Authorization': 'Bearer SEU TOKEN',
     },
     data: data
   };
@@ -145,7 +186,15 @@ async function buscaExp(pergunta) {
 
 
 
+function normalizaTextoWhatsApp(texto) {
+  if (!texto) return texto;
 
+  return texto
+    .replace(/\\n\\n/g, "\n\n") // parágrafo
+    .replace(/\\n/g, "\n\n")    // força espaço visual
+    .replace(/\n{3,}/g, "\n\n") // evita exagero
+    .trim();
+}
 
 async function verificaPalavrao(mensagem) {
   try {
@@ -175,7 +224,7 @@ async function verificaPalavrao(mensagem) {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: "Bearer Seu Token GPT",
+          Authorization: "Bearer SEU TOKEN",
         },
       }
     );
@@ -214,9 +263,9 @@ let getDocument = async function (caminho) {
   let config = {
     method: 'post',
     maxBodyLength: Infinity,
-    url: 'https://graph.facebook.com/v17.0/116793154851650/media',
+    url: 'https://graph.facebook.com/v22.0/116793154851650/media',
     headers: {
-      'Authorization': 'Bearer Seu Token',
+      'Authorization': 'Bearer SEU TOKEN',
       ...data.getHeaders()
     },
     data: data
@@ -246,9 +295,9 @@ let getImage = async function (caminho) {
   let config = {
     method: 'post',
     maxBodyLength: Infinity,
-    url: 'https://graph.facebook.com/v17.0/116793154851650/media',
+    url: 'https://graph.facebook.com/v22.0/116793154851650/media',
     headers: {
-      'Authorization': 'Bearer Seu Token',
+      'Authorization': 'Bearer SEU TOKEN',
       ...data.getHeaders()
     },
     data: data
@@ -278,9 +327,9 @@ let getAudio = async function (caminho) {
   let config = {
     method: 'post',
     maxBodyLength: Infinity,
-    url: 'https://graph.facebook.com/v17.0/116793154851650/media',
+    url: 'https://graph.facebook.com/v22.0/116793154851650/media',
     headers: {
-      'Authorization': 'Bearer Seu Token',
+      'Authorization': 'Bearer SEU TOKEN',
       ...data.getHeaders()
     },
     data: data
@@ -305,7 +354,7 @@ let sendImage = async function (to, id, usuario, res, wpp_id, wpnumber) {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
-      'Authorization': "Bearer Seu Token"
+      'Authorization': "Bearer SEU TOKEN"
     },
     body: JSON.stringify({
       "messaging_product": "whatsapp", // Adicione o messaging_product aqui
@@ -351,7 +400,7 @@ let sendAudio = async function (to, id, usuario, res, wpp_id, wpnumber) {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
-      'Authorization': "Bearer Seu Token"
+      'Authorization': "Bearer SEU TOKEN"
     },
     body: JSON.stringify({
       "messaging_product": "whatsapp", // Adicione o messaging_product aqui
@@ -394,14 +443,14 @@ let reciveMediaLink = async function (id, res) {
     method: 'GET', // Mudança: Alterado de POST para GET para buscar informações
     headers: {
       "Content-Type": "application/json",
-      'Authorization': "Bearer Seu Token" // Token de autorização
+      'Authorization': "Bearer SEU TOKEN" // Token de autorização
     }
   };
 
   try {
     const fetch = require('node-fetch');
     // Requisição para a API do Facebook
-    const response = await fetch(`https://graph.facebook.com/v17.0/${id}`, requestOptions);
+    const response = await fetch(`https://graph.facebook.com/v22.0/${id}`, requestOptions);
     const data = await response.json();
     console.log(data)
     // Mudança: Verifica se o campo url existe no retorno da API
@@ -426,14 +475,14 @@ let geraMedia = async function (url, res) {
     method: 'GET', // Mudança: Alterado de POST para GET para buscar informações
     headers: {
       "Content-Type": "application/json",
-      'Authorization': "Bearer Seu Token" // Token de autorização
+      'Authorization': "Bearer SEU TOKEN" // Token de autorização
     }
   };
 
   try {
     const fetch = require('node-fetch');
     // Requisição para a API do Facebook
-    const response = await fetch(`https://graph.facebook.com/v17.0/${id}`, requestOptions);
+    const response = await fetch(`https://graph.facebook.com/v22.0/${id}`, requestOptions);
     const data = await response.json();
     console.log(data)
     // Mudança: Verifica se o campo url existe no retorno da API
@@ -459,7 +508,7 @@ let sendVideo = async function (to, id, link, res, wpp_id, wpnumber) {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
-      'Authorization': "Bearer Seu Token"
+      'Authorization': "Bearer SEU TOKEN"
     },
     body: JSON.stringify({
       "messaging_product": "whatsapp", // Adicione o messaging_product aqui
@@ -507,7 +556,7 @@ let sendDocument = async (to, id, filename, usuario, extensao, res, wpp_id, wpnu
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
-      'Authorization': "Bearer Seu Token"
+      'Authorization': "Bearer SEU TOKEN"
     },
     body: JSON.stringify({
       "messaging_product": "whatsapp", // Adicione o messaging_product aqui
@@ -527,7 +576,7 @@ let sendDocument = async (to, id, filename, usuario, extensao, res, wpp_id, wpnu
     //////console.log(data);
 
 
-    let qry = `insert into meso_mensagens_solicitante (telefone,nome,agent,wpnumber,mensagem, type) values ('${to}','${usuario}','${usuario}','${wpnumber}','https://meso.plugphone.cloud:4444/midia/${id}.${extensao}','midia-document');`
+    let qry = `insert into meso_mensagens_solicitante (telefone,nome,agent,wpnumber,mensagem, type) values ('${to}','${usuario}','${usuario}','${wpnumber}','https://app.plugphone.cloud:4444/midia/${id}','document');`
     console.log('furia berserk do sendDocument', qry)
     executaQry(qry)
 
@@ -549,7 +598,7 @@ let sendAutenticacao = async (to, text, res, wpp_id) => {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
-      'Authorization': "Bearer Seu Token"
+      'Authorization': "Bearer SEU TOKEN"
     },
     // O corpo DEVE ser uma string JSON
     body: JSON.stringify({
@@ -610,6 +659,16 @@ let sendAutenticacao = async (to, text, res, wpp_id) => {
 let sendTemplateMenu = async (to, name, res, wpp_id, wpnumber, id_empresa) => {
   console.log('Enviando template menu...')
 
+  let qry2 = `
+        SELECT empresa
+        FROM meso_empresas
+        WHERE id_empresa = '${id_empresa}'
+        LIMIT 1
+      `;
+
+  let empresa = await executaQry(qry2);
+
+  console.log('eu sou a empresa', empresa)
 
   let qry = `select count(whatsappid) as quantNum from meso_mensagens_solicitante where whatsappid = '${to}' and DATE(datetime) = CURDATE()`;
 
@@ -622,7 +681,7 @@ let sendTemplateMenu = async (to, name, res, wpp_id, wpnumber, id_empresa) => {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
-      'Authorization': "Bearer Seu Token"
+      'Authorization': "Bearer SEU TOKEN"
     },
     body: JSON.stringify({
       "messaging_product": "whatsapp",
@@ -642,7 +701,7 @@ let sendTemplateMenu = async (to, name, res, wpp_id, wpnumber, id_empresa) => {
     const data = await response.json();
 
     // Inserir dados no banco após enviar a mensagem
-    let qry = `insert into meso_mensagens_solicitante (telefone, whatsappid, nome,agent,wpnumber,mensagem, id_empresa, type) values ('${to}','${to}','Template-PlugPhone','Template-PlugPhone','${wpnumber}','PlugPhone\nOi,você está no PlugPhone. Comunique-se, colabore e conecte-se de qualquer lugar! Para que eu possa te atender melhor, escolha uma das opções que tenho para você:\n\n -Técnico\n-Comercial\n-Financeiro','${id_empresa}', 'document');`
+    let qry = `insert into meso_mensagens_solicitante (telefone, whatsappid, nome,agent,wpnumber,mensagem, id_empresa, type) values ('${to}','${to}','Template-${empresa.dados[0].empresa}','Template-${empresa.dados[0].empresa}','${wpnumber}','Template enviado: menu_plugphone','${id_empresa}', 'template-document');`
 
     console.log('vai se fuder mano', qry)
     await executaQry(qry);
@@ -731,7 +790,7 @@ let sendTemplate = async (to, name, usuario, text, res, wpp_id, wpnumber) => {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
-      'Authorization': "Bearer Seu Token"
+      'Authorization': "Bearer SEU TOKEN"
     },
     body: JSON.stringify({
       "messaging_product": "whatsapp",
@@ -765,8 +824,16 @@ let sendTemplate = async (to, name, usuario, text, res, wpp_id, wpnumber) => {
     const data = await response.json();
     console.log('Olha aqui a data do sendTemplate', data);
 
+    let arrayID = await api.get(`/pegaIdEmpresa/${wpnumber}`)
+    let idEmpresa = arrayID.data.dados[0].id_empresa
 
-    let qry = `insert into meso_mensagens_solicitante (whatsappid,telefone,nome,agent,wpnumber,mensagem, type) values ('${to}','${to}','${usuario}','${usuario}','${wpnumber}','Olá, tudo bem?\nAqui é da equipe da Meso Telecom. \nEstamos entrando em contato para tratar de um assunto referente ao seu atendimento. \nPodemos conversar por aqui?','document');`
+
+    let qry = `
+  insert into meso_mensagens_solicitante
+  (whatsappid,telefone,nome,agent,wpnumber,mensagem,type, id_empresa)
+  values
+  ('${to}','${to}','${usuario}','${usuario}','${wpnumber}','Template Enviado: boas_vindas_plugphone','template-document', '${idEmpresa}');
+`;
     console.log('furia berserk', qry)
     executaQry(qry)
 
@@ -794,13 +861,13 @@ let download = async function (id, nome, formato, res) {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer Seu Token"
+      "Authorization": "Bearer SEU TOKEN",
     }
   };
 
   try {
     // Obter informações com base no ID
-    const response = await axios.get(`https://graph.facebook.com/v17.0/${id}`, requestOptions);
+    const response = await axios.get(`https://graph.facebook.com/v22.0/${id}`, requestOptions);
     //////console.log('Ola eu sou response', response.data);
 
     // Baixar o arquivo usando a URL obtida acima
@@ -812,7 +879,7 @@ let download = async function (id, nome, formato, res) {
       responseType: 'arraybuffer',
       headers: {
         "Content-Type": "application/pdf",
-        'Authorization': "Bearer Seu Token"
+        'Authorization': "Bearer SEU TOKEN"
       }
     });
 
@@ -839,7 +906,7 @@ let download = async function (id, nome, formato, res) {
 };
 
 const client = new OpenAI({
-  apiKey: 'Seu Token GPT',
+  apiKey: 'SEU TOKEN',
 })
 
 async function audioGpt() {
@@ -855,4 +922,4 @@ async function audioGpt() {
 
 
 
-module.exports = { send, gerenciarAtendimento, buscaExp, sendImage, sendVideo, sendAudio, sendDocument, download, getImage, getAudio, sendTemplate, sendAutenticacao, sendTemplateMenu, getDocument, test, reciveMediaLink, geraMedia, sendGpt, verificaPalavrao, audioGpt }
+module.exports = { send, normalizaTextoWhatsApp, gerenciarAtendimento, buscaExp, sendImage, sendVideo, sendAudio, sendDocument, download, getImage, getAudio, sendTemplate, sendAutenticacao, sendTemplateMenu, getDocument, test, reciveMediaLink, geraMedia, sendGpt, verificaPalavrao, audioGpt, precisaDeHumano }

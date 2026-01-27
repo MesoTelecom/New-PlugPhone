@@ -83,7 +83,7 @@
           <v-list-item-icon>
             <v-icon>mdi-upload</v-icon>
           </v-list-item-icon>
-          <v-list-item-title>Upload CSV</v-list-item-title>
+          <v-list-item-title>Envio em Massa (CSV)</v-list-item-title>
         </v-list-item>
 
 
