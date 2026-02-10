@@ -5,7 +5,7 @@ const csv = require('csv-parser');
 
 const { executaQry2 } = require("../banco/db2");
 const { geraToken } = require("./jwt/jwt");
-const { send, sendImage, sendVideo, sendAudio, sendDocument, sendTemplate, download, test, getImage, getAudio, getDocument, reciveMediaLink, geraMedia, sendGpt, verificaPalavrao, sendAutenticacao } = require('/meso/whatsapp/webhook/methods.js');
+const { send, sendImage, sendVideo, sendAudio, getVideo, sendDocument, sendTemplate, edit, download, test, getImage, getAudio, getDocument, reciveMediaLink, geraMedia, sendGpt, verificaPalavrao, sendAutenticacao } = require('/meso/whatsapp/webhook/methods.js');
 const axios = require("axios");
 const { executaQryServer } = require('../banco/dbServer');
 const multer = require('multer');
@@ -174,16 +174,20 @@ class ExpressController {
     })
 
     this.expressAppWrapper.post('/cadastrarcontato', async (req, res) => {
-      const { nome, telefone, setor, email, empresa, idEmpresa } = req.body;
+      const { nome, telefone, setor, email, empresa, id_empresa } = req.body;
 
-      let existe = await executaQry(`select exists (select 1 from meso_contatos where telefone = '${telefone}' and id_empresa ='${idEmpresa}') as existe;`)
+      console.log('merda', id_empresa)
 
+      let existe = await executaQry(`select exists (select 1 from meso_contatos where telefone = '${telefone}' and id_empresa ='${id_empresa}') as existe;`)
+      console.log("Cubão aqui")
       if (existe.dados[0].existe == 0) {
+        console.log("Cubão aqui")
+
         const qry = `
     INSERT INTO meso_contatos 
       (nome, telefone, estado, datahora, setor, email, empresa, id_empresa)
     VALUES 
-      ('${nome}', '${telefone}', 'Novo', NOW(), '${setor}', '${email}', '${empresa}', '${idEmpresa}')
+      ('${nome}', '${telefone}', 'Novo', NOW(), '${setor}', '${email}', '${empresa}', '${id_empresa}')
   `;
 
         console.log('bumbum profundo', qry);
@@ -327,6 +331,7 @@ class ExpressController {
 
 
 
+
     this.expressAppWrapper.get('/mudamsg/:num', async (req, res, next) => {
       let num = req.params.num
 
@@ -357,6 +362,99 @@ class ExpressController {
         return res.status(404).send('Imagem não encontrada.');
       }
     });
+
+    this.expressAppWrapper.get('/get-video/:id', (req, res) => {
+      const id = req.params.id;
+
+      if (!id) return res.status(400).send('ID do vídeo não fornecido.');
+
+      const videoPath = path.join(__dirname, 'uploads', id);
+
+      if (!fs.existsSync(videoPath)) {
+        return res.status(404).send('Vídeo não encontrado');
+      }
+
+      // ✅ Headers importantes para subresource (vídeo dentro da página)
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Accept-Ranges', 'bytes');
+
+      // ✅ Se seu front estiver em outro domínio/porta, libera o carregamento do vídeo
+      // (isso não é "CORS de API", é para mídia embutida também)
+      res.setHeader('Access-Control-Allow-Origin', '*');
+
+      const stat = fs.statSync(videoPath);
+      const fileSize = stat.size;
+      const range = req.headers.range;
+
+      if (range) {
+        const parts = range.replace(/bytes=/, '').split('-');
+        const start = Number(parts[0]);
+        const end = parts[1] ? Number(parts[1]) : fileSize - 1;
+
+        // Range inválido
+        if (Number.isNaN(start) || start >= fileSize) {
+          res.status(416).setHeader('Content-Range', `bytes */${fileSize}`);
+          return res.end();
+        }
+
+        const chunkSize = (end - start) + 1;
+
+        res.status(206);
+        res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+        res.setHeader('Content-Length', chunkSize);
+
+        fs.createReadStream(videoPath, { start, end }).pipe(res);
+      } else {
+        res.status(200);
+        res.setHeader('Content-Length', fileSize);
+        fs.createReadStream(videoPath).pipe(res);
+      }
+    });
+
+
+    this.expressAppWrapper.post("/geraVideo/", async (req, res, next) => {
+      let url = req.body.url;
+      let id = req.body.id;
+
+      try {
+        const response = await axios({
+          method: 'get',
+          url: url,
+          responseType: 'stream',
+          headers: {
+            'Authorization': 'SEU TOKEN '
+          }
+        });
+
+        let stream = response.data;
+        const contentEncoding = response.headers['content-encoding'];
+
+        if (contentEncoding && contentEncoding.includes('br')) {
+          stream = stream.pipe(zlib.createBrotliDecompress());
+        } else if (contentEncoding && contentEncoding.includes('gzip')) {
+          stream = stream.pipe(zlib.createGunzip());
+        }
+
+        const uploadPath = path.join(__dirname, 'uploads', `${id}.mp4`);
+
+        const writer = fs.createWriteStream(uploadPath);
+        stream.pipe(writer);
+
+        writer.on('finish', () => {
+          res.status(200).send({ message: 'Vídeo salvo com sucesso!', path: uploadPath });
+        });
+
+        writer.on('error', (err) => {
+          console.error("Erro ao salvar o vídeo:", err.message);
+          res.status(500).send("Erro ao salvar o vídeo.");
+        });
+
+      } catch (error) {
+        console.error("Erro ao baixar o vídeo:", error.response ? error.response.data : error.message);
+        res.status(500).send("Erro ao baixar o vídeo.");
+      }
+    });
+
 
     this.expressAppWrapper.get('/get-audio/:id', async (req, res) => {
       let id = req.params.id;
@@ -631,7 +729,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'Bearer SEU TOKEN AQUI'
+            'Authorization': 'SEU TOKEN '
           }
         });
 
@@ -678,7 +776,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'Bearer SEU TOKEN AQUI'
+            'Authorization': 'SEU TOKEN '
           }
         });
 
@@ -729,7 +827,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'Bearer SEU TOKEN AQUI'
+            'Authorization': 'SEU TOKEN '
           }
         });
 
@@ -1279,6 +1377,71 @@ WHERE telefone = '${telefone}'
       return res.json(resultado);
     });
 
+    this.expressAppWrapper.get("/buscarcontatos7/:tipo/:usuario/:estado/:filtro/:offset", async (req, res) => {
+      let { tipo, usuario, estado, filtro, offset } = req.params;
+
+      if (!offset || offset === 'undefined') offset = 0;
+
+      let idEmpresaArray = await executaQry(`
+    SELECT id_empresa 
+    FROM meso_usuariologin 
+    WHERE usuario = '${usuario}'
+  `);
+
+      let idEmpresa = idEmpresaArray.dados?.[0]?.id_empresa;
+
+      if (!idEmpresa) {
+        return res.json({ dados: [], msg: "Usuário não tem id_empresa" });
+      }
+
+      let where = [`meso_contatos.id_empresa = '${idEmpresa}'`];
+
+      // regra por tipo
+      if (tipo !== "admin" && tipo !== "Técnico") {
+        where.push(`(meso_contatos.usuario LIKE '%${usuario}%' OR meso_contatos.usuario IS NULL)`);
+        where.push(`meso_contatos.setor = '${tipo}'`);
+      }
+
+      if (tipo === "Técnico") {
+        where.push(`meso_contatos.setor = 'Técnico'`);
+      }
+
+      // estado
+      if (estado !== "Todos") {
+        where.push(`meso_contatos.estado = '${estado}'`);
+      }
+
+      // FILTRO PRINCIPAL (nome, telefone, email ou mensagem)
+      if (filtro !== "null" && filtro !== "") {
+        where.push(`
+      (
+        meso_contatos.nome LIKE '%${filtro}%'
+        OR meso_contatos.telefone LIKE '%${filtro}%'
+        OR meso_contatos.email LIKE '%${filtro}%'
+        OR EXISTS (
+          SELECT 1
+          FROM meso_mensagens_solicitante m
+          WHERE m.telefone = meso_contatos.telefone
+            AND m.id_empresa = meso_contatos.id_empresa
+            AND m.mensagem LIKE '%${filtro}%'
+        )
+      )
+    `);
+      }
+
+      let qry = `
+    SELECT meso_contatos.*
+    FROM meso_contatos
+    ${where.length ? "WHERE " + where.join(" AND ") : ""}
+    ORDER BY meso_contatos.datahora DESC
+    LIMIT 100 OFFSET ${offset}
+  `;
+
+      let resultado = await executaQry(qry);
+      return res.json(resultado);
+    });
+
+
 
     this.expressAppWrapper.get("/buscarcontatomealing/:usuario/:tipo/", async (req, res, next) => {
       let qry
@@ -1375,11 +1538,22 @@ WHERE telefone = '${telefone}'
 
         // 2) Busca mensagens do contato naquela empresa
         let qry = `
-      select * 
-      from meso_mensagens_solicitante 
-      where telefone like "${telFormatado}" 
-      and wpnumber = '${wpnumber}'
-    `;
+      SELECT *
+FROM (
+  SELECT *
+  FROM meso_mensagens_solicitante
+  WHERE telefone = '${telFormatado}'
+    AND wpnumber = '${wpnumber}'
+  ORDER BY id DESC
+  
+) AS ultimas
+ORDER BY id ASC;
+`;
+
+
+
+        console.log('qry das mensagens', qry)
+
 
         let res3 = await executaQry(qry);
 
@@ -1406,6 +1580,68 @@ WHERE telefone = '${telefone}'
       }
     });
 
+    this.expressAppWrapper.post("/reciveMsg1", async (req, res, next) => {
+      try {
+        let telefone = req.body.telefone;
+        let telFormatado = telefone;
+        let id_empresa = req.body.idEmpresa;
+
+        // 1) Pega o wpnumber da empresa
+        let qry55 = `select telefone, empresa from meso_empresas where id_empresa = '${id_empresa}'`;
+        console.log("Consulta da empresa:", qry55);
+        let empresa = await executaQry(qry55);
+
+        console.log("Dados da empresa:", empresa);
+        if (!empresa?.dados?.length) {
+          return res.json({ ok: false, msg: "Empresa não encontrada" });
+        }
+
+        let wpnumber = empresa.dados[0].telefone;
+        let nomeEmpresa = empresa.dados[0].empresa || "Empresa";
+
+        // 2) Busca mensagens do contato naquela empresa
+        let qry = `
+      SELECT *
+FROM (
+  SELECT *
+  FROM meso_mensagens_solicitante
+  WHERE telefone = '${telFormatado}'
+    AND wpnumber = '${wpnumber}'
+  ORDER BY id DESC
+  LIMIT 50
+) AS ultimas
+ORDER BY id ASC;
+`;
+
+
+
+        console.log('qry das mensagens', qry)
+
+
+        let res3 = await executaQry(qry);
+
+        // 3) Troca "cgPhone" pelo nome da empresa
+        if (res3?.dados?.length) {
+          res3.dados = res3.dados.map((m) => {
+            if (m.nome && m.nome.includes("-PlugPhone")) {
+              m.nome = m.nome.replace("-PlugPhone", `-${nomeEmpresa}`);
+            }
+
+            if (m.agent && m.agent.includes("-PlugPhone")) {
+              m.agent = m.agent.replace("-PlugPhone", `-${nomeEmpresa}`);
+            }
+
+            return m;
+          });
+        }
+
+        return res.json(res3);
+
+      } catch (err) {
+        console.log("Erro no /reciveMsg:", err);
+        return res.json({ ok: false, msg: "Erro interno no servidor" });
+      }
+    });
     this.expressAppWrapper.get("/mediapesquisaconta/:d1/:d2", async (req, res, next) => {
       let data1 = req.params.d1 + ' 00:00:00'
       let data2 = req.params.d2 + ' 23:59:59'
@@ -1416,6 +1652,7 @@ WHERE telefone = '${telefone}'
       ////console.log(res2);
 
     });
+
 
     this.expressAppWrapper.get("/listaanalista", async (req, res, next) => {
       let qry = `select * from meso_usuariologin where tipo = 'Analista'`;
@@ -3474,11 +3711,29 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       }
     });
 
+    this.expressAppWrapper.get("/verificaWhatsapp/:id_empresa", async (req, res) => {
+      try {
+        const id_empresa = req.params.id_empresa;
+
+        const qry = `
+      SELECT telefonia
+      FROM meso_empresas
+      WHERE id_empresa = '${id_empresa}'
+      LIMIT 1
+    `;
+
+        const result = await executaQry(qry);
+        return res.json(result);
+
+      } catch (err) {
+        return res.status(500).json({ erro: "Erro interno" });
+      }
+    });
+
     this.expressAppWrapper.post("/enviar-email-erro", async (req, res, next) => {
       console.log("Ai entrei no sendEmail")
       try {
         const { message, error, stack, platform, route } = req.body;
-
 
 
         await transporter.sendMail({
@@ -3867,7 +4122,22 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       //let data1 = req.params.d1 + ' 00:00:00'
       //let data2 = req.params.d2 + ' 23:59:59'
 
-      let qry = `SELECT * FROM meso_usuariologin where id_empresa = 5 ORDER BY FIELD(estado, 'em ligação', 'logado', 'pausado', 'deslogado');`;
+      let qry = `SELECT * FROM meso_usuariologin ORDER BY FIELD(estado, 'em ligação', 'logado', 'pausado', 'deslogado');`;
+      ////console.log(qry);
+
+      let res36 = await executaQry(qry);
+      res.json(res36);
+      ////console.log(res36);
+
+    });
+
+    this.expressAppWrapper.get("/realoperadorrt2/:idEmpresa", async (req, res, next) => {
+      let idEmpresa = req.params.idEmpresa;
+      // let filacompleta = req.params.fila;
+      //let data1 = req.params.d1 + ' 00:00:00'
+      //let data2 = req.params.d2 + ' 23:59:59'
+
+      let qry = `SELECT * FROM meso_usuariologin where id_empresa = ${idEmpresa} ORDER BY FIELD(estado, 'em ligação', 'logado', 'pausado', 'deslogado');`;
       ////console.log(qry);
 
       let res36 = await executaQry(qry);
@@ -4442,26 +4712,23 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       console.log("fazendo o som")
       try {
         let usuario = req.body.usuario;
-        let usuarioSemPlug = usuario;
-        if (usuario.includes('-PlugPhone')) {
-          usuarioSemPlug = usuario.replace('-PlugPhone', '');
-          console.log("Caiu aquii será?");
-        }
-
         let senha = req.body.senha;
         let tipo = req.body.tipo;
         let id = req.body.id
-
-
-
-
+        let idEmpresa = req.body.id_empresa
 
 
         let updateUsuario = await executaQry(`
       UPDATE meso_usuariologin
       SET usuario='${usuario}', senha=MD5('${senha}'), tipo='${tipo}'
-      WHERE id=${id}
+      WHERE id = ${id} and id_empresa = '${idEmpresa}'
     `);
+
+        console.log(`olha a putaria 
+      UPDATE meso_usuariologin
+      SET usuario='${usuario}', senha=MD5('${senha}'), tipo='${tipo}'
+      WHERE id = ${id} and id_empresa = '${idEmpresa}'
+    `)
 
         // Aqui depende de como o executaQry retorna — geralmente:
         // updateUsuario.affectedRows OU updateUsuario.dados.affectedRows
@@ -4543,6 +4810,56 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
 
     })
 
+
+    this.expressAppWrapper.post("/editarMensagem", async (req, res) => {
+
+      let to = req.body.to
+      let body = req.body.body
+      let nome = req.body.nome
+      let id_empresa = req.body.idEmpresa
+      let messageId = req.body.messageId
+
+      let qry = `select wpp_id, telefone from meso_empresas where id_empresa = '${id_empresa}'`
+      console.log('irritado', qry)
+      let wpp = await executaQry(qry)
+      let wpp_id = wpp.dados[0].wpp_id
+      let wpnumber = wpp.dados[0].telefone
+
+      console.log('dificil heim kkkkkkk', to, body, nome, wpp_id, wpnumber)
+      let palavrao = await verificaPalavrao(body)
+      ////console.log('palavrão nãokkkkkkk', palavrao)
+      if (palavrao) {
+        let qry = `insert into meso_mensagens_banidas (nome, mensagem) VALUES ('${nome}', '${body}')`
+        await executaQry(qry)
+        res.json({ "dados": "mensagem não tolerada" });
+      } else {
+        //////////console.log('passei mesmo kkkkk')
+
+
+        /*
+                let qry1 = `
+            UPDATE meso_contatos 
+            SET atendimento_ai = 0
+            WHERE telefone = '${to}' and id_empresa = '${id_empresa}'
+          `;
+        
+                console.log('opaaaaa vamo q vamo', qry1)
+                await executaQry(qry1)
+        */
+        await edit(to, body, nome, res, messageId, wpp_id, wpnumber)
+        let qry = `update meso_contatos set ultimamsg = '${body}' where telefone = ${to} and id_empresa = '${id_empresa}'`
+        console.log('eu sou a ultimamsg', qry)
+        await executaQry(qry)
+
+
+        ////console.log("Essa bosta aqui")
+
+        //////console.log("Sem ter hora pra chegar")
+
+        res.json({ "dados": "mensagem enviada" });
+
+      }
+    })
     this.expressAppWrapper.post("/atualizausuario", async (req, res) => {
       let nome = req.body.nome;
       let telefone = req.body.telefone;
@@ -4607,7 +4924,7 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
 
       ////console.log(to, id, link, res)
       ////console.log('oque vem sem link', link)
-      sendImage(to, id, usuario, res, wpp_id, wpnumber)
+      sendImage(to, id, usuario, res, wpp_id, wpnumber, id_empresa)
     })
 
 
@@ -4616,6 +4933,8 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       let to = req.body.to
       let id = req.body.id
       let link = req.body.link
+      let usuario = req.body.usuario
+
       let id_empresa = req.body.idEmpresa
 
       let qry = `select wpp_id, telefone from meso_empresas where id_empresa = '${id_empresa}'`
@@ -4623,7 +4942,7 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       let wpp_id = wpp.dados[0].wpp_id
       let wpnumber = wpp.dados[0].telefone
 
-      sendVideo(to, id, link, res, wpp_id, wpnumber)
+      sendVideo(to, id, usuario, res, wpp_id, wpnumber, id_empresa)
     })
 
     this.expressAppWrapper.post("/sendaudio", async (req, res) => {
@@ -4688,7 +5007,7 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       console.log(`teste do send document, \nto${to},\n id:${id}, \n newID:${newID},\n nomeArquivo ${filename},\nusuario ${usuario}\n extensao ${extensao}`)
 
 
-      sendDocument(to, newID, filename, usuario, extensao, res, wpp_id, wpnumber)
+      sendDocument(to, newID, filename, usuario, extensao, res, wpp_id, wpnumber, id_empresa)
     })
 
 
@@ -4866,7 +5185,56 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       }
     });
 
+    const videoFilter = (req, file, cb) => {
 
+      const allowed = [
+        "video/mp4",
+        "video/quicktime",
+        "video/webm"
+      ];
+
+      if (allowed.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error("Formato de vídeo não suportado"), false);
+      }
+    };
+    const uploadVideo = multer({
+      storage,
+      limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+      fileFilter: videoFilter
+    });
+
+
+    this.expressAppWrapper.post('/upload-video', uploadVideo.single('video'), async (req, res) => {
+
+      if (!req.file) {
+        return res.status(400).send('Nenhum vídeo recebido.');
+      }
+
+      let caminho = req.file.path;
+
+      // função que faz upload pra META igual getImage
+      let idVideo = await getVideo(caminho);
+
+      res.json({ id: idVideo });
+
+    });
+
+    this.expressAppWrapper.post('/upload-video', async (req, res) => {
+
+      if (!req.file) {
+        return res.status(400).send('Nenhum vídeo recebido.');
+      }
+
+      let caminho = req.file.path;
+
+      // função que faz upload pra META igual getImage
+      let idVideo = await getVideo(caminho);
+
+      res.json({ id: idVideo });
+
+    });
 
     this.expressAppWrapper.get("/estadoMealing/:processo/:atendeu/:reagendar/:interesse/:negociar/:observacao", async (req, res, next) => {
       ////console.log('entrei aqui')

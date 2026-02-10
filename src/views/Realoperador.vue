@@ -211,6 +211,9 @@ import Footer from "../components/footer.vue";
 export default {
   async beforeMount() {
     //const { setIntervalAsync } = require("set-interval-async/legacy");
+    let usuario = JSON.parse(localStorage.getItem('usu'));
+    this.usuario = usuario.usuario
+    this.id_empresa = usuario.id_empresa
     this.exibir();
     console.log('eu sou idsetinterval Before mount', this.idsetinterval)
 
@@ -236,6 +239,8 @@ export default {
     dialogLogout: false,
     dialogPausa: false,
     dialogPausaOut: false,
+    usuario: "",
+    id_empresa: "",
 
     dialogDelete: false,
 
@@ -325,7 +330,7 @@ export default {
   methods: {
 
     exibir: async function () {
-      let a = await api.get(`/realoperadorrt`);
+      let a = await api.get(`/realoperadorrt2/${this.id_empresa}`);
       let b = await api.get('/ajustaestado');
       //console.log(`/realoperadorrt`);
       //console.log(a.data.dados);
@@ -477,7 +482,7 @@ export default {
       let res4;
 
       //edita
-      //console.log("Item editado", this.editedItem);
+      console.log("Item editado", this.editedItem);
       res = await api.post("/logarpainel", this.editedItem);
 
       res2 = await api.post("/estadoperador", this.editedItem);

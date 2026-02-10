@@ -142,28 +142,30 @@
 
 export default {
   name: "SideBar",
-  data: () => ({
 
+  data: () => ({
+    temWhatsapp: false, // boolean, correto
     error: false,
   }),
-  methods: {
 
+  async mounted() {
+    console.log("MOUNTED DA SIDEBAR");
+    console.log("me mostre", this.temWhatsapp);
+  },
+
+  methods: {
     async logout() {
       try {
         this.error = false;
-
         sessionStorage.removeItem("jwt");
         this.$router.push("/");
-
-        // console.log(res.data.dados[0]);
       } catch (e) {
-        window.alert('Não deu!')
+        window.alert("Não deu!");
       }
     },
   },
-
 };
-
 </script>
+
 
 <style></style>

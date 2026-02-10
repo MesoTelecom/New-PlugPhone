@@ -50,7 +50,12 @@ export default {
         img: require('@/assets/realtimeInbound.jpg'),
         url: '/campanhafila'
       },
-
+      {
+        title: 'Real Time WhatsApp',
+        text: 'Monitoramento das Filas WhatsApp em Tempo Real',
+        img: require('@/assets/whatsapp.png'),
+        url: '/campanhafila'
+      },
 
     ],
     transparent: 'rgba(255, 255, 255, 0)',

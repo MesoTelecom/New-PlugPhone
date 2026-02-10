@@ -11,7 +11,7 @@ const cors = require("cors");
 const axios = require("axios");
 const { executaQry } = require('/meso/whatsapp/webhook/db');
 const { send, sendImage, sendVideo, sendAudio, normalizaTextoWhatsApp, gerenciarAtendimento, sendDocument, sendTemplate, download, sendTemplateMenu, reciveMediaLink, verificaPalavrao, audioGpt, precisaDeHumano } = require('./methods');
-const { emitMensagem, emitImage, emitAudio, emitDocument, emitMensagem2 } = require("./emit");
+const { emitMensagem, emitImage, emitAudio, emitVideo, emitDocument, emitMensagem2 } = require("./emit");
 const { sendToNia } = require("./llama_bot/services/nia-service.js");
 const { Socket } = require("socket.io");
 const app = express().use(body_parser.json());
@@ -111,7 +111,8 @@ emitirContatosAtualizados(io);
 app.post("/webhooks", async (req, res) => {
     let body_param = req.body;
     let tudo = body_param;
-    //console.log('NegocioAqui', JSON.stringify(tudo))
+    //console.log('NegocioAqui', JSON.stringify(tudo.entry[0].changes[0].value.messages[0].type))
+    //tudo.entry[0].changes[0].value.message[0].type
 
     const msgObj = tudo?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
     const meta = tudo?.entry?.[0]?.changes?.[0]?.value?.metadata;
@@ -170,6 +171,7 @@ app.post("/webhooks", async (req, res) => {
     let quantNum = quantNumArray.dados[0].quantNum;
 
     let qry2 = `select estado from meso_contatos where id_empresa = '${idEmpresa}' and telefone = '${numeroWhatsapp}' `;
+    console.log('teste teste teste teste', qry2)
     let estadoArray = await executaQry(qry2);
     let estado = estadoArray.dados[0].estado;
     console.log('Cupcake', estado)
@@ -246,7 +248,6 @@ app.post("/webhooks", async (req, res) => {
                             waId,
                             "Para evitar qualquer desencontro de informações, vou te direcionar agora para um atendente humano.",
                             botName,
-                            res,
                             wpp_id,
                             telEmpresa
                         );
@@ -322,7 +323,6 @@ app.post("/webhooks", async (req, res) => {
                             waId,
                             respostaFinal,
                             botName,
-                            res,
                             wpp_id,
                             telEmpresa
                         );
@@ -337,8 +337,6 @@ app.post("/webhooks", async (req, res) => {
                                 telEmpresa
                             );
                         }
-
-
 
                         if (!threadId && novoThread) {
                             await executaQry(`
@@ -450,7 +448,8 @@ app.post("/webhooks", async (req, res) => {
                         '551131646301',
                         msgEnviada.mensagem,
                         msgEnviada.type,
-                        msgEnviada.datetime
+                        msgEnviada.datetime,
+                        ""
                     ]);
 
 
@@ -504,19 +503,22 @@ app.post("/webhooks", async (req, res) => {
                     io.emit('contatos', agrupados)
 
 
-                    let qryMandaToken = `select usuario, setor,nome from meso_contatos where telefone = '${waId}'`
+                    let qryMandaToken = `select usuario, setor,nome from meso_contatos where telefone = '${waId}' and id_empresa = ${idEmpresa}`
                     let mandaToken = await executaQry(qryMandaToken)
+
+                    console.log("Se prometa que dessa noite não vai passar", qryMandaToken)
+
                     ////console.log("Manda meu setor", mandaToken.dados[0].setor)
                     //estado, usuario, setor, tipo
                     // await emitContatosFlutter(io, estadoCampanha.dados[0].estado, mandaToken.dados[0].usuario, mandaToken.dados[0].setor, mandaToken.dados[0].tipo)
 
                     if (mandaToken.dados[0].usuario == null || mandaToken.dados[0].usuario == "") {
-                        pegatokenfire(msg, nome, null, mandaToken.dados[0].setor, waId, io)
-                        pegatokenfireMobile(msg, nome, null, mandaToken.dados[0].setor, waId)
+                        pegatokenfire(msg, nome, null, mandaToken.dados[0].setor, waId, io, idEmpresa)
+                        pegatokenfireMobile(msg, nome, null, mandaToken.dados[0].setor, waId, idEmpresa)
                         console.log("me retorna aqui usuario nulo");
                     } else {
-                        pegatokenfire(msg, nome, mandaToken.dados[0].usuario, null, waId, io)
-                        pegatokenfireMobile(msg, nome, mandaToken.dados[0].usuario, null, waId)
+                        pegatokenfire(msg, nome, mandaToken.dados[0].usuario, null, waId, io, idEmpresa)
+                        pegatokenfireMobile(msg, nome, mandaToken.dados[0].usuario, null, waId, idEmpresa)
                         console.log("me retorna aqui setor");
                     }
 
@@ -524,6 +526,119 @@ app.post("/webhooks", async (req, res) => {
 
                 } catch (error) {
                     ////console.error("Erro ao processar mensagem:", error);
+                }
+            }
+
+            else if (tudo.entry[0].changes[0].value.messages[0].type == 'contacts') {
+                let nome = tudo.entry[0].changes[0].value.contacts[0].profile.name;
+                let mensagem = tudo.entry[0].changes[0].value.messages[0];
+                let msg = "contacts"
+                let waId = tudo.entry[0].changes[0].value.contacts[0].wa_id;
+                let telEmpresa = tudo.entry[0].changes[0].value.metadata.display_phone_number
+                let type = mensagem.type;
+                let messageId = mensagem.id;
+
+                let qry = `
+                        INSERT INTO meso_mensagens_solicitante 
+                        (nome, whatsappid, mensagem, telefone,wpnumber, type, message_id, id_empresa) 
+                        VALUES ('${nome}', '${waId}','${msg}','${waId}','${telEmpresa}','${type}', '${messageId}','${idEmpresa}');
+                    `;
+                console.log('vc me sente?', qry)
+                await executaQry(qry);
+
+
+                const agoraTempo = new Date();
+                const horaFormatada = new Intl.DateTimeFormat('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                }).format(agoraTempo);
+                ////////console.log('minha msg', horaFormatada)
+
+                let msgEnviada = {
+                    telefone: waId,
+                    nome: nome,
+                    agente: '',
+                    mensagem: msg,
+                    type: 'contacts',
+                    datetime: horaFormatada
+                }
+
+                io.emit('receive-message', [
+                    msgEnviada.telefone,
+                    msgEnviada.nome,
+                    msgEnviada.agente,
+                    '551131646301',
+                    msgEnviada.mensagem,
+                    msgEnviada.type,
+                    msgEnviada.datetime,
+                    ''
+                ]);
+
+
+
+                //     let qryBuscaEstadoCampanha = `select * from estado_contato;`
+                //////////     console.log("Estou aqui bonitinho", qryBuscaEstadoCampanha)
+                //     let estadoCampanha = await executaQry(qryBuscaEstadoCampanha)
+                //////////     //console.log("estado campanha", estadoCampanha)
+
+                let qryContatos = `select * from meso_contatos`
+                let contatosValor = await executaQry(qryContatos)
+
+                ////////console.log("My contacts", contatosValor.dados)
+
+                const estadosValidos = [
+                    'Novo',
+                    'Aguardando Cliente',
+                    'Aguardando Atendimento',
+                    'Concluido'
+                ];
+
+                const agrupados = {
+                    'Todos': contatosValor.dados,
+                    'Novo': [],
+                    'Aguardando Cliente': [],
+                    'Aguardando Atendimento': [],
+                    'Concluido': []
+                };
+
+                contatosValor.dados.forEach(element => {
+                    const estado = element.estado;
+
+                    if (estadosValidos.includes(estado)) {
+                        agrupados[estado].push({
+                            estado: element.estado,
+                            nome: element.nome,
+                            usuario: element.usuario,
+                            telefone: element.telefone,
+                            ultimamsg: element.ultimamsg,
+                            setor: element.setor,
+                            datahora: element.datahora
+
+                        });
+                    } else {
+                        ////////console.log('Estado desconhecido ou não tratado:', estado);
+                    }
+                });
+
+                io.emit('contatos', agrupados)
+
+
+                let qryMandaToken = `select usuario, setor from meso_contatos where telefone = '${waId}'`
+                let mandaToken = await executaQry(qryMandaToken)
+                ////////console.log("Manda meu setor", mandaToken.dados[0].setor)
+                //     //estado, usuario, setor, tipo
+                //    // await emitContatosFlutter(io, estadoCampanha.dados[0].estado, mandaToken.dados[0].usuario, mandaToken.dados[0].setor, mandaToken.dados[0].tipo)
+
+                if (mandaToken.dados[0].usuario == null || mandaToken.dados[0].usuario == "") {
+                    pegatokenfire(msg, nome, null, mandaToken.dados[0].setor)
+                    ////////console.log("me retorna aqui usuario nulo");
+                } else {
+                    pegatokenfire(msg, nome, mandaToken.dados[0].usuario, null)
+                    ////////console.log("me retorna aqui setor");
                 }
             }
 
@@ -730,7 +845,8 @@ WHERE NOT EXISTS (
                         '551131646301',
                         msgEnviada.mensagem,
                         msgEnviada.type,
-                        msgEnviada.datetime
+                        msgEnviada.datetime,
+                        ''
                     ]);
 
 
@@ -895,7 +1011,8 @@ WHERE NOT EXISTS (
                             '551131646301',
                             msgEnviada.mensagem,
                             msgEnviada.type,
-                            msgEnviada.datetime
+                            msgEnviada.datetime,
+                            ''
                         ]);
 
 
@@ -974,6 +1091,108 @@ WHERE NOT EXISTS (
 
 
             }
+            else if (tudo.entry[0].changes[0].value.messages[0].type == 'video') {
+                try {
+
+                    console.log('cheguei no bloco de VIDEO')
+
+                    let mensagem = tudo.entry[0].changes[0].value.messages[0];
+                    let produto = tudo.entry[0].changes[0].value;
+
+                    let type = mensagem.type;
+                    let msg = mensagem.video.id;
+                    let nome = tudo.entry[0].changes[0].value.contacts[0].profile.name;
+                    let waId = tudo.entry[0].changes[0].value.contacts[0].wa_id;
+                    let telEmpresa = tudo.entry[0].changes[0].value.metadata.display_phone_number;
+
+                    let messageId = mensagem.id;
+                    let timestamp = parseInt(mensagem.timestamp);
+                    let agora = Math.floor(Date.now() / 1000);
+
+                    // IGNORA mensagens antigas
+                    if (agora - timestamp > 10) return res.sendStatus(200);
+
+                    // EVITA DUPLICADO
+                    let qryCheck = `SELECT COUNT(*) as jaExiste 
+                    FROM meso_mensagens_solicitante 
+                    WHERE message_id = '${messageId}'`;
+
+                    let check = await executaQry(qryCheck);
+                    if (check.dados[0].jaExiste > 0) return res.sendStatus(200);
+
+                    // SALVA NO BANCO
+                    let qry = `
+      INSERT INTO meso_mensagens_solicitante 
+      (nome, whatsappid, mensagem, wpnumber, telefone, type, message_id, id_empresa) 
+      VALUES ('${nome}', '${waId}', 'https://meso.plugphone.cloud:4444/midia/${msg}.mp4', '${telEmpresa}', '${waId}', '${type}', '${messageId}', '${idEmpresa}');
+    `;
+
+                    await executaQry(qry);
+
+                    console.log('id do video', msg)
+
+                    // BUSCA URL DO VIDEO NA META
+                    let a = await api.get(`/pegaURL/${msg}`);
+                    let url = a.data.url;
+
+                    let bodyVideo = {
+                        url: url,
+                        id: msg
+                    };
+
+                    await api.post(`/geraVideo/`, bodyVideo);
+
+                    // BAIXA VIDEO
+                    let geraMidia = await api.get(`/get-video/${msg}.mp4`, { responseType: 'arraybuffer' });
+
+                    if (geraMidia.status === 200) {
+
+                        const videoBuffer = Buffer.from(geraMidia.data, 'binary');
+                        const base64Video = `data:video/mp4;base64,${videoBuffer.toString('base64')}`;
+
+                        // SOCKET VIDEO
+                        emitVideo(io, nome, `${msg}.mp4`, waId);
+
+                        let salva = { "msg": "video", "tel": waId };
+                        await api.post("/atualizacontato", salva);
+
+                        const agoraTempo = new Date();
+                        const horaFormatada = new Intl.DateTimeFormat('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                        }).format(agoraTempo);
+
+                        let msgEnviada = {
+                            telefone: waId,
+                            nome: nome,
+                            agente: '',
+                            mensagem: `${msg}.mp4`,
+                            type: 'video',
+                            datetime: horaFormatada
+                        };
+
+                        io.emit('receive-message', [
+                            msgEnviada.telefone,
+                            msgEnviada.nome,
+                            msgEnviada.agente,
+                            '551131646301',
+                            msgEnviada.mensagem,
+                            msgEnviada.type,
+                            msgEnviada.datetime,
+                            ''
+                        ]);
+
+                    }
+
+                } catch (error) {
+                    console.error('Erro ao processar VIDEO:', error);
+                }
+            }
+
             else if (tudo.entry[0].changes[0].value.messages[0].type == 'audio') {
                 try {
                     let mensagem = tudo.entry[0].changes[0].value.messages[0];
@@ -1000,6 +1219,7 @@ WHERE NOT EXISTS (
                     ;
 
 
+                    console.log('idEmpresa', idEmpresa)
                     // INSERE NO BANCO
                     let qry = `
                         INSERT INTO meso_mensagens_solicitante 
@@ -1067,7 +1287,8 @@ WHERE NOT EXISTS (
                         '551131646301',
                         msgEnviada.mensagem,
                         msgEnviada.type,
-                        msgEnviada.datetime
+                        msgEnviada.datetime,
+                        ''
                     ]);
 
 
@@ -1157,7 +1378,7 @@ WHERE NOT EXISTS (
 
                     let fileName = tudo.entry[0].changes[0].value.messages[0].document.filename; // ex: "contrato.v1.final.pdf"
                     let extensao = fileName.substring(fileName.lastIndexOf(".") + 1);
-                    let qry = `insert into meso_mensagens_solicitante (nome, whatsappid, mensagem, telefone, wpnumber, type ) VALUES ('${nome}', '${waId}','https://meso.plugphone.cloud:4444/midia/${msg}.${extensao}','${waId}','${telEmpresa}','${type}');`
+                    let qry = `insert into meso_mensagens_solicitante (nome, whatsappid, mensagem, telefone, wpnumber, id_empresa, type, extensao ) VALUES ('${nome}', '${waId}','https://meso.plugphone.cloud:4444/midia/${msg}.${extensao}','${waId}','${telEmpresa}','${idEmpresa}','document', '${extensao}');`
                     console.log('Satoru gojo', qry)
                     await executaQry(qry)
 
@@ -1198,7 +1419,8 @@ WHERE NOT EXISTS (
                         '551131646301',
                         `${msg}.${extensao}`,
                         type,
-                        horaFormatada
+                        horaFormatada,
+                        extensao
                     ]);
 
                 } catch (error) {
@@ -1298,7 +1520,8 @@ WHERE NOT EXISTS (
             '551131646301',
             msgEnviada.mensagem,
             msgEnviada.type,
-            msgEnviada.datetime
+            msgEnviada.datetime,
+            ''
         ]);
 
 
@@ -1390,6 +1613,38 @@ WHERE NOT EXISTS (
         console.log('maira', numeroWhatsapp, template, wpp_id)
 
         console.log('legends never dies', numeroWhatsapp, template, wpp_id, idEmpresa)
+
+        let verificaAtendimento = await executaQry(`
+  SELECT id FROM meso_atendimentos 
+  WHERE telefone = '${waId}' AND status IN ('Novo', 'Aguardando Atendimento')
+  ORDER BY id DESC LIMIT 1;
+`);
+
+        if (verificaAtendimento.dados.length === 0) {
+            console.log(`🪄 Criando novo atendimento para ${waId} (${msg})`);
+
+            let qryInsert = `
+    INSERT INTO meso_atendimentos 
+      (id_contato, telefone, id_empresa,setor_origem, setor_atual, canal, status, data_inicio, ultima_mensagem, criado_por, atualizado_em)
+    VALUES (
+      (SELECT id FROM meso_contatos WHERE telefone = '${waId}' LIMIT 1),
+      '${waId}',
+      '${empresa}',
+      'Bot',
+      'Técnico',
+      'WhatsApp',
+      'Novo',
+      NOW(),
+      NOW(),
+      'Sistema',
+      NOW()
+    );
+  `;
+            console.log('query do atendimento', qryInsert)
+            await executaQry(qryInsert);
+        } else {
+            console.log(`🧭 Atendimento já existente para ${waId}`);
+        }
 
         sendTemplateMenu(numeroWhatsapp, template, res, wpp_id, telEmpresa, idEmpresa)
 
@@ -1634,10 +1889,11 @@ app.use(bodyParser.json());
 app.post('/registrar-token-mobile', async (req, res) => {
     const { token } = req.body;
     const { usuario } = req.body
+    const { id_empresa } = req.body
 
-    ////console.log('auauau', token, usuario)
+    console.log('auauau', token, usuario, id_empresa)
 
-    const tokenFuncMobile = await funcTokenMobile(usuario);
+    const tokenFuncMobile = await funcTokenMobile(usuario, id_empresa);
 
     ////console.log("token e usuario aqui", token, usuario);
 
@@ -1674,29 +1930,52 @@ app.post('/register', async (req, res) => {
         return res.status(400).json({ error: "Subscription inválida" })
     }
 
-    let existe = await executaQry(`select exists(select 1 from meso_push_subscriptions where id_usuario = (select id from meso_usuariologin where usuario like '%${usuario}%')) as existe;`)
+    let idEmpresaQry = `select id_empresa from meso_usuariologin where usuario like '${usuario}'`
+    console.log("Vem com o -Empresa", idEmpresaQry)
+    let idEmpresaValor = await executaQry(idEmpresaQry)
+
+    let existe = await executaQry(`
+  SELECT EXISTS(
+    SELECT 1
+    FROM meso_push_subscriptions ps
+    JOIN meso_usuariologin ul 
+      ON ul.id = ps.id_usuario
+    WHERE ul.usuario LIKE '%${usuario}%'
+      AND ul.id_empresa = ${idEmpresaValor.dados[0].id_empresa}
+      AND ps.id_empresa = ${idEmpresaValor.dados[0].id_empresa}
+  ) AS existe;
+`);
 
 
-    //console.log("meu pai amado", existe.dados[0].existe)
+
+    console.log(`meu pai amado ELECT EXISTS(
+    SELECT 1
+    FROM meso_push_subscriptions ps
+    JOIN meso_usuariologin ul 
+      ON ul.id = ps.id_usuario
+    WHERE ul.usuario LIKE '%${usuario}%'
+      AND ul.id_empresa = ${idEmpresaValor.dados[0].id_empresa}
+      AND ps.id_empresa = ${idEmpresaValor.dados[0].id_empresa}
+  ) AS existe;`)
 
     try {
 
         if (existe.dados[0].existe == 0) {
             executaQry(
-                `insert into meso_push_subscriptions (id_usuario, tipo, endpoint, p256dh,auth) 
+                `insert into meso_push_subscriptions (id_usuario, tipo, endpoint, p256dh,auth,id_empresa) 
             values ((select id from meso_usuariologin where usuario 
-            like '%${usuario}%'),'${tipo}', '${subscription.endpoint}', '${subscription.keys.p256dh}', '${subscription.keys.auth}')`)
+            like '%${usuario}%'),'${tipo}', '${subscription.endpoint}', '${subscription.keys.p256dh}', '${subscription.keys.auth}', ${idEmpresaValor.dados[0].id_empresa})`)
 
-            // console.log(`borracha forte insert into meso_push_subscriptions (id_usuario, tipo, endpoint, p256dh,auth) 
-            // values((select id from meso_usuariologin where usuario 
-            // like '%${usuario}%'), '${tipo}', '${subscription.endpoint}', '${subscription.keys.p256dh}', '${subscription.keys.auth}')`)
+            console.log(`borracha forte insert into meso_push_subscriptions (id_usuario, tipo, endpoint, p256dh,auth,id_empresa) 
+            values ((select id from meso_usuariologin where usuario 
+            like '%${usuario}%'),'${tipo}', '${subscription.endpoint}', '${subscription.keys.p256dh}', '${subscription.keys.auth}', ${idEmpresaValor.dados[0].id_empresa})`)
 
         } else {
             executaQry(`update meso_push_subscriptions set endpoint = '${subscription.endpoint}', p256dh = '${subscription.keys.p256dh}', auth = '${subscription.keys.auth}' 
-                where id_usuario = (select id from meso_usuariologin where usuario like '%${usuario}%')`)
+                where id_usuario = (select id from meso_usuariologin where usuario like '%${usuario}%' and id_empresa = ${idEmpresaValor.dados[0].id_empresa})`)
 
-            // console.log(`borracha fraca update meso_push_subscriptions set endpoint = '${subscription.endpoint}', p256dh = '${subscription.keys.p256dh}', auth = '${subscription.keys.auth}' 
-            //     where id = (select id from meso_usuariologin where usuario like '%${usuario}%')`)
+            console.log(`borracha fraca update meso_push_subscriptions set endpoint = '${subscription.endpoint}', p256dh = '${subscription.keys.p256dh}', auth = '${subscription.keys.auth}' 
+                where id_usuario = (select id from meso_usuariologin where usuario like '%${usuario}%' and id_empresa = ${idEmpresaValor.dados[0].id_empresa})`)
         }
 
         res.json({ success: true, message: "Subscription registrada com sucesso" });
@@ -1706,29 +1985,29 @@ app.post('/register', async (req, res) => {
     }
 });
 
-let funcToken = async function (nome) {
-    let qry = `select token from meso_usuariologin where usuario like '%${nome}%'; `;
-    token = await executaQry(qry)
-    let tokenFormatado = token.dados.length > 0 ? token.dados[0].token : "";
-    return tokenFormatado
-}
-
-let funcTokenMobile = async function (nome) {
-    let qry = `select tokenMobile from meso_usuariologin where usuario like '%${nome}%'; `;
+let funcTokenMobile = async function (nome, id_empresa) {
+    let qry = `select tokenMobile from meso_usuariologin where usuario like '%${nome}%' and id_empresa = '${id_empresa}'; `;
     token = await executaQry(qry)
     let tokenFormatado = token.dados.length > 0 ? token.dados[0].tokenMobile : "";
+    console.log("caralho hein essa merda vai funcionar?", qry)
     return tokenFormatado
 }
 
-let pegatokenfire = async function (mensagem, nome, usuario, setor, telefone, io) {
+let pegatokenfire = async function (mensagem, nome, usuario, setor, telefone, io, idEmpresa) {
     try {
         // 1. Buscar tokens do banco
 
         const rows = await executaQry(`select *
     FROM meso_push_subscriptions 
-            WHERE id_usuario = (select id from meso_usuariologin where usuario like '%${usuario}%') 
+            WHERE id_usuario = (select id from meso_usuariologin where usuario like '%${usuario}% and id_empresa = ${idEmpresa}') 
                OR tipo = '${setor}' 
-               OR tipo = 'admin'`)
+               OR tipo = 'admin' and id_empresa = '${idEmpresa}'`)
+
+        console.log(`Me mostre o qry do firebase web select *
+    FROM meso_push_subscriptions 
+            WHERE id_usuario = (select id from meso_usuariologin where usuario like '%${usuario}% and id_empresa = ${idEmpresa}') 
+               OR tipo = '${setor}' 
+               OR tipo = 'admin' and id_empresa = '${idEmpresa}'`)
 
 
 
@@ -1777,11 +2056,7 @@ let pegatokenfire = async function (mensagem, nome, usuario, setor, telefone, io
     }
 }
 
-
-
-
-
-let pegatokenfireMobile = async function (mensagem, nome, usuario, setor, telefone) {
+let pegatokenfireMobile = async function (mensagem, nome, usuario, setor, telefone, idEmpresa) {
 
     console.log(
         "mensagem:", mensagem, typeof mensagem,
@@ -1793,12 +2068,18 @@ let pegatokenfireMobile = async function (mensagem, nome, usuario, setor, telefo
 
     try {
         let qry = `
-      SELECT tokenMobile, somNotificacaoMobile
-      FROM meso_usuariologin 
-      WHERE usuario LIKE '%${usuario}%' 
-         OR tipo = '${setor}' 
-         OR tipo = 'admin';
-    `;
+  SELECT tokenMobile, somNotificacaoMobile
+  FROM meso_usuariologin 
+  WHERE (
+        usuario LIKE '%${usuario}%'
+        OR tipo = '${setor}'
+        OR tipo = 'admin'
+  )
+  AND id_empresa = ${idEmpresa};
+`;
+
+        console.log("me mostra o select do firebase", qry)
+
 
         let resultado = await executaQry(qry);
         console.log('🔍 Consulta executada:', qry);
@@ -1877,3 +2158,6 @@ let pegatokenfireMobile = async function (mensagem, nome, usuario, setor, telefo
         console.error("📄 Detalhes completos:", error);
     }
 };
+
+
+

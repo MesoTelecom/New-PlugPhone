@@ -2,6 +2,8 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { api } from '../conf/api'
+import { verificaWhatsapp } from "../acess/verificaWhatsapp.js";
+
 
 
 Vue.use(VueRouter)
@@ -15,6 +17,8 @@ const routes = [
   {
     path: '/gravacao',
     name: 'Gravacao',
+          meta: { precisaTelefonia: true },
+
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
@@ -193,6 +197,8 @@ const routes = [
   {
     path: '/menusupervisor',
     name: 'MenuSupervisor',
+      meta: { precisaTelefonia: true },
+
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
@@ -201,6 +207,8 @@ const routes = [
   {
     path: '/menusupervisorsainte',
     name: 'menusupervisorsainte',
+      meta: { precisaTelefonia: true },
+
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
@@ -447,19 +455,16 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes
 })
-
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const jwt = sessionStorage.getItem("jwt");
 
-  // Atualizar headers
   if (jwt) {
     api.defaults.headers.common["x-access-token"] = jwt;
   }
 
-  // Timeout de inatividade
   const lastActivity = Number(sessionStorage.getItem("lastActivity"));
   const agora = Date.now();
-  const tempoMaximo = 30 * 60 * 1000; // 30min
+  const tempoMaximo = 30 * 60 * 1000;
 
   if (jwt && lastActivity && (agora - lastActivity > tempoMaximo)) {
     sessionStorage.clear();
@@ -470,12 +475,24 @@ router.beforeEach((to, from, next) => {
     sessionStorage.setItem("lastActivity", agora);
   }
 
-  // Bloqueia rotas privadas
   if (to.name !== "home" && !jwt) {
     return next({ name: "home" });
   }
 
-  return next();
-});
+  // 🔒 TELEFONIA
+  if (to.meta?.precisaTelefonia) {
+    const temTelefonia = Number(await verificaWhatsapp())
+
+    console.log('temTelefonia:', temTelefonia)
+
+    if (temTelefonia !== 1) {
+      alert('Você não tem permissão para acessar essa tela')
+      return next({ name: 'Dashboard' })
+    }
+  }
+
+  next()
+})
+
 
 export default router

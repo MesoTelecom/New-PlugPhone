@@ -44,8 +44,9 @@
           height: 50px;
           font-size: 40px;
           color: white;">mdi-lock</v-icon>
-          <v-text-field id="password" label="Digite sua senha" name="senha" type="password" v-model="senha"
-            class="custom-text-field" solo />
+          <v-text-field id="password" label="Digite sua senha" name="senha" :type="showPassword ? 'text' : 'password'"
+            v-model="senha" class="custom-text-field" solo :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+            @click:append="showPassword = !showPassword" />
         </v-row>
         <div class="text-center" style="width: 100%">
           <br>
@@ -105,6 +106,7 @@ export default {
   data: () => ({
     usuario: "",
     senha: "",
+    showPassword: false,
     openDialogAuth: false,
     codigo: "",
     error: false,

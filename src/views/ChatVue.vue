@@ -184,10 +184,20 @@
 
           <v-row style="margin-right: 25%;">
             <v-col cols="12" md="12" style="padding: 0%;">
+              <!-- 🔎 BUSCA FIXA -->
+
               <div class="messages gradient-bg" ref="messages"
                 style="margin-left: 4%;margin-right: 2%;max-height: 80vh;overflow-y: auto;">
+                <v-tooltip top>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn v-bind="attrs" v-on="on" class="carregarMensagens" @click="receiveAllMessages()">
+                      <v-icon>mdi-message-text-clock-outline</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Carregar Todas as Mensagens do Contato</span>
+                </v-tooltip>
+                <div v-for="(message, index) in messages" :key="index" :ref="'msg-' + index">
 
-                <div v-for="(message, index) in messages" :key="index">
 
                   <!-- ✅ bloco da data -->
                   <div v-if="shouldShowDate(index)" class="date-divider">
@@ -235,6 +245,22 @@
                             Seu navegador não suporta o elemento de áudio.
                           </audio>
                         </span>
+                        <!-- VIDEO -->
+                        <span v-else-if="message.isVideo">
+
+                          <div class="video-card" @click="abrirVideo(message.text)">
+
+                            <v-icon class="video-icon">mdi-play-circle</v-icon>
+
+                            <div class="video-info">
+                              <div class="video-title">Vídeo recebido</div>
+                              <div class="video-sub">Clique para abrir</div>
+                            </div>
+
+                          </div>
+
+                        </span>
+
 
                         <span v-else-if="message.isDocument">
                           <div class="doc-card" @click="downloadFile(message.text)">
@@ -253,9 +279,26 @@
 
                         <!-- TEXTO NORMAL -->
                         <span v-else>
-                          {{ message.text }} <br />
+                          <span v-html="highlightText(message.text)"></span><br />
                         </span>
 
+
+                        <!-- 👇 AQUI É O LUGAR CERTO DO BOTÃO -->
+                        <div v-if="isAgent(message.sender)
+                          && index === messages.length - 1
+                          && !message.isImage
+                          && !message.isAudio
+                          && !message.isDocument" style="text-align: end; margin-top: 4px;">
+
+                          <v-btn x-small icon color="#ffffffcc"
+                            @click="dialogEdit = true, messageId = message.messageId">
+                            <v-icon size="16">mdi-pencil</v-icon>
+                          </v-btn>
+
+
+                        </div>
+
+                        <!-- HORÁRIO -->
                         <div :style="{ 'text-align': isAgent(message.sender) ? 'end' : 'start' }">
                           <data style="font-size: 12px; color: #ffffff">
                             {{ formatTime(message.datetime) }}
@@ -298,7 +341,18 @@
   border-width: thin;
   border-radius: 0;
 ">
+        <div class="chat-search-fixed">
+          <v-text-field v-model="searchText" placeholder="Buscar na conversa..." dense outlined hide-details
+            @input="buscarMensagens"></v-text-field>
 
+          <v-btn icon @click="prevMatch">
+            <v-icon>mdi-chevron-up</v-icon>
+          </v-btn>
+
+          <v-btn icon @click="nextMatch">
+            <v-icon>mdi-chevron-down</v-icon>
+          </v-btn>
+        </div>
         <div style="padding: 10px;">
           <v-data-table :items="dados" :items-per-page="1" hide-default-footer class="responsive-table"
             style="background: #f5f5f5;">
@@ -411,19 +465,28 @@
             <span style="color:black">Imagem</span>
           </div>
 
+          <div style="display: flex; align-items: center; cursor: pointer;" class="listaIcon"
+            @click="openDialogVideo = true">
+            <v-icon style="font-size: 26px; color: red; margin-right: 8px;">mdi-video</v-icon>
+            <span style="color:black">Vídeo</span>
+          </div>
+
 
 
         </div>
       </v-menu>
 
-
-      <v-icon @click="toggleEmojiPicker" class="imageIcon" style="left: 13px;
-    font-size: 195%;
-    color: #b76600;"> mdi-emoticon-outline
+      <v-icon ref="emojiButton" @click="toggleEmojiPicker" class="imageIcon"
+        style="left: 13px; font-size: 195%; color: #b76600;">
+        mdi-emoticon-outline
       </v-icon>
 
+      <div v-if="showEmojiPicker" ref="emojiPicker"
+        style="position: fixed; bottom: 5%; left: 25%; z-index: 9999; background: white; border-radius: 10px; box-shadow: rgba(0,0,0,0.2) 0px 0px 8px;">
+        <emoji-picker @emoji-click="onEmojiClick"></emoji-picker>
+      </div>
 
-      <v-textarea v-model="newMessage" :maxlength="500" counter @keydown.enter="handleEnter($event)"
+      <v-textarea v-model="newMessage" :maxlength="1000" counter @keydown.enter="handleEnter($event)"
         placeholder="Digite uma mensagem" class="input-message" auto-grow
         style="left: 53px; bottom: 63%; width: 67%; border-radius: 1px; border-style: unset;  resize: none; overflow-y: auto;"
         rows="1"></v-textarea>
@@ -449,6 +512,22 @@
       </div>
 
       <!-- <v-icon @click="openDialog = true" class="imageIcon" style="left: 94%">mdi-image</v-icon>-->
+      <v-dialog v-model="dialogEdit" max-width="500px" persistent>
+        <v-card class="dialogo">
+          <v-card-title>Editar Mensagem</v-card-title>
+          <v-text-field v-model="novaMsgEditada" label="Digite a nova mensagem" style="width: 90%;
+    margin-left: 5%;"></v-text-field>
+          <v-row class=" linhaBtn">
+            <v-card-actions>
+              <v-btn color="primary" @click="editarMensagem(novaMsgEditada)">Enviar</v-btn>
+            </v-card-actions>
+            <v-card-actions>
+              <v-btn color="primary" @click="dialogEdit = false">Fechar</v-btn>
+            </v-card-actions>
+          </v-row>
+        </v-card>
+      </v-dialog>
+
 
       <v-dialog v-model="openDialog" max-width="500px" persistent>
         <v-card class="dialogo">
@@ -466,6 +545,8 @@
           </v-row>
         </v-card>
       </v-dialog>
+
+
 
       <v-dialog v-model="OpenDialogGLPI" max-width="500px" persistent>
         <v-card class="dialogo">
@@ -630,6 +711,22 @@
         </v-card>
       </v-dialog>
 
+      <v-dialog v-model="openDialogVideo" max-width="500px" persistent>
+        <v-card class="dialogo">
+          <v-card-title>Enviar Vídeo</v-card-title>
+          <v-card-text>
+            <v-file-input v-model="selectedFile" label="Escolha um vídeo"></v-file-input>
+          </v-card-text>
+          <v-row class="linhaBtn">
+            <v-card-actions>
+              <v-btn color="primary" @click="uploadVideo">Enviar</v-btn>
+            </v-card-actions>
+            <v-card-actions>
+              <v-btn color="primary" @click="openDialogVideo = false">Fechar</v-btn>
+            </v-card-actions>
+          </v-row>
+        </v-card>
+      </v-dialog>
 
       <v-dialog v-model="openDialog2" max-width="700px">
         <v-card class="dialogoZap">
@@ -843,9 +940,11 @@ import 'emoji-picker-element'
 
 export default {
   async mounted() {
+    document.addEventListener("click", this.handleClickOutside)
 
   },
   async beforeMount() {
+
     this.buscaCidadao();
     let usuario = JSON.parse(localStorage.getItem('usu'));
     this.tipo = usuario.tipo;
@@ -879,6 +978,7 @@ export default {
   },
 
   async beforeUnmount() {
+    document.removeEventListener("click", this.handleClickOutside)
 
     console.log('sol apareça')
 
@@ -925,7 +1025,12 @@ export default {
         { text: 'Empresa', value: 'empresa' },
 
       ],
+      searchText: '',
+      matchedIndexes: [],
+      currentMatchIndex: -1,
       messages: [],
+      openDialogVideo: false,
+      dialogEdit: false,
       empresa: "",
       dialogDetalhes: false,
       id_empresa: "",
@@ -951,6 +1056,7 @@ export default {
       agents: [],
       showEmojiPicker: false,
       observacao: "",
+      messageId: "",
       openDialogLigacao: false,
       openDialogEdita: false,
       openDialogContato: false,
@@ -991,6 +1097,7 @@ export default {
       mediaDialog: false,
       mediaSrc: "",
       mediaType: "",
+      novaMsgEditada: "",
       selectedMedia: null,
 
       usuarioSelect: "",
@@ -1018,7 +1125,10 @@ export default {
       atendeu: false,
       reagendar: false,
       interesse: false,
-      negociar: false
+      negociar: false,
+      modoEdicao: false,
+      textoInput: "",
+      mensagemParaEditar: null
     };
   },
   created() {
@@ -1137,6 +1247,34 @@ export default {
     );
 
 
+    this.socket.on('chat video', async (nome, videoUrl, telefone) => {
+
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+
+      console.log("video recebido:", videoUrl);
+
+      if (telefone == this.wppnum) {
+
+        this.lido(telefone)
+        let a = await api.get(`/lidamsg/${this.wppnum}`);
+        console.log(a)
+        this.messages.push({
+          text: videoUrl,
+          isVideo: true,
+          sender: nome,
+          datetime: new Date().toLocaleString("pt-BR")
+        });
+
+      } else {
+
+        this.mudaEstado(telefone)
+
+      }
+
+      this.atendimentos = []
+      let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}/${this.id_empresa}`)
+      this.atendimentos = atendimentoArray.data.dados
+    });
 
     this.socket.on('chat audio', async (nome, base64Audio, telefone) => {
       this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
@@ -1209,6 +1347,76 @@ export default {
           return 'grey'
       }
     },
+    highlightText(text) {
+      if (!this.searchText) return text
+
+      const regex = new RegExp(`(${this.searchText})`, 'gi')
+      return text.replace(regex, `<mark class="chat-highlight">$1</mark>`)
+    },
+    abrirVideo(url) {
+
+      if (!url) return;
+
+      // se já for URL completa
+      if (url.startsWith("http")) {
+        window.open(url, "_blank");
+        return;
+      }
+
+      // se for só "id.mp4"
+      const fullUrl = `https://meso.plugphone.cloud:4444/get-video/${url}`;
+      window.open(fullUrl, "_blank");
+    }
+    ,
+    buscarMensagens() {
+      this.matchedIndexes = []
+      this.currentMatchIndex = -1
+
+      if (!this.searchText) return
+
+      const termo = this.searchText.toLowerCase()
+
+      this.messages.forEach((msg, index) => {
+        if (
+          !msg.isImage &&
+          !msg.isAudio &&
+          !msg.isDocument &&
+          msg.text &&
+          msg.text.toLowerCase().includes(termo)
+        ) {
+          this.matchedIndexes.push(index)
+        }
+      })
+
+      if (this.matchedIndexes.length) {
+        this.currentMatchIndex = 0
+        this.scrollToMatch()
+      }
+    },
+
+    nextMatch() {
+      if (!this.matchedIndexes.length) return
+      this.currentMatchIndex =
+        (this.currentMatchIndex + 1) % this.matchedIndexes.length
+      this.scrollToMatch()
+    },
+
+    prevMatch() {
+      if (!this.matchedIndexes.length) return
+      this.currentMatchIndex =
+        (this.currentMatchIndex - 1 + this.matchedIndexes.length) %
+        this.matchedIndexes.length
+      this.scrollToMatch()
+    },
+
+    scrollToMatch() {
+      this.$nextTick(() => {
+        const index = this.matchedIndexes[this.currentMatchIndex]
+        const el = this.$refs['msg-' + index]?.[0]
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      })
+    },
+
     openMedia(src, type) {
       this.selectedMedia = src;
       this.mediaSrc = src;
@@ -1224,6 +1432,28 @@ export default {
       document.body.removeChild(a);
     },
 
+    async editarMensagem(novaMsgEditada) {
+      console.log("Editar mensagem:");
+      console.log('pé na areia, capirinha', this.messageId, novaMsgEditada)
+
+      let msg = {
+        to: this.wppnum,
+        body: `${this.usuario} \nCorreção: ${novaMsgEditada}`,
+        nome: this.usuario,
+        idEmpresa: this.id_empresa,
+        messageId: this.messageId
+      }
+
+      console.log(msg)
+      let a = await api.post(`/editarMensagem`, msg)
+      console.log(a)
+      await this.receiveMessage();
+      this.dialogEdit = false;
+
+
+      // Atualize a lista de mensagens ou faça outras ações necessárias
+    }
+    ,
 
     getEstadoColor(estado) {
       const cores = {
@@ -1271,7 +1501,7 @@ export default {
           tokenM: `${d.tokenMobile}`,       // o que aparece no select
           value: d.nome // o valor que será capturado no v-model
 
-          //          value: d.id_agencia // o valor que será capturado no v-model
+          //value: d.id_agencia // o valor que será capturado no v-model
         });
       });
 
@@ -1395,6 +1625,25 @@ export default {
     toggleEmojiPicker() {
       this.showEmojiPicker = !this.showEmojiPicker
     },
+
+    handleClickOutside(event) {
+      const picker = this.$refs.emojiPicker
+      const button = this.$refs.emojiButton
+
+      if (!picker) return
+
+      const clicouNoPicker = picker.contains(event.target)
+      const clicouNoBotao = button && button.$el
+        ? button.$el.contains(event.target)
+        : button.contains(event.target)
+
+      if (!clicouNoPicker && !clicouNoBotao) {
+        this.showEmojiPicker = false
+      }
+    },
+
+
+
     onEmojiClick(event) {
       this.newMessage += event.detail.unicode
       this.showEmojiPicker = false
@@ -1568,7 +1817,7 @@ export default {
 
       this.buscarCliente();
 
-      let response = await api.post("/reciveMsg", msg);
+      let response = await api.post("/reciveMsg1", msg);
       let receivedMessages = response.data.dados;
 
       console.log("Mensagens recebidas:", receivedMessages);
@@ -1590,10 +1839,12 @@ export default {
             });
 
             let imageUrl = URL.createObjectURL(imageResponse.data);
-
+            console.log('mensagens antes do allMessages', message)
             allMessages.push({
               text: imageUrl,
               datetime: fixedDate.toISOString(),
+              messageId: message.message_id, // 👈 ESSENCIAL
+
               sender: message.nome,
               isImage: true,
               isAudio: false,
@@ -1601,14 +1852,53 @@ export default {
             });
           } catch (err) {
             console.error("Erro ao buscar imagem:", err);
-
+            console.log('mensagens antes do allMessages', message)
             allMessages.push({
               text: message.mensagem,
               datetime: fixedDate.toISOString(),
+              messageId: message.message_id, // 👈 ESSENCIAL
+
               sender: message.nome,
               isImage: false,
               isAudio: false,
               isDocument: false,
+            });
+          }
+        }
+        // ===== VIDEO =====
+        else if (message.type === "video" || (message.mensagem || "").endsWith(".mp4")) {
+          console.log("Processando vídeo...");
+
+          try {
+            let videoResponse = await api.get(`/get-video/${message.mensagem}`, {
+              responseType: "blob",
+            });
+
+            let videoUrl = URL.createObjectURL(videoResponse.data);
+
+            allMessages.push({
+              text: videoUrl,
+              datetime: fixedDate.toISOString(),
+              messageId: message.message_id,
+              sender: message.nome,
+              isImage: false,
+              isAudio: false,
+              isDocument: false,
+              isVideo: true
+            });
+
+          } catch (err) {
+            console.error("Erro ao buscar vídeo:", err);
+
+            allMessages.push({
+              text: message.mensagem,
+              datetime: fixedDate.toISOString(),
+              messageId: message.message_id,
+              sender: message.nome,
+              isImage: false,
+              isAudio: false,
+              isDocument: false,
+              isVideo: true
             });
           }
         }
@@ -1622,10 +1912,11 @@ export default {
             });
 
             let audioUrl = URL.createObjectURL(audioResponse.data);
-
+            console.log('mensagens antes do allMessages', message)
             allMessages.push({
               text: audioUrl,
               datetime: fixedDate.toISOString(),
+              messageId: message.message_id, // 👈 ESSENCIAL
               sender: message.nome,
               isImage: false,
               isAudio: true,
@@ -1633,10 +1924,12 @@ export default {
             });
           } catch (err) {
             console.error("Erro ao buscar áudio:", err);
-
+            console.log('mensagens antes do allMessages', message)
             allMessages.push({
               text: message.mensagem,
               datetime: fixedDate.toISOString(),
+              messageId: message.message_id, // 👈 ESSENCIAL
+
               sender: message.nome,
               isImage: false,
               isAudio: false,
@@ -1667,6 +1960,7 @@ export default {
           allMessages.push({
             text: message.mensagem,
             datetime: fixedDate.toISOString(),
+            messageId: message.message_id, // 👈 ESSENCIAL
             sender: message.nome,
             isImage: false,
             isAudio: false,
@@ -1679,9 +1973,201 @@ export default {
 
       this.messages.push(...allMessages);
       this.scrollToBottom();
+      this.$nextTick(() => {
+        const el = this.$refs.messages
+        if (el) {
+          el.scrollTop = el.scrollHeight
+        }
+      })
     },
 
+    async receiveAllMessages() {
+      console.log("MAIS FACIL DE ACHAR", this.usuario);
 
+      if (this.tipo == "admin") {
+        console.log("admin não atualiza usuario");
+        await api.get(`/paraBot/${this.wppnum}/${this.id_empresa}`);
+      } else {
+        await api.get(`/atualizausuario/${this.usuario}/${this.wppnum}`);
+        await api.get(`/paraBot/${this.wppnum}/${this.id_empresa}`);
+      }
+
+      let a = await api.get(`/lidamsg/${this.wppnum}`);
+      console.log("eu sou o A Só que lido kkkkkkk", a);
+      this.messages = []
+      console.log(
+        "eu sou o selected contact do receiveMessage",
+        this.selectedContact,
+        this.wppnum
+      );
+
+      let msg = { telefone: this.wppnum, idEmpresa: this.id_empresa };
+      console.log("eu sou o wppnum", this.wppnum);
+
+      this.buscarCliente();
+      let response = await api.post("/reciveMsg", msg);
+      let receivedMessages = response.data.dados;
+
+      console.log("Mensagens recebidas:", receivedMessages);
+
+      let allMessages = [];
+
+      for (let message of receivedMessages) {
+        console.log("Mensagem:", message);
+
+        const fixedDate = message.datetime
+          ? new Date(message.datetime.replace(" ", "T"))
+          : new Date();
+
+        // ===== IMAGEM =====
+        if (message.type === "image") {
+          try {
+            let imageResponse = await api.get(`/get-image/${message.mensagem}`, {
+              responseType: "blob",
+            });
+
+            let imageUrl = URL.createObjectURL(imageResponse.data);
+            console.log('mensagens antes do allMessages', message)
+            allMessages.push({
+              text: imageUrl,
+              datetime: fixedDate.toISOString(),
+              messageId: message.message_id, // 👈 ESSENCIAL
+
+              sender: message.nome,
+              isImage: true,
+              isAudio: false,
+              isDocument: false,
+            });
+          } catch (err) {
+            console.error("Erro ao buscar imagem:", err);
+            console.log('mensagens antes do allMessages', message)
+            allMessages.push({
+              text: message.mensagem,
+              datetime: fixedDate.toISOString(),
+              messageId: message.message_id, // 👈 ESSENCIAL
+
+              sender: message.nome,
+              isImage: false,
+              isAudio: false,
+              isDocument: false,
+            });
+          }
+        }
+        // ===== VIDEO =====
+        else if (message.type === "video" || (message.mensagem || "").endsWith(".mp4")) {
+          console.log("Processando vídeo...");
+
+          try {
+            let videoResponse = await api.get(`/get-video/${message.mensagem}`, {
+              responseType: "blob",
+            });
+
+            let videoUrl = URL.createObjectURL(videoResponse.data);
+
+            allMessages.push({
+              text: videoUrl,
+              datetime: fixedDate.toISOString(),
+              messageId: message.message_id,
+              sender: message.nome,
+              isImage: false,
+              isAudio: false,
+              isDocument: false,
+              isVideo: true
+            });
+
+          } catch (err) {
+            console.error("Erro ao buscar vídeo:", err);
+
+            allMessages.push({
+              text: message.mensagem,
+              datetime: fixedDate.toISOString(),
+              messageId: message.message_id,
+              sender: message.nome,
+              isImage: false,
+              isAudio: false,
+              isDocument: false,
+              isVideo: true
+            });
+          }
+        }
+
+        // ===== AUDIO =====
+        else if (message.type === "audio" || (message.mensagem || "").endsWith(".mp3")) {
+          console.log("Processando áudio...");
+          try {
+            let audioResponse = await api.get(`/get-audio/${message.mensagem}`, {
+              responseType: "blob",
+            });
+
+            let audioUrl = URL.createObjectURL(audioResponse.data);
+            console.log('mensagens antes do allMessages', message)
+            allMessages.push({
+              text: audioUrl,
+              datetime: fixedDate.toISOString(),
+              messageId: message.message_id, // 👈 ESSENCIAL
+              sender: message.nome,
+              isImage: false,
+              isAudio: true,
+              isDocument: false,
+            });
+          } catch (err) {
+            console.error("Erro ao buscar áudio:", err);
+            console.log('mensagens antes do allMessages', message)
+            allMessages.push({
+              text: message.mensagem,
+              datetime: fixedDate.toISOString(),
+              messageId: message.message_id, // 👈 ESSENCIAL
+
+              sender: message.nome,
+              isImage: false,
+              isAudio: false,
+              isDocument: false,
+            });
+          }
+        }
+
+        // ===== DOCUMENTO =====
+        else if (message.type === "document") {
+          const url = message.mensagem;
+          const fileName = url.split("/").pop(); // pega só o nome do arquivo
+
+          allMessages.push({
+            text: url,               // URL direta
+            fileName: fileName,      // nome correto
+            datetime: fixedDate.toISOString(),
+            sender: message.nome,
+            isImage: false,
+            isAudio: false,
+            isDocument: true,
+          });
+        }
+
+
+        // ===== TEXTO NORMAL =====
+        else {
+          allMessages.push({
+            text: message.mensagem,
+            datetime: fixedDate.toISOString(),
+            messageId: message.message_id, // 👈 ESSENCIAL
+            sender: message.nome,
+            isImage: false,
+            isAudio: false,
+            isDocument: false,
+          });
+        }
+      }
+
+      console.log("allMessages final:", allMessages);
+
+      this.messages.push(...allMessages);
+      this.scrollToBottom();
+      this.$nextTick(() => {
+        const el = this.$refs.messages
+        if (el) {
+          el.scrollTop = el.scrollHeight
+        }
+      })
+    },
     formatTime(dateString) {
       if (!dateString) return "";
 
@@ -1944,9 +2430,12 @@ export default {
       this.usuario = this.usuario.charAt(0).toUpperCase() + this.usuario.slice(1);
       console.log('teste usuario aqui', this.usuario)
       console.log('eu aqui né vei kkkk', this.newMessage)
+      const tempId = `local-${Date.now()}`;
+
       if (this.newMessage.trim() !== "") {
         let msg = {
           to: this.wppnum,
+          tempId,
           body: `${this.usuario} \n${this.newMessage}`,
           nome: this.usuario,
           idEmpresa: this.id_empresa
@@ -1962,21 +2451,23 @@ export default {
           alert('Esta é sua primeira mensagem para o contato hoje.\nPor favor, envie um template antes de continuar.');
         } else {
           console.log('concedi pra vc', this.newMessage.length)
-          if (this.newMessage.length > 500) {
-            alert('Não foi possível enviar essa mensagem, pois ela ultrapassa 500 caracteres.');
+          if (this.newMessage.length > 1000) {
+            alert('Não foi possível enviar essa mensagem, pois ela ultrapassa 1000 caracteres.');
           } else {
             let usuario = this.usuario
             let umaMensagem = this.newMessage
             let numero = this.wppnum
             console.log('me de o CUBO', msg)
+            this.newMessage = "";
+
             //this.messages.push({ text: this.newMessage, sender: this.usuario });
             console.log('eu sou oque vai ser enviado pelo socket', usuario, umaMensagem, numero)
             this.socket.emit('send Message', { usuario, umaMensagem, numero });
             console.log('passei do socket')
             let resposta = await api.post("/whatsapp/send", msg);
-            console.log('passei do resposta')
 
-            this.newMessage = "";
+            console.log('passei do resposta')
+            await this.receiveMessage()
             console.log("limpou?", this.newMessage);
             console.log('verifica resposta da API', resposta.data.dados)
 
@@ -1985,10 +2476,10 @@ export default {
               alert('Palavras de baixo calão não serão toleradas!')
             }
             // deve imprimir string vazia
-
             this.$nextTick(() => {
               this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
             });
+
             this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
 
           }
@@ -2037,6 +2528,78 @@ export default {
       let liga = await api.get(`/ligar/${this.ramal}/${this.wppnum}`);
       console.log('eou sou', liga)
 
+    },
+    async uploadVideo() {
+
+      this.openDialogEnviando = true;
+
+      if (!this.selectedFile) {
+        console.error("Nenhum vídeo selecionado.");
+        this.openDialogEnviando = false;
+        return;
+      }
+
+      const allowedTypes = ['video/mp4', 'video/quicktime', 'video/webm'];
+
+      if (!allowedTypes.includes(this.selectedFile.type)) {
+        console.error("O arquivo selecionado não é um vídeo.");
+        alert('O arquivo selecionado não é um vídeo.');
+        this.openDialogEnviando = false;
+        return;
+      }
+
+      let formData = new FormData();
+      formData.append("video", this.selectedFile, this.selectedFile.name);
+
+      try {
+
+        // 1️⃣ Upload do vídeo pro backend
+        let response = await api.post("/upload-video", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        let pegaId = response.data.id;
+
+        // mostra no chat imediatamente
+        this.messages.push({
+          text: this.selectedFile.name,
+          sender: this.usuario,
+          isVideo: true
+        });
+
+        // 2️⃣ Envia vídeo via WhatsApp
+        let enviaVideo = {
+          to: this.wppnum,
+          id: pegaId,
+          usuario: this.usuario,
+          idEmpresa: this.id_empresa
+        };
+
+        await api.post("sendvideo", enviaVideo);
+
+        // 3️⃣ pega URL da meta
+        let getURL = await api.get(`/pegaURL/${pegaId}`);
+        let videoURL = { "url": getURL.data.url, "id": pegaId };
+
+        // 4️⃣ baixa e salva local
+        await api.post(`/geraVideo/`, videoURL);
+        await this.receiveMessage()
+
+        this.openDialogVideo = false;
+        this.openDialogEnviando = false;
+
+
+      } catch (error) {
+        console.error("Erro ao enviar vídeo:", error);
+
+        this.messages.push({
+          text: "Erro ao enviar vídeo.",
+          sender: this.usuario
+        });
+
+        this.openDialogVideo = false;
+        this.openDialogEnviando = false;
+      }
     },
 
     async uploadImage() {
@@ -2116,7 +2679,8 @@ export default {
         'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
         'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+        'text/csv'
       ];
 
       if (!allowedTypes.includes(this.selectedFile.type)) {
@@ -2244,9 +2808,9 @@ export default {
       console.log("filtro", filtro)
 
       if (this.filtroValor == "") {
-        contatos = await api.get(`/buscarcontatos6/${this.tipo}/${this.usuario}/${estadoContato}/null/${offset}`);
+        contatos = await api.get(`/buscarcontatos7/${this.tipo}/${this.usuario}/${estadoContato}/null/${offset}`);
       } else {
-        contatos = await api.get(`/buscarcontatos6/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}/${offset}`);
+        contatos = await api.get(`/buscarcontatos7/${this.tipo}/${this.usuario}/${estadoContato}/${this.filtroValor}/${offset}`);
       }
 
       let contatosArray = contatos.data.dados;
@@ -2557,7 +3121,8 @@ export default {
 
 .date-divider {
   text-align: center;
-  margin-left: 45%;
+  margin-top: 1%;
+  margin-left: 47%;
   font-size: 13px;
   color: #000000;
   background: rgb(159 159 159 / 62%);
@@ -2989,5 +3554,68 @@ export default {
 .doc-sub {
   color: rgba(255, 255, 255, 0.75);
   font-size: 12px;
+}
+
+.chat-search-fixed {
+  position: sticky;
+  width: 97%;
+  margin-left: 0%;
+  top: 0;
+  z-index: 10;
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.chat-highlight {
+  background: #ffeb3b;
+  color: #000;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.chat-search {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  background: #1f2c34;
+}
+
+.video-card {
+  background: #1f2c34;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  max-width: 260px;
+}
+
+.video-card:hover {
+  background: #2a3942;
+}
+
+.video-icon {
+  font-size: 32px;
+  color: #61a5e8;
+}
+
+.video-title {
+  font-weight: bold;
+  color: white;
+}
+
+.video-sub {
+  font-size: 12px;
+  color: #cfd8dc;
+}
+
+.carregarMensagens {
+  margin-left: 48%;
+  width: 72px;
+  margin-right: 2%;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 </style>
