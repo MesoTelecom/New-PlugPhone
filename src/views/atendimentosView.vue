@@ -5,46 +5,50 @@
             <v-icon>mdi-arrow-left</v-icon>
         </v-btn>
         <!-- LISTAGEM DE ATENDIMENTOS -->
-        <div class="atendimentos-list" style="margin-top: 20px;">
-            <v-card v-for="(atendimento, index) in atendimentos" :key="index" elevation="2" class="pa-3 mb-3">
-                <v-card-title>
-                    <v-icon color="green" class="mr-2">mdi-whatsapp</v-icon>
-                    <span class="font-weight-bold">{{ atendimento.telefone }}</span>
-                    <v-spacer></v-spacer>
-                    <v-chip :color="getStatusColor(atendimento.status)" text-color="white" small>
-                        {{ atendimento.status }}
-                    </v-chip>
-                </v-card-title>
+        <div class="kanban">
 
-                <v-card-text style="font-size: 13px;">
-                    <div><b>Telefone:</b> {{ atendimento.telefone }}</div>
-                    <b>Canal:</b> {{ atendimento.canal }}
+            <div class="kanban-coluna" v-for="(cards, status) in kanban" :key="status">
+                <h3 class="kanban-titulo">
+                    {{ status }}
+                    <v-chip small class="ml-2">{{ cards.length }}</v-chip>
+                </h3>
 
-                    <div><b>Setor origem:</b> {{ atendimento.setor_origem }}</div>
+                <draggable v-model="kanban[status]" :group="'atendimentos'" :animation="200" ghost-class="ghost-card"
+                    class="dropzone" tag="div" :options="{ emptyInsertThreshold: 80 }"
+                    @change="(evt) => atualizarStatus(status, evt)">
+                    <div v-for="element in kanban[status]" :key="element.id">
+                        <v-card elevation="2" class="pa-3 mb-3" style="cursor: grab;">
+                            <v-card-title>
+                                <v-icon color="green" class="mr-2">mdi-whatsapp</v-icon>
+                                <span class="font-weight-bold">{{ element.telefone }}</span>
+                                <v-spacer></v-spacer>
 
-                    <div><b>Setor atual:</b> {{ atendimento.setor_atual }}</div>
-                    <div v-if="atendimento.agente">
-                        <b>Agente:</b> {{ atendimento.agente }}
-                    </div>
-                    <div v-if="atendimento.agenteTransferido">
-                        <b>Agente Transferido:</b> {{ atendimento.agenteTransferido }}
-                    </div>
+                                <v-chip :color="getStatusColor(element.status)" text-color="white" small>
+                                    {{ element.status }}
+                                </v-chip>
+                            </v-card-title>
 
-                    <div><b>Início:</b> {{ atendimento.data_inicio }}</div>
-                    <div v-if="atendimento.data_fim">
-                        <b>Fim:</b> {{ atendimento.data_fim }}
-                    </div>
-                    <div v-if="atendimento.id_agente">
-                        <b>Atendido por:</b> {{ atendimento.id_agente }}
-                    </div>
-                    <div v-if="atendimento.pendencia">
-                        <b>Pendência:</b> {{ atendimento.pendencia }}
-                    </div>
-                    <b>Criado por:</b> {{ atendimento.criado_por }}
+                            <v-card-text style="font-size: 13px;">
+                                <div><b>Canal:</b> {{ element.canal }}</div>
+                                <div><b>Setor origem:</b> {{ element.setor_origem }}</div>
+                                <div><b>Setor atual:</b> {{ element.setor_atual }}</div>
 
-                </v-card-text>
-            </v-card>
+                                <div v-if="element.agente">
+                                    <b>Agente:</b> {{ element.agente }}
+                                </div>
+
+                                <div><b>Início:</b> {{ element.data_inicio }}</div>
+                                <div v-if="element.pendencia">
+                                    <b>Pendencia:</b> {{ element.pendencia }}
+                                </div>
+                            </v-card-text>
+                        </v-card>
+                    </div>
+                </draggable>
+            </div>
+
         </div>
+
         <br>
         <br>
         <br>
@@ -64,9 +68,12 @@
 import { api } from "@/conf/api";
 import Navbar from "../components/Navbar";
 import Footer from "../components/footer.vue";
+import draggable from 'vuedraggable'
 
 export default {
     async beforeMount() {
+        let usuario = JSON.parse(localStorage.getItem('usu'));
+        this.id_empresa = usuario.id_empresa
 
         this.wppnum = this.$store.state.wppnum;
         console.log('numero no atendimento view', this.wppnum);
@@ -76,28 +83,93 @@ export default {
     components: {
         Navbar,
         Footer,
+        draggable
     },
 
     data() {
         return {
 
             wppnum: "",
-            atendimentos: []
-
+            atendimentos: [],
+            id_empresa: "",
+            kanban: {
+                'Novo': [],
+                'Em Andamento': [],
+                'Transferido': [],
+                'Pendente': [],
+                'Concluído': []
+            }
         };
+    },
+    computed: {
+
     },
 
     methods: {
         async buscaAtendimentos() {
-            this.atendimentos = []
-            let atendimentoArray = await api.get(`buscarAtendimentos/${this.wppnum}`)
-            console.log('acho que dos 60 ate o 70', atendimentoArray)
+            let atendimentoArray = await api.get(
+                `buscarAtendimentos/${this.wppnum}/${this.id_empresa}`
+            )
 
-            this.atendimentos = atendimentoArray.data.dados
-            console.log('Tecnologia', this.atendimentos)
+            const dados = atendimentoArray.data.dados
+
+            // limpa colunas
+            Object.keys(this.kanban).forEach(status => {
+                this.kanban[status] = []
+            })
+
+            dados.forEach(a => {
+                let statusNormalizado = (a.status || '').trim().toLowerCase()
+
+                if (statusNormalizado.includes('novo')) {
+                    this.kanban['Novo'].push(a)
+                }
+                else if (statusNormalizado.includes('andamento')) {
+                    this.kanban['Em Andamento'].push(a)
+                }
+                else if (statusNormalizado.includes('transfer')) {
+                    this.kanban['Transferido'].push(a)
+                }
+                else if (statusNormalizado.includes('pendente')) {
+                    this.kanban['Pendente'].push(a)
+                }
+                else if (statusNormalizado.includes('conclu')) {
+                    this.kanban['Concluído'].push(a)
+                }
+                else {
+                    this.kanban['Novo'].push(a)
+                }
+            })
+        },
+        async atualizarStatus(novoStatus, evt) {
+
+            // só executa quando o card foi adicionado nessa coluna
+            if (evt.added) {
+
+                const atendimento = evt.added.element
+
+                console.log("Movido atendimento:", atendimento.id)
+                console.log("Novo status:", novoStatus)
+
+                try {
+
+                    await api.post("/atualizarStatusAtendimento", {
+                        id: atendimento.id,
+                        status: novoStatus
+                    })
+
+                    // atualiza localmente
+                    atendimento.status = novoStatus
+
+                } catch (err) {
+
+                    console.log("Erro ao atualizar status", err)
+
+                }
+
+            }
 
         },
-
         async deslogar() {
 
             this.$router.push("chat");
@@ -107,13 +179,16 @@ export default {
             switch (status) {
                 case 'Concluído':
                     return 'green'
-
+                case 'Pendente':
+                    return 'purple'
                 case 'Transferido':
                     return 'blue'
                 case 'Novo':
                     return 'orange'
+
                 case 'Em Andamento':
                     return 'red'
+
                 default:
                     return 'grey'
             }
@@ -10402,5 +10477,53 @@ div.llamadas table>tbody>tr>td {
     margin-left: 1%;
     background-color: green !important;
     text-decoration: none !important;
+}
+
+.kanban {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 10px;
+}
+
+.kanban-coluna {
+    min-width: 320px;
+    background: #f4f5f7;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.kanban-titulo {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.ghost-card {
+    opacity: 0.4;
+}
+
+.kanban {
+    display: flex;
+    gap: 16px;
+}
+
+.kanban-coluna {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 260px;
+}
+
+.dropzone {
+    flex: 1;
+    /* ocupa o resto da coluna */
+    min-height: 60vh;
+    /* cria área dropável mesmo vazia */
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.dropzone:empty {
+    border: 2px dashed rgba(0, 0, 0, 0.15);
 }
 </style>

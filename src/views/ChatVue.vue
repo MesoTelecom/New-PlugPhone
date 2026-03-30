@@ -1,897 +1,838 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div id="app" style="">
-    <v-app style="">
-
-      <v-navigation-drawer app color="#001644" class="sidebar" style="  border-right-style: double;
-  border-color: #13224245;
-">
-        <v-row>
-          <img src="../assets/plugphone.png" class="avatar">
-
-          <div style="margin-top: 6%;
-    position: relative;
-    left: 16%;">
-
-            <v-btn icon color="black" @click="deslogar" style="left: 120%; font-size: 24px; margin-bottom: -4%;">
+  <v-app>
+    <!-- Navigation Drawer (Contatos) -->
+    <v-navigation-drawer v-model="drawer" app clipped color="#f5f5f5" :mobile-breakpoint="960" :width="300"
+      class="sidebarCTT">
+      <v-container class="pa-2">
+        <!-- Header da Sidebar -->
+        <v-row align="center" no-gutters class="mb-4">
+          <v-col>
+            <v-img src="../assets/plugphone.png" max-width="120" contain></v-img>
+          </v-col>
+          <v-col class="text-right">
+            <v-btn icon color="black" @click="deslogar">
               <v-icon>mdi-arrow-left</v-icon>
             </v-btn>
-          </div>
-
-          <!--<v-icon @click="OpenDialogGLPI = true" class="imageIcon"
-            style="    left: 71%;font-size: 169%; margin-bottom: -1%;">
-            mdi-help-circle
-          </v-icon>
-          -->
-          <br>
-          <br>
-          <div style="position: relative;
-    left: 40%;">
-            <b> {{ usuario }} </b>
-          </div>
-        </v-row>
-        <v-row class="cabecalhoNovo">
-
-          <v-tooltip top>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn v-bind="attrs" v-on="on" class="botaoEstado"
-                @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Todos')">
-                <v-icon style="color: #568cbe">mdi-account-multiple-outline</v-icon>
-              </v-btn>
-            </template>
-            <span>Todos</span>
-          </v-tooltip>
-
-          <v-tooltip top>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn v-bind="attrs" v-on="on" class="botaoEstado"
-                @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Novo')">
-                <v-icon style="color: #d09e0c">mdi-account-alert-outline</v-icon>
-              </v-btn>
-            </template>
-            <span>Novos</span>
-          </v-tooltip>
-
-          <v-tooltip top>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn v-bind="attrs" v-on="on" class="botaoEstado"
-                @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Aguardando Atendimento')">
-                <v-icon style="color: #d20d0d">mdi-account-clock-outline</v-icon>
-              </v-btn>
-            </template>
-            <span>Pendentes</span>
-          </v-tooltip>
-          <!--
-          <v-tooltip top>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn v-bind="attrs" v-on="on" class="botaoEstado"
-                @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Pendente de Assunto')">
-                <v-icon style="color: #f57c00">mdi-account-question-outline</v-icon>
-              </v-btn>
-            </template>
-            <span>Pendência de Assunto</span>
-          </v-tooltip>
--->
-          <v-tooltip top>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn v-bind="attrs" v-on="on" class="botaoEstado"
-                @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Concluído')">
-                <v-icon style="color: #3aaa3e">mdi-account-check-outline</v-icon>
-              </v-btn>
-            </template>
-            <span>Concluídos</span>
-          </v-tooltip>
-          <v-icon @click="openDialogContato = true" style="       margin-top: 1%;
-    font-size: 169%;
-    margin-bottom: 0%;
-    left: 7%;
-    color: black;
-" id="clerico">
-            mdi-plus
-          </v-icon>
+          </v-col>
+          <v-text class="v-list-item__subtitle">
+            <b style="color: black">{{ usuario }}</b>
+          </v-text>
         </v-row>
 
-        <br>
+        <!-- Filtros -->
+        <v-row justify="space-around" no-gutters class="mb-4">
+          <v-btn icon small @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Todos')">
+            <v-icon color="#568cbe">mdi-account-multiple-outline</v-icon>
+          </v-btn>
+          <v-btn icon small @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Novo')">
+            <v-icon color="#d09e0c">mdi-account-alert-outline</v-icon>
+          </v-btn>
+          <v-btn icon small @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Aguardando Atendimento')">
+            <v-icon color="#d20d0d">mdi-account-clock-outline</v-icon>
+          </v-btn>
+          <v-btn icon small @click="buscarContato(filtroSelecionado, estadoContatoFiltro = 'Concluído')">
+            <v-icon color="#3aaa3e">mdi-account-check-outline</v-icon>
+          </v-btn>
+          <v-btn icon small @click="openDialogContato = true">
+            <v-icon color="black">mdi-plus</v-icon>
+          </v-btn>
+        </v-row>
 
-        <v-list dense>
-          <v-row>
-            <v-icon
-              @click="buscarContato(filtroSelecionado, estadoContatoFiltro, offset -= 100), contador > 1 ? contador-- : contador = 1"
-              class="imageIcon" style="left: 10%;
-    margin-bottom: -1%; color: black;
-">
-              mdi-arrow-left</v-icon>
-            <h1 style="    position: relative;
-    left: 32%;
-    bottom: 3%;
-    margin-top: 3%;
-    font-size: 15px;">Página {{ contador }}</h1>
-            <v-icon @click="buscarContato(filtroSelecionado, estadoContatoFiltro, offset += 100), contador++"
-              class="imageIcon" style="    left: 55%;
-    margin-bottom: -1%;  color: black">
-              mdi-arrow-right</v-icon>
-          </v-row>
-          <div style="    margin-left: -7%;
-    margin-right: -15%; background-color: #f5f5f5;">
-            <v-card-text style="    margin-bottom: -10%; margin-right: 3%; background-color: #f5f5f5 !important;">
-              <!-- TextField no topo -->
-              <v-text-field v-model="filtroValor" placeholder="Pesquisar contato" prepend-inner-icon="mdi-magnify" solo
-                flat hide-details class="searchField"
-                @input="buscarContato(filtroSelecionado, estadoContatoFiltro, 0)" />
+        <!-- Paginação e Busca -->
+        <v-row align="center" justify="center" no-gutters class="mb-2">
+          <v-btn icon x-small @click="offset -= 100">
+            <v-icon color="black"
+              @click="buscarContato(filtroSelecionado, estadoContatoFiltro, offset -= 100), contador > 1 ? contador-- : contador = 1">mdi-arrow-left</v-icon>
+          </v-btn>
+          <span class="mx-2 black--text">Página {{ contador }}</span>
+          <v-btn icon x-small @click="offset += 100">
+            <v-icon color="black"
+              @click="buscarContato(filtroSelecionado, estadoContatoFiltro, offset += 100), contador++">mdi-arrow-right</v-icon>
+          </v-btn>
+        </v-row>
 
-            </v-card-text>
-          </div>
-          <br>
+        <v-text-field style="color: black !important" v-model="filtroValor" placeholder="Pesquisar contato"
+          prepend-inner-icon="mdi-magnify" outlined hide-details dense background-color="#e0e0e0"
+          class="rounded-pill mb-4" @input="buscarContato(filtroSelecionado, estadoContatoFiltro, 0)" />
+
+        <!-- Lista de Contatos -->
+        <v-list dense class="pa-0">
           <v-list-item-group v-model="selectedContact">
-
-
-            <v-list-item v-for="(contact, index) in contacts" :key="index" class="Itemsidebar">
+            <v-list-item v-for="(contact, index) in contacts" :key="index" @click="selectContact(contact.telefone)">
+              <v-list-item-avatar size="40">
+                <v-icon size="40" :color="getEstadoColor(contact.estado)">mdi-account-circle</v-icon>
+              </v-list-item-avatar>
               <v-list-item-content>
-                <v-list-item-title @click="selectContact(contact.telefone)">
-                  <v-icon :style="{
-                    color: getEstadoColor(contact.estado),
-                    fontSize: '50px',
-                    marginBottom: '-9%'
-                  }">
-                    mdi-account-circle
-                  </v-icon>
-                  <b style="text-align: start !important; color: black"> {{ contact.nome }}</b>
-                  <br>
-
-                  <a style="    margin-left: 21%;
-                  font-size: 12px;
-                  color: black;">{{ contact.ultimamsg }}</a>
-                  <v-icon v-if="contact.estadomsg === 'novamsg'" color="#25D366"
-                    style="font-size: 15px; left: 3%;">mdi-checkbox-blank-circle
-                  </v-icon>
-
-                  <v-icon v-if="contact.estado && contact.estado.startsWith('mdi-')" :style="{
-                    color: contact.estado === 'mdi-checkbox-marked-circle-outline'
-                      ? '#8bff9a'
-                      : contact.estado === 'mdi-cancel'
-                        ? 'red'
-                        : 'black'
-                  }">
-                    {{ contact.estado }}
-                  </v-icon>
-                  <br>
-                  <a style="margin-left: 21%; color: #8f8f8f !important;">{{ contact.datahora }}</a>
-                  <hr>
-
-                </v-list-item-title>
+                <v-list-item-title class="font-weight-bold black--text">{{ contact.nome }}</v-list-item-title>
+                <v-list-item-subtitle class="black--text">{{ contact.ultimamsg }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
           </v-list-item-group>
         </v-list>
-
-        <!--<img src="../assets/Logo_Meso_vetorizada.png" class="logo" />-->
-
-
-      </v-navigation-drawer>
-
-      <img src="../assets/PlugPhoneCentro.png" class="plugPhone" />
-
-      <v-main style="padding: 0px; background: #ffffff; height: 100vh; display: absolute; flex-direction: column;">
-        <v-container fluid>
-          <v-row class="header">
-            <v-icon class="informacaoHeader">mdi-account-circle</v-icon>
-            <h3 style="          margin-left: 6% !important;
-    font-size: 15px;
-    margin-top: 10px !important;
-    color: black !important;"> {{ editaNome }}</h3>
-          </v-row>
+      </v-container>
+    </v-navigation-drawer>
 
 
-          <v-row style="margin-right: 25%;">
-            <v-col cols="12" md="12" style="padding: 0%;">
-              <!-- 🔎 BUSCA FIXA -->
 
-              <div class="messages gradient-bg" ref="messages"
-                style="margin-left: 4%;margin-right: 2%;max-height: 80vh;overflow-y: auto;">
-                <v-tooltip top>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn v-bind="attrs" v-on="on" class="carregarMensagens" @click="receiveAllMessages()">
-                      <v-icon>mdi-message-text-clock-outline</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Carregar Todas as Mensagens do Contato</span>
-                </v-tooltip>
-                <div v-for="(message, index) in messages" :key="index" :ref="'msg-' + index">
+    <!-- Barra Superior -->
+    <v-app-bar clipped-left clipped-right flat color="white" class="border-bottom" style="height: 25px;">
+      <v-app-bar-nav-icon class="d-md-none" @click="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-icon size="32" color="black" class="ml-2">mdi-account-circle</v-icon>
+      <v-toolbar-title class="ml-2 black--text font-weight-bold">{{ editaNome }}</v-toolbar-title>
+      <v-spacer></v-spacer>
 
 
-                  <!-- ✅ bloco da data -->
-                  <div v-if="shouldShowDate(index)" class="date-divider">
-                    {{ formatDateLabel(message.datetime) }}
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn icon v-bind="attrs" v-on="on" @click="openDialogEdita = true" color="black">
+            <v-icon>mdi-account-edit</v-icon>
+          </v-btn>
+        </template>
+
+        <span>Editar contato</span>
+      </v-tooltip>
+      <v-btn icon @click="showInfo = !showInfo" color="black">
+        <v-icon>{{ showInfo ? 'mdi-information' : 'mdi-information-outline' }}</v-icon>
+      </v-btn>
+    </v-app-bar>
+
+    <!-- Conteúdo Principal -->
+    <!-- 1. PARTE DO TEMPLATE (Dentro do v-main) -->
+
+    <v-main class="chat-main">
+
+      <div class="chat-container">
+
+        <!-- ÁREA DE MENSAGENS (COM SCROLL INDEPENDENTE) -->
+        <div class="messages-scroll-area" ref="messages">
+          <v-tooltip top>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn v-bind="attrs" v-on="on" class="carregarMensagens" @click="receiveAllMessages()">
+                <v-icon>mdi-message-text-clock-outline</v-icon>
+              </v-btn>
+            </template>
+            <span>Carregar Todas as Mensagens do Contato</span>
+          </v-tooltip>
+
+          <div v-for="(message, index) in messages" :key="index" class="message-row" :ref="'msg-' + index">
+            <!-- Bloco de Data -->
+            <div v-if="shouldShowDate(index)" class="date-divider">
+              {{ formatDateLabel(message.datetime) }}
+            </div>
+
+            <!-- Balão de Mensagem -->
+            <div :class="['message-wrapper', isAgent(message.sender) ? 'agent-side' : 'requester-side']">
+              <div :class="['message-bubble', isAgent(message.sender) ? 'agent-bubble' : 'requester-bubble']">
+                <div class="sender-name">{{ message.sender }}:</div>
+
+                <!-- IMAGEM -->
+                <div v-if="message.isImage" class="media-content">
+                  <div class="media-wrap">
+                    <v-img :src="message.text" max-width="250" contain class="rounded-lg"
+                      @click="openMedia(message.text, 'image')"></v-img>
+
+                    <v-icon class="media-zoom-icon" color="white">
+                      mdi-magnify-plus-outline
+                    </v-icon>
                   </div>
+                </div>
 
-                  <!-- ✅ sua mensagem normal -->
-                  <div :class="{
-                    'message-requester': !isAgent(message.sender),
-                    'message-agent': isAgent(message.sender),
-                  }">
+                <!-- AUDIO -->
+                <div v-else-if="message.isAudio" class="media-content">
+                  <audio controls style="max-width: 250px;">
+                    <source :src="message.text" type="audio/mpeg" />
+                    Seu navegador não suporta áudio.
+                  </audio>
+                </div>
 
-                    <div :class="{
-                      buttonSender: !isAgent(message.sender),
-                      button: isAgent(message.sender),
-                    }" :style="{ 'text-align': isAgent(message.sender) ? 'end' : 'start' }">
+                <!-- VIDEO -->
+                <div v-else-if="message.isVideo" class="media-content">
+                  <div class="video-card" @click="abrirVideo(message.text)">
+                    <v-icon class="video-icon">mdi-play-circle</v-icon>
 
-                      <span :class="{
-                        tituloSender: !isAgent(message.sender),
-                        titulo: isAgent(message.sender),
-                      }">
-                        <div><b id="tituloMsg">{{ message.sender }}:</b></div>
-                      </span>
-
-                      <span class="message-text">
-
-                        <!-- IMAGEM -->
-                        <span v-if="message.isImage">
-                          <div class="media-wrap">
-                            <img :src="message.text" alt="Imagem" class="chat-media"
-                              :class="{ 'media-selected': selectedMedia === message.text }"
-                              @click="openMedia(message.text, 'image')" />
-
-                            <v-icon class="media-zoom-icon" color="white">
-                              mdi-magnify-plus-outline
-                            </v-icon>
-                          </div>
-                          <br />
-                        </span>
-
-                        <!-- AUDIO -->
-                        <span v-else-if="message.isAudio">
-                          <audio controls>
-                            <source :src="message.text" type="audio/mpeg" />
-                            Seu navegador não suporta o elemento de áudio.
-                          </audio>
-                        </span>
-                        <!-- VIDEO -->
-                        <span v-else-if="message.isVideo">
-
-                          <div class="video-card" @click="abrirVideo(message.text)">
-
-                            <v-icon class="video-icon">mdi-play-circle</v-icon>
-
-                            <div class="video-info">
-                              <div class="video-title">Vídeo recebido</div>
-                              <div class="video-sub">Clique para abrir</div>
-                            </div>
-
-                          </div>
-
-                        </span>
-
-
-                        <span v-else-if="message.isDocument">
-                          <div class="doc-card" @click="downloadFile(message.text)">
-                            <v-icon class="doc-icon">mdi-file-document-outline</v-icon>
-
-                            <div class="doc-info">
-                              <div class="doc-name">{{ message.fileName }}</div>
-                              <div class="doc-sub">Clique para abrir</div>
-                            </div>
-
-                            <v-icon class="doc-download">mdi-open-in-new</v-icon>
-                          </div>
-                        </span>
-
-
-
-                        <!-- TEXTO NORMAL -->
-                        <span v-else>
-                          <span v-html="highlightText(message.text)"></span><br />
-                        </span>
-
-
-                        <!-- 👇 AQUI É O LUGAR CERTO DO BOTÃO -->
-                        <div v-if="isAgent(message.sender)
-                          && index === messages.length - 1
-                          && !message.isImage
-                          && !message.isAudio
-                          && !message.isDocument" style="text-align: end; margin-top: 4px;">
-
-                          <v-btn x-small icon color="#ffffffcc"
-                            @click="dialogEdit = true, messageId = message.messageId">
-                            <v-icon size="16">mdi-pencil</v-icon>
-                          </v-btn>
-
-
-                        </div>
-
-                        <!-- HORÁRIO -->
-                        <div :style="{ 'text-align': isAgent(message.sender) ? 'end' : 'start' }">
-                          <data style="font-size: 12px; color: #ffffff">
-                            {{ formatTime(message.datetime) }}
-                          </data>
-                        </div>
-
-                      </span>
-
-
+                    <div class="video-info">
+                      <div class="video-title">Vídeo recebido</div>
+                      <div class="video-sub">Clique para abrir</div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-            </v-col>
-          </v-row>
+                <!-- DOCUMENTO -->
+                <div v-else-if="message.isDocument" class="media-content">
+                  <div class="doc-card" @click="openFile(message.text, message.fileName)">
+                    <v-icon class="doc-icon">mdi-file-document-outline</v-icon>
 
-          <!-- Botão de seta para descer -->
-          <div style="    position: absolute;
-    left: 4%;
-    bottom: 16%;">
-            <v-btn icon color="#6d6d6d;" @click="scrollToBottom" style="z-index: 999;">
-              <v-icon style="font-size: 35px; color: #000000a1">mdi-arrow-down-circle</v-icon>
-            </v-btn>
-          </div>
-        </v-container>
-      </v-main>
+                    <div class="doc-info">
+                      <div class="doc-name">{{ message.fileName }}</div>
+                      <div class="doc-sub">Clique para abrir</div>
+                    </div>
 
+                    <v-icon class="doc-download">mdi-open-in-new</v-icon>
+                  </div>
+                </div>
 
-      <div class="info" style="background-color: #f5f5f5 !important;
-  border-color: #f5f5f5 !important;
-  position: fixed;
-  right: 0;
-  width: 22%;
-  height: 95%;
-  bottom: 0;
-  overflow-y: auto;
-  padding: 1%;
-  border-style: inset;
-  border-width: thin;
-  border-radius: 0;
-">
-        <div class="chat-search-fixed">
-          <v-text-field v-model="searchText" placeholder="Buscar na conversa..." dense outlined hide-details
-            @input="buscarMensagens"></v-text-field>
+                <!-- ERRO -->
+                <div v-else-if="message.isErro" class="media-content">
+                  <div class="erro-card">
+                    <v-icon class="erro-icon">mdi-alert-circle</v-icon>
 
-          <v-btn icon @click="prevMatch">
-            <v-icon>mdi-chevron-up</v-icon>
-          </v-btn>
+                    <div class="erro-info">
+                      <div class="erro-title">Mensagem não enviada</div>
+                      <div class="erro-sub">{{ message.text }}</div>
+                    </div>
+                  </div>
+                </div>
 
-          <v-btn icon @click="nextMatch">
-            <v-icon>mdi-chevron-down</v-icon>
-          </v-btn>
-        </div>
-        <div style="padding: 10px;">
-          <v-data-table :items="dados" :items-per-page="1" hide-default-footer class="responsive-table"
-            style="background: #f5f5f5;">
-            <template v-slot:item="{ item }">
-              <div class="table-row" style="display: inline-grid; margin-top: -5%;">
-                <div v-for="(header, index) in informacao" :key="index">
-                  <br><strong>{{ header.text }}:<br></strong> {{ item[header.value] }}
+                <!-- TEXTO NORMAL -->
+                <div v-else class="text-content">
+                  <span v-html="highlightText(message.text)"></span>
+                </div>
+
+                <div class="message-footer" style="display:flex; align-items:center; justify-content: space-between;">
+
+                  <div>
+                    <span class="time-stamp">
+                      {{ formatTime(message.datetime) }}
+                    </span>
+
+                    <v-icon v-if="isAgent(message.sender)" size="12" color="white" class="ml-1">
+                      mdi-check-all
+                    </v-icon>
+                  </div>
+
+                  <!-- BOTÃO EDITAR -->
+                  <v-btn v-if="isAgent(message.sender)
+                    && index === messages.length - 1
+                    && !message.isImage
+                    && !message.isAudio
+                    && !message.isDocument" x-small icon color="white"
+                    @click="dialogEdit = true; messageId = message.messageId">
+                    <v-icon size="16">mdi-pencil</v-icon>
+                  </v-btn>
+
                 </div>
               </div>
-            </template>
-          </v-data-table>
-          <br>
+            </div>
 
-          <!-- LISTAGEM DE ATENDIMENTOS -->
-          <div class="atendimentos-list" style="margin-top: 20px;">
-            <v-card v-for="(atendimento, index) in atendimentos" :key="index" elevation="2" class="pa-3 mb-3">
-              <v-card-title>
-                <v-icon color="green" class="mr-2">mdi-whatsapp</v-icon>
-                <span class="font-weight-bold">{{ atendimento.telefone }}</span>
-                <v-spacer></v-spacer>
-                <v-chip :color="getStatusColor(atendimento.status)" text-color="white" small>
-                  {{ atendimento.status }}
-                </v-chip>
-              </v-card-title>
-
-              <v-card-text style="font-size: 13px;">
-                <div><b>Setor origem:</b> {{ atendimento.setor_origem }}</div>
-
-                <div><b>Setor atual:</b> {{ atendimento.setor_atual }}</div>
-                <div v-if="atendimento.agente">
-                  <b>Agente:</b> {{ atendimento.agente }}
-                </div>
-                <div v-if="atendimento.agenteTransferido">
-                  <b>Agente Transferido:</b> {{ atendimento.agenteTransferido }}
-                </div>
-
-                <div><b>Início:</b> {{ atendimento.data_inicio }}</div>
-                <div v-if="atendimento.data_fim">
-                  <b>Fim:</b> {{ atendimento.data_fim }}
-                </div>
-                <div v-if="atendimento.id_agente">
-                  <b>Atendido por:</b> {{ atendimento.id_agente }}
-                </div>
-                <div v-if="atendimento.pendencia">
-                  <b>Pendência:</b> {{ atendimento.pendencia }}
-                </div>
-                <div style="margin-left: 25%;">
-                  <v-btn @click="enviaAtendimentos()" style="font-size: 10px;
-    background-color: white;
-    right: 45%;
-    color:#2196f3;
-    box-shadow: none;"> <b>Mais detalhes</b></v-btn>
-                </div>
-              </v-card-text>
-            </v-card>
           </div>
         </div>
-      </div>
 
 
+        <!-- BARRA DE DIGITAÇÃO (FIXA NO RODAPÉ) -->
+        <div class="input-fixed-bar">
+          <v-row no-gutters align="center" class="pa-2">
+            <v-menu offset-y>
+              <template v-slot:activator="{ on, attrs }">
+                <img src="../assets/PlugPhoneCentro.png" @click="openDialog2 = true" class="imageIcon" />
 
-
-    </v-app>
-
-    <v-btn class="infoBtn" @click="openDialogEdita = true" style="color: black !important">Informações<v-icon
-        @click="openDialogForm = true" style="left: 3%;">
-        mdi-account-edit
-      </v-icon></v-btn>
-
-
-
-
-    <div class="bottom-bar" style="    width: 100%;
-    padding-top: 5%;
-    position: absolute;
-    bottom: 0px;">
-      <img src="../assets/PlugPhoneCentro.png" @click="openDialog2 = true" class="imageIcon" style="
-   margin-left: 5%;
-    width: 35px;
-    margin-bottom: -8px;" />
-
-      <v-menu offset-y>
-        <template v-slot:activator="{ on, attrs }">
-          <v-icon class="soHover" v-bind="attrs" v-on="on" color="grey " style="      cursor: pointer;
+                <v-icon class=" soHover" v-bind="attrs" v-on="on" color="grey " style="      cursor: pointer;
     font-size: 34px;
     color: #414141 !important;
         left: 5px;
     margin-top: 2px;">
-            mdi-plus
-          </v-icon>
-        </template>
+                  mdi-plus
+                </v-icon>
+              </template>
 
-        <div style="background-color: white; display: flex; flex-direction: column; gap: 10px; padding: 10px;">
-          <div style="display: flex; align-items: center; cursor: pointer;" class="listaIcon"
-            @click="openDialogAnexo = true">
-            <v-icon style="font-size: 26px; color: purple; margin-right: 8px;">mdi-file-document</v-icon>
-            <span style="color: black">Documentos</span>
-          </div>
+              <div style="background-color: white; display: flex; flex-direction: column; gap: 10px; padding: 10px;">
+                <div style="display: flex; align-items: center; cursor: pointer;" class="listaIcon"
+                  @click="openDialogAnexo = true">
+                  <v-icon style="font-size: 26px; color: purple; margin-right: 8px;">mdi-file-document</v-icon>
+                  <span style="color: black">Documentos</span>
+                </div>
 
-          <div style="display: flex; align-items: center; cursor: pointer;" class="listaIcon"
-            @click="openDialog1 = true">
-            <v-icon style="font-size: 26px; color: orangered; margin-right: 8px;">mdi-microphone</v-icon>
-            <span style="color:black">Audio</span>
-          </div>
-
-
-          <div style="display: flex; align-items: center; cursor: pointer;" class="listaIcon"
-            @click="openDialog = true">
-            <v-icon style="font-size: 26px; color: #2b5b84; margin-right: 8px;">mdi-image</v-icon>
-            <span style="color:black">Imagem</span>
-          </div>
-
-          <div style="display: flex; align-items: center; cursor: pointer;" class="listaIcon"
-            @click="openDialogVideo = true">
-            <v-icon style="font-size: 26px; color: red; margin-right: 8px;">mdi-video</v-icon>
-            <span style="color:black">Vídeo</span>
-          </div>
+                <div style="display: flex; align-items: center; cursor: pointer;" class="listaIcon"
+                  @click="openDialog1 = true">
+                  <v-icon style="font-size: 26px; color: orangered; margin-right: 8px;">mdi-microphone</v-icon>
+                  <span style="color:black">Audio</span>
+                </div>
 
 
+                <div style="display: flex; align-items: center; cursor: pointer;" class="listaIcon"
+                  @click="openDialog = true">
+                  <v-icon style="font-size: 26px; color: #2b5b84; margin-right: 8px;">mdi-image</v-icon>
+                  <span style="color:black">Imagem</span>
+                </div>
 
+                <div style="display: flex; align-items: center; cursor: pointer;" class="listaIcon"
+                  @click="openDialogVideo = true">
+                  <v-icon style="font-size: 26px; color: red; margin-right: 8px;">mdi-video</v-icon>
+                  <span style="color:black">Vídeo</span>
+                </div>
+
+
+
+              </div>
+            </v-menu> <v-icon ref="emojiButton" @click="toggleEmojiPicker" class="imageIcon"
+              style="left: 5px; font-size: 195%; color: #b76600;">
+              mdi-emoticon-outline
+            </v-icon>
+
+            <div v-if="showEmojiPicker" ref="emojiPicker" style="">
+              <emoji-picker @emoji-click="onEmojiClick"></emoji-picker>
+            </div>
+
+            <v-textarea v-model="newMessage" @input="checkQuickReply" placeholder="Digite uma mensagem" outlined
+              hide-details dense auto-grow rows="1" max-rows="4" background-color="#f0f2f5" class="rounded-xl mx-2"
+              @keydown.enter="handleEnter($event)"></v-textarea>
+
+            <div v-if="showQuickReplies" class="quick-reply-box">
+              <br>
+              <v-btn class="addAcaoBtn" @click="addAcao = true, showQuickReplies = false">Adcionar Ação</v-btn>
+              <br>
+              <div v-for="reply in filteredQuickReplies" :key="reply.id" class="quick-reply-item" gt
+                @click="selectQuickReply(reply)">
+                <strong>{{ reply.texto }}</strong> - {{ reply.acao }}<v-icon small class="edit-icon"
+                  @click.stop="abrirEdicao(reply)">
+                  mdi-pencil
+                </v-icon> <v-icon small class="delete-icon" @click.stop="abrirConfirmacao(reply)">
+                  mdi-delete
+                </v-icon>
+              </div>
+
+            </div>
+            <v-btn icon color="blue darken-2"
+              @click="openDialogForm = true"><v-icon>mdi-account-convert</v-icon></v-btn>
+            <v-btn icon color="green darken-1"
+              @click="openDialogConcluirPendente = true"><v-icon>mdi-checkbox-marked-circle</v-icon></v-btn>
+          </v-row>
         </div>
-      </v-menu>
 
-      <v-icon ref="emojiButton" @click="toggleEmojiPicker" class="imageIcon"
-        style="left: 13px; font-size: 195%; color: #b76600;">
-        mdi-emoticon-outline
-      </v-icon>
-
-      <div v-if="showEmojiPicker" ref="emojiPicker"
-        style="position: fixed; bottom: 5%; left: 25%; z-index: 9999; background: white; border-radius: 10px; box-shadow: rgba(0,0,0,0.2) 0px 0px 8px;">
-        <emoji-picker @emoji-click="onEmojiClick"></emoji-picker>
       </div>
 
-      <v-textarea v-model="newMessage" :maxlength="1000" counter @keydown.enter="handleEnter($event)"
-        placeholder="Digite uma mensagem" class="input-message" auto-grow
-        style="left: 53px; bottom: 63%; width: 67%; border-radius: 1px; border-style: unset;  resize: none; overflow-y: auto;"
-        rows="1"></v-textarea>
-      <v-icon @click="openDialogForm = true" class="imageIcon" style="    left: 25px;
-    font-size: 169%;
-    color: #2b5b84;">
-        mdi-account-convert
-      </v-icon>
-
-      <v-icon class="imageIcon" style="    left: 35px;
-    font-size: 169%;
-    color: rgb(58, 170, 62);" @click="openDialogConcluirPendente = true">
-        mdi-checkbox-marked-circle</v-icon>
-
-
-      <!-- Ícone que abre o emoji picker -->
-
-
-      <!-- Picker de Emojis -->
-      <div v-if="showEmojiPicker"
-        style="position: fixed;bottom: 5%;left: 25%;z-index: 9999;background: white;border-radius: 10px;box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 8px;">
-        <emoji-picker @emoji-click="onEmojiClick"></emoji-picker>
+      <div style="
+        position: absolute;
+    top: 87%;
+    bottom: 10%;
+    right: 0%;">
+        <v-btn icon color="#6d6d6d;" @click="scrollToBottom" style="z-index: 999;">
+          <v-icon style="font-size: 35px; color: #000000a1">mdi-arrow-down-circle</v-icon>
+        </v-btn>
       </div>
+    </v-main>
 
-      <!-- <v-icon @click="openDialog = true" class="imageIcon" style="left: 94%">mdi-image</v-icon>-->
-      <v-dialog v-model="dialogEdit" max-width="500px" persistent>
-        <v-card class="dialogo">
-          <v-card-title>Editar Mensagem</v-card-title>
-          <v-text-field v-model="novaMsgEditada" label="Digite a nova mensagem" style="width: 90%;
-    margin-left: 5%;"></v-text-field>
-          <v-row class=" linhaBtn">
-            <v-card-actions>
-              <v-btn color="primary" @click="editarMensagem(novaMsgEditada)">Enviar</v-btn>
-            </v-card-actions>
-            <v-card-actions>
-              <v-btn color="primary" @click="dialogEdit = false">Fechar</v-btn>
-            </v-card-actions>
-          </v-row>
+    <!-- Painel de Informações (Direita) -->
+    <v-navigation-drawer v-model="showInfo" app right clipped :width="320" color="#f8f9fa" class="border-left">
+      <v-container class="pa-4">
+        <v-text-field style="color: black !important" v-model="searchText" placeholder="Buscar na conversa..." dense
+          outlined hide-details @input="buscarMensagens"></v-text-field>
+
+        <v-btn icon @click="prevMatch">
+          <v-icon>mdi-chevron-up</v-icon>
+        </v-btn>
+
+        <v-btn icon @click="nextMatch">
+          <v-icon>mdi-chevron-down</v-icon>
+        </v-btn>
+
+
+
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-bind="attrs" v-on="on" @click="enviaPendencias" class="botaoAtendimento">
+              <v-icon>mdi-alert-octagon</v-icon>
+            </v-btn>
+          </template>
+
+          <span>Pendências</span>
+        </v-tooltip>
+
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-bind="attrs" v-on="on" @click="enviaAtendimentosGeral" class="botaoAtendimento">
+              <v-icon>mdi-arrow-right</v-icon>
+            </v-btn>
+          </template>
+
+          <span>Atendimentos Gerais</span>
+        </v-tooltip>
+
+        <v-card flat class="mb-6 pa-4 rounded-lg" color="white" style="border: 1px solid #eee">
+          <div class="subtitle-2 mb-4 blue--text">DADOS DO CONTATO</div>
+          <div v-for="(header, idx) in informacao" :key="idx" class="mb-3">
+            <div class="caption black--text text--darken-1">{{ header.text }}</div>
+            <div class="body-2 font-weight-medium">{{ dados[0] ? dados[0][header.value] : '-' }}</div>
+          </div>
         </v-card>
-      </v-dialog>
 
 
-      <v-dialog v-model="openDialog" max-width="500px" persistent>
-        <v-card class="dialogo">
-          <v-card-title>Enviar Imagem</v-card-title>
-          <v-card-text>
-            <v-file-input v-model="selectedFile" label="Escolha uma imagem"></v-file-input>
-          </v-card-text>
-          <v-row class="linhaBtn">
-            <v-card-actions>
-              <v-btn color="primary" @click="uploadImage">Enviar</v-btn>
-            </v-card-actions>
-            <v-card-actions>
-              <v-btn color="primary" @click="openDialog = false">Fechar</v-btn>
-            </v-card-actions>
-          </v-row>
-        </v-card>
-      </v-dialog>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn icon v-bind="attrs" v-on="on" @click="openDialogPendencia = true" color="black">
+              <v-icon>mdi-alert-plus</v-icon>
+            </v-btn>
+          </template>
 
-
-
-      <v-dialog v-model="OpenDialogGLPI" max-width="500px" persistent>
-        <v-card class="dialogo">
-          <v-card-title>Abrir chamado</v-card-title>
-          <v-card-text>
-            <v-text-field style="color: black" v-model="nameGLPI" label="Digite o nome do seu chamado"></v-text-field>
-          </v-card-text>
-          <v-card-text>
-            <v-text-field style="color: black" v-model="content" label="Digite a content do seu chamado"></v-text-field>
-          </v-card-text>
-          <v-row class="linhaBtn">
-            <v-card-actions>
-              <v-btn color="primary" @click="enviaChamado()">Enviar</v-btn>
-            </v-card-actions>
-            <v-card-actions>
-              <v-btn color="primary" @click="OpenDialogGLPI = false">Fechar</v-btn>
-            </v-card-actions>
-          </v-row>
-        </v-card>
-      </v-dialog>
-
-      <v-dialog v-model="openDialogFiltrado" max-width="500px" persistent>
-        <v-card class="dialogoZap">
-          <v-card-title class="text-h6">Qual Filtro Você Deseja?</v-card-title>
-
-          <v-card-text>
-            <!-- TextField no topo -->
-            <v-text-field v-model="filtroValor" label="Digite o valor do filtro" outlined class="mb-4"
-              @input="buscarContato(filtroSelecionado, estadoContatoFiltro, 0)"></v-text-field>
-          </v-card-text>
-
-          <v-card-actions>
+          <span>Criar Pendências</span>
+        </v-tooltip>
+        <div class="subtitle-2 mb-3 px-1">ATENDIMENTOS RECENTES</div>
+        <v-card v-for="(atendimento, index) in atendimentos" :key="index" elevation="2" class="pa-3 mb-3">
+          <v-card-title>
+            <v-icon color="green" class="mr-2">mdi-whatsapp</v-icon>
+            <span class="font-weight-bold">{{ atendimento.telefone }}</span>
             <v-spacer></v-spacer>
-
-            <v-btn color="secondary" text
-              @click="openDialogFiltrado = false;  /*filtroValor=''; buscarContato('', estadoContatoFiltro);*/">
-              Fechar
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-
-
-
-      <v-dialog v-model="openDialogContato" max-width="500px" persistent>
-        <v-card>
-          <v-card-title>Adicionar Contatos</v-card-title>
-          <v-card-text>
-            <v-text-field v-model="novoNome" label="Digite o nome do seu contato"></v-text-field>
-          </v-card-text>
-          <v-card-text>
-            <v-text-field v-model="novoNum" label="Número com DDD"
-              hint="Ex: 553187654321 (sem o 9 após o DDD)"></v-text-field>
-          </v-card-text>
-          <v-card-text>
-
-            <v-select :items="setor" label="Setor" v-model="setorSelect" @update:modelValue="listar(setorSelect)">
-            </v-select>
-          </v-card-text>
-          <v-card-text>
-
-            <v-text-field v-model="novoEmail" label="Digite o email do seu contato"></v-text-field>
-          </v-card-text>
-
-          <v-card-text>
-
-
-            <v-text-field v-model="novoEmpresa" label="Digite a empresa do seu contato"></v-text-field>
-
-
-          </v-card-text>
-          <v-row class="linhaBtn">
-            <v-card-actions>
-              <v-btn color="primary" @click="addContato">Enviar</v-btn>
-            </v-card-actions>
-            <v-card-actions>
-              <v-btn color="primary" @click="openDialogContato = false">Fechar</v-btn>
-            </v-card-actions>
-          </v-row>
-        </v-card>
-      </v-dialog>
-
-      <v-dialog v-model="openDialogEdita" max-width="500px" persistent>
-        <v-card>
-          <v-card-title>Editar Contatos</v-card-title>
-          <v-card-text>
-            <v-text-field v-model="editaNome" label="Digite o nome do seu contato"></v-text-field>
-          </v-card-text>
-
-          <v-card-text>
-
-            <v-text-field v-model="editaNum" label="Número com DDD"
-              hint="Ex: 553187654321 (sem o 9 após o DDD)"></v-text-field>
-          </v-card-text>
-          <v-card-text>
-
-            <v-select :items="setor" label="Setor" v-model="setorSelect" @update:modelValue="listar(setorSelect)">
-            </v-select>
-          </v-card-text>
-          <v-card-text>
-
-            <v-text-field v-model="editaEmail" label="Digite o email do seu contato"></v-text-field>
-          </v-card-text>
-
-          <v-card-text>
-
-
-            <v-text-field v-model="editaEmpresa" label="Digite a empresa do seu contato"></v-text-field>
-
-
-          </v-card-text>
-          <v-row class="linhaBtn">
-            <v-card-actions>
-              <v-btn color="primary" @click="editaContato()">Enviar</v-btn>
-            </v-card-actions>
-            <v-card-actions>
-              <v-btn color="primary" @click="openDialogEdita = false">Fechar</v-btn>
-            </v-card-actions>
-          </v-row>
-        </v-card>
-      </v-dialog>
-
-      <!--<v-icon @click="openDialog = true" class="imageIcon" style="left: 95%">mdi-image</v-icon>  -->
-
-      <v-dialog v-model="openDialog1" max-width="500px" persistent>
-        <v-card class="dialogo1">
-          <v-card-title>Grave seu áudio</v-card-title>
-          <v-card-text>
-            <v-btn @click="startRecording" :disabled="isRecording" class="btnAudio">
-              Iniciar Gravação <v-icon>mdi-play</v-icon>
-            </v-btn>
-            <v-btn @click="stopRecording" :disabled="!isRecording" class="btnAudioStop">
-              Parar Gravação <v-icon>mdi-stop</v-icon>
-            </v-btn>
-            <audio v-if="audioUrl" :src="audioUrl" controls></audio>
-          </v-card-text>
-          <v-row class="linhaBtn">
-            <v-card-actions>
-              <v-btn color="primary" @click="uploadAudio">Enviar</v-btn>
-            </v-card-actions>
-            <v-card-actions>
-              <v-btn color="primary" @click="openDialog1 = false">Fechar</v-btn>
-            </v-card-actions>
-          </v-row>
-        </v-card>
-      </v-dialog>
-
-      <v-dialog v-model="openDialogAnexo" max-width="500px" persistent>
-        <v-card class="dialogo">
-          <v-card-title>Enviar Documento</v-card-title>
-          <v-card-text>
-            <v-file-input v-model="selectedFile" label="Escolha um documento"></v-file-input>
-          </v-card-text>
-          <v-row class="linhaBtn">
-            <v-card-actions>
-              <v-btn color="primary" @click="uploadDocumento">Enviar</v-btn>
-            </v-card-actions>
-            <v-card-actions>
-              <v-btn color="primary" @click="openDialogAnexo = false">Fechar</v-btn>
-            </v-card-actions>
-          </v-row>
-        </v-card>
-      </v-dialog>
-
-      <v-dialog v-model="openDialogVideo" max-width="500px" persistent>
-        <v-card class="dialogo">
-          <v-card-title>Enviar Vídeo</v-card-title>
-          <v-card-text>
-            <v-file-input v-model="selectedFile" label="Escolha um vídeo"></v-file-input>
-          </v-card-text>
-          <v-row class="linhaBtn">
-            <v-card-actions>
-              <v-btn color="primary" @click="uploadVideo">Enviar</v-btn>
-            </v-card-actions>
-            <v-card-actions>
-              <v-btn color="primary" @click="openDialogVideo = false">Fechar</v-btn>
-            </v-card-actions>
-          </v-row>
-        </v-card>
-      </v-dialog>
-
-      <v-dialog v-model="openDialog2" max-width="700px">
-        <v-card class="dialogoZap">
-          <v-card-title>Qual a forma que deseja entrar em contato</v-card-title>
-          <v-card-text>
-            <v-row class="linhaContato">
-
-              <v-btn @click=" sendTemplate(), openDialog2 = false" class="btnAudio">
-                Whatsapp <v-icon>mdi-whatsapp</v-icon>
-              </v-btn>
-              <v-btn @click="openDialogLigacao = true, openDialog2 = false" class="btnCall"
-                style="color: white !important;">
-                Ligação <v-icon>mdi-phone</v-icon>
-              </v-btn>
-              <audio v-if="audioUrl" :src="audioUrl" controls></audio>
-            </v-row>
-          </v-card-text>
-
-        </v-card>
-      </v-dialog>
-
-
-      <!------------------------------------------------------------------------->
-
-      <v-dialog v-model="openDialogLigacao" max-width="500px" persistent>
-        <v-card class="dialogo1">
-          <v-card-title>Por favor digite seu Ramal</v-card-title>
-
-          <v-row class="linhaBtnCall">
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <br>
-            <v-card-actions style="padding-left: 1%;">
-              <v-btn @click="ligar()" class="btnCall">
-                Ligar <v-icon>mdi-phone</v-icon>
-              </v-btn>
-            </v-card-actions>
-            <v-card-actions style="padding-left: 10%; ">
-              <v-btn color="primary" @click="openDialogLigacao = false"
-                style="background-color: #e74343 !important; color: white !important;">Cancelar</v-btn>
-            </v-card-actions>
-          </v-row>
-        </v-card>
-      </v-dialog>
-
-      <!------------------------------------------------------------------------->
-
-      <v-dialog v-model="openDialogRamal" max-width="500px" persistent>
-        <v-card>
-          <v-card-title class="text-h6">
-            Para tornar-se disponível, digite seu ramal
+            <v-chip :color="getStatusColor(atendimento.status)" text-color="white" small>
+              {{ atendimento.status }}
+            </v-chip>
           </v-card-title>
 
-          <v-card-text>
-            <!-- Aqui vai seu campo de ramal -->
-            <v-text-field label="Ramal" v-model="ramal" />
+          <v-card-text style="font-size: 13px;">
+            <div><b>Setor origem:</b> {{ atendimento.setor_origem }}</div>
+
+            <div><b>Setor atual:</b> {{ atendimento.setor_atual }}</div>
+            <div v-if="atendimento.agente">
+              <b>Agente:</b> {{ atendimento.agente }}
+            </div>
+            <div v-if="atendimento.agenteTransferido">
+              <b>Agente Transferido:</b> {{ atendimento.agenteTransferido }}
+            </div>
+
+            <div><b>Início:</b> {{ atendimento.data_inicio }}</div>
+            <div v-if="atendimento.data_fim">
+              <b>Fim:</b> {{ atendimento.data_fim }}
+            </div>
+            <div v-if="atendimento.id_agente">
+              <b>Atendido por:</b> {{ atendimento.id_agente }}
+            </div>
+            <div v-if="atendimento.pendencia">
+              <b>Pendência:</b> {{ atendimento.pendencia }}
+            </div>
+            <div style="margin-left: 25%;">
+              <v-btn @click="enviaAtendimentos()" style="font-size: 10px;
+    background-color: white;
+    right: 45%;
+    color:#2196f3;
+    box-shadow: none;"> <b>Mais detalhes</b></v-btn>
+            </div>
           </v-card-text>
-
-          <v-card-actions>
-            <v-spacer />
-            <v-btn color="primary" @click="ramalDigitado()">Confirmar</v-btn>
-          </v-card-actions>
         </v-card>
-      </v-dialog>
+      </v-container>
+    </v-navigation-drawer>
 
-      <!-------------------------------------------------------------------------->
+    <!-- ===== Dialogs & Menus restored from original file (backend interactions) ===== -->
 
-      <v-dialog v-model="openDialogConcluir" max-width="500px" persistent>
-        <v-card class="dialogoZap">
-          <v-card-title>Deseja Concluir o atendimento?</v-card-title>
+
+    <v-dialog v-model="dialogEdit" max-width="500px" persistent>
+      <v-card class="dialogo">
+        <v-card-title>Editar Mensagem</v-card-title>
+        <v-text-field v-model="novaMsgEditada" label="Digite a nova mensagem" style="width: 90%;
+    margin-left: 5%;"></v-text-field>
+        <v-row class=" linhaBtn">
+          <v-card-actions>
+            <v-btn color="primary" @click="editarMensagem(novaMsgEditada)">Enviar</v-btn>
+          </v-card-actions>
+          <v-card-actions>
+            <v-btn color="primary" @click="dialogEdit = false">Fechar</v-btn>
+          </v-card-actions>
+        </v-row>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialog" max-width="500px" persistent>
+      <v-card class="dialogo">
+        <v-card-title>Enviar Imagem</v-card-title>
+        <v-card-text>
+          <v-file-input v-model="selectedFile" label="Escolha uma imagem"></v-file-input>
+        </v-card-text>
+        <v-row class="linhaBtn">
+          <v-card-actions>
+            <v-btn color="primary" @click="uploadImage">Enviar</v-btn>
+          </v-card-actions>
+          <v-card-actions>
+            <v-btn color="primary" @click="openDialog = false">Fechar</v-btn>
+          </v-card-actions>
+        </v-row>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="OpenDialogGLPI" max-width="500px" persistent>
+      <v-card class="dialogo">
+        <v-card-title>Abrir chamado</v-card-title>
+        <v-card-text>
+          <v-text-field v-model="nameGLPI" label="Digite o nome do seu chamado"
+            style="color: black !important"></v-text-field>
+        </v-card-text>
+        <v-card-text>
+          <v-text-field v-model="content" label="Digite a content do seu chamado"
+            style="color: black !important"></v-text-field>
+        </v-card-text>
+        <v-row class="linhaBtn">
+          <v-card-actions>
+            <v-btn color="primary" @click="enviaChamado()">Enviar</v-btn>
+          </v-card-actions>
+          <v-card-actions>
+            <v-btn color="primary" @click="OpenDialogGLPI = false">Fechar</v-btn>
+          </v-card-actions>
+        </v-row>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialogFiltrado" max-width="500px" persistent>
+      <v-card class="dialogoZap">
+        <v-card-title class="text-h6">Qual Filtro Você Deseja?</v-card-title>
+
+        <v-card-text>
+          <!-- TextField no topo -->
+          <v-text-field style="color: black !important" v-model="filtroValor" label="Digite o valor do filtro" outlined
+            class="mb-4" @input="buscarContato(filtroSelecionado, estadoContatoFiltro, 0)"></v-text-field>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn color="secondary" text
+            @click="openDialogFiltrado = false;  /*filtroValor=''; buscarContato('', estadoContatoFiltro);*/">
+            Fechar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialogContato" max-width="500px" persistent>
+      <v-card>
+        <v-card-title>Adicionar Contatos</v-card-title>
+        <v-card-text>
+          <v-text-field style="color: black !important" v-model="novoNome"
+            label="Digite o nome do seu contato"></v-text-field>
+        </v-card-text>
+        <v-card-text>
+          <v-text-field style="color: black !important" v-model="novoNum" label="Número com DDD"
+            hint="Ex: 553187654321 (sem o 9 após o DDD)"></v-text-field>
+        </v-card-text>
+        <v-card-text>
+
+          <v-select :items="setor" label="Setor" v-model="setorSelect" @update:modelValue="listar(setorSelect)">
+          </v-select>
+        </v-card-text>
+        <v-card-text>
+
+          <v-text-field style="color: black !important" v-model="novoEmail"
+            label="Digite o email do seu contato"></v-text-field>
+        </v-card-text>
+
+        <v-card-text>
+
+
+          <v-text-field style="color: black !important" v-model="novoEmpresa"
+            label="Digite a empresa do seu contato"></v-text-field>
+
+
+        </v-card-text>
+        <v-row class="linhaBtn">
+          <v-card-actions>
+            <v-btn color="primary" @click="addContato">Enviar</v-btn>
+          </v-card-actions>
+          <v-card-actions>
+            <v-btn color="primary" @click="openDialogContato = false">Fechar</v-btn>
+          </v-card-actions>
+        </v-row>
+      </v-card>
+    </v-dialog>
+
+
+
+    <v-dialog v-model="addAcao" max-width="500px" persistent>
+      <v-card>
+        <v-card-title>Adicionar Ação</v-card-title>
+        <v-card-text>
+          <v-text-field style="color: black !important" v-model="textoacao"
+            label='Digite o "/" da do seu texto'></v-text-field>
+        </v-card-text>
+
+
+        <v-card-text>
+          <v-textarea style="color: black !important" v-model="acao"
+            label='Digite a Ação que seu "/" vai gerar'></v-textarea>
+        </v-card-text>
+        <v-row class="addAcao">
+          <v-card-actions>
+            <v-btn color="primary" @click="insereAcao">Enviar</v-btn>
+          </v-card-actions>
+          <v-card-actions>
+            <v-btn color="primary" @click="addAcao = false">Fechar</v-btn>
+          </v-card-actions>
+        </v-row>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialogEdita" max-width="500px" persistent>
+      <v-card>
+        <v-card-title>Editar Contatos</v-card-title>
+        <v-card-text>
+          <v-text-field style="color: black !important" v-model="editaNome"
+            label="Digite o nome do seu contato"></v-text-field>
+        </v-card-text>
+
+        <v-card-text>
+
+          <v-text-field style="color: black !important" v-model="editaNum" label="Número com DDD"
+            hint="Ex: 553187654321 (sem o 9 após o DDD)"></v-text-field>
+        </v-card-text>
+        <v-card-text>
+
+          <v-select :items="setor" label="Setor" v-model="setorSelect" @update:modelValue="listar(setorSelect)">
+          </v-select>
+        </v-card-text>
+        <v-card-text>
+
+          <v-text-field style="color: black !important" v-model="editaEmail"
+            label="Digite o email do seu contato"></v-text-field>
+        </v-card-text>
+
+        <v-card-text>
+
+
+          <v-text-field style="color: black !important" v-model="editaEmpresa"
+            label="Digite a empresa do seu contato"></v-text-field>
+
+
+        </v-card-text>
+        <v-row class="linhaBtn">
+          <v-card-actions>
+            <v-btn color="primary" @click="editaContato()">Enviar</v-btn>
+          </v-card-actions>
+          <v-card-actions>
+            <v-btn color="primary" @click="openDialogEdita = false">Fechar</v-btn>
+          </v-card-actions>
+        </v-row>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialogPendencia" max-width="500px" persistent>
+      <v-card>
+        <v-card-title>Criar Pendencia</v-card-title>
+        <v-card-text>
+          <v-text-field style="color: black !important" v-model="descricaoPendencia"
+            label="Digite a descrição da Pendências"></v-text-field>
+        </v-card-text>
+
+
+        <v-row class="linhaBtn" style="    margin-bottom: 0%;">
+          <br>
+          <v-card-actions>
+            <v-btn color="primary" @click="enviarPendencia()">Enviar</v-btn>
+          </v-card-actions>
+          <v-card-actions>
+            <v-btn color="primary" @click="openDialogPendencia = false">Fechar</v-btn>
+          </v-card-actions>
+        </v-row>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialog1" max-width="500px" persistent>
+      <v-card class="dialogo1">
+        <v-card-title>Grave seu áudio</v-card-title>
+        <v-card-text>
+          <v-btn @click="startRecording" :disabled="isRecording" class="btnAudio">
+            Iniciar Gravação <v-icon>mdi-play</v-icon>
+          </v-btn>
+          <v-btn @click="stopRecording" :disabled="!isRecording" class="btnAudioStop">
+            Parar Gravação <v-icon>mdi-stop</v-icon>
+          </v-btn>
+          <audio v-if="audioUrl" :src="audioUrl" controls></audio>
+        </v-card-text>
+        <v-row class="linhaBtn">
+          <v-card-actions>
+            <v-btn color="primary" @click="uploadAudio">Enviar</v-btn>
+          </v-card-actions>
+          <v-card-actions>
+            <v-btn color="primary" @click="openDialog1 = false">Fechar</v-btn>
+          </v-card-actions>
+        </v-row>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialogAnexo" max-width="500px" persistent>
+      <v-card class="dialogo">
+        <v-card-title>Enviar Documento</v-card-title>
+        <v-card-text>
+          <v-file-input v-model="selectedFile" label="Escolha um documento"></v-file-input>
+        </v-card-text>
+        <v-row class="linhaBtn">
+          <v-card-actions>
+            <v-btn color="primary" @click="uploadDocumento">Enviar</v-btn>
+          </v-card-actions>
+          <v-card-actions>
+            <v-btn color="primary" @click="openDialogAnexo = false">Fechar</v-btn>
+          </v-card-actions>
+        </v-row>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialogVideo" max-width="500px" persistent>
+      <v-card class="dialogo">
+        <v-card-title>Enviar Vídeo</v-card-title>
+        <v-card-text>
+          <v-file-input v-model="selectedFile" label="Escolha um vídeo"></v-file-input>
+        </v-card-text>
+        <v-row class="linhaBtn">
+          <v-card-actions>
+            <v-btn color="primary" @click="uploadVideo">Enviar</v-btn>
+          </v-card-actions>
+          <v-card-actions>
+            <v-btn color="primary" @click="openDialogVideo = false">Fechar</v-btn>
+          </v-card-actions>
+        </v-row>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialog2" max-width="700px">
+      <v-card class="dialogoZap">
+        <v-card-title>Qual a forma que deseja entrar em contato</v-card-title>
+        <v-card-text>
+          <v-row class="linhaContato">
+
+            <v-btn @click=" sendTemplate(), openDialog2 = false" class="btnAudio">
+              Whatsapp <v-icon>mdi-whatsapp</v-icon>
+            </v-btn>
+            <v-btn @click="openDialogLigacao = true, openDialog2 = false" class="btnCall"
+              style="color: white !important;">
+              Ligação <v-icon>mdi-phone</v-icon>
+            </v-btn>
+            <audio v-if="audioUrl" :src="audioUrl" controls></audio>
+          </v-row>
+        </v-card-text>
+
+      </v-card>
+    </v-dialog>
+
+
+    <v-dialog v-model="openDialogLigacao" max-width="500px" persistent>
+      <v-card class="dialogo1">
+        <v-card-title>Por favor digite seu Ramal</v-card-title>
+
+        <v-row class="linhaBtnCall">
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <v-card-actions style="padding-left: 1%;">
+            <v-btn @click="ligar()" class="btnCall">
+              Ligar <v-icon>mdi-phone</v-icon>
+            </v-btn>
+          </v-card-actions>
+          <v-card-actions style="padding-left: 10%; ">
+            <v-btn color="primary" @click="openDialogLigacao = false"
+              style="background-color: #e74343 !important; color: white !important;">Cancelar</v-btn>
+          </v-card-actions>
+        </v-row>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialogRamal" max-width="500px" persistent>
+      <v-card>
+        <v-card-title class="text-h6">
+          Para tornar-se disponível, digite seu ramal
+        </v-card-title>
+
+        <v-card-text>
+          <!-- Aqui vai seu campo de ramal -->
+          <v-text-field style="color: black !important" label="Ramal" v-model="ramal" />
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="primary" @click="ramalDigitado()">Confirmar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialogConcluir" max-width="500px" persistent>
+      <v-card class="dialogoZap">
+        <v-card-title>Deseja Concluir o atendimento?</v-card-title>
+        <br>
+
+
+
+        <v-card-text>
+          <v-row class="linhaContatoConcluir">
+
+            <v-btn @click="finalizar(finaliza = true), openDialogConcluir = false" class="btnAudio" v-model="finaliza">
+              Concluir! <v-icon> mdi-checkbox-marked-circle-outline</v-icon>
+
+            </v-btn>
+            <v-btn @click="finalizar(finaliza = false), openDialogConcluir = false" class="btnAudioStop">
+              Cancelar <v-icon> mdi-cancel</v-icon>
+            </v-btn>
+
+
+          </v-row>
+
+
           <br>
 
+        </v-card-text>
 
+      </v-card>
 
-          <v-card-text>
-            <v-row class="linhaContatoConcluir">
+    </v-dialog>
 
-              <v-btn @click="finalizar(finaliza = true), openDialogConcluir = false" class="btnAudio"
-                v-model="finaliza">
-                Concluir! <v-icon> mdi-checkbox-marked-circle-outline</v-icon>
+    <v-dialog v-model="openDialogConcluirPendente" max-width="500px" persistent>
+      <v-card class="dialogoZap">
+        <v-card-title>Deseja Concluir o atendimento?</v-card-title>
 
-              </v-btn>
-              <v-btn @click="finalizar(finaliza = false), openDialogConcluir = false" class="btnAudioStop">
-                Cancelar <v-icon> mdi-cancel</v-icon>
-              </v-btn>
-
-
-            </v-row>
-
-
-            <br>
-
-          </v-card-text>
-
-        </v-card>
-
-      </v-dialog>
-
-      <v-dialog v-model="openDialogConcluirPendente" max-width="500px" persistent>
-        <v-card class="dialogoZap">
-          <v-card-title>Deseja Concluir o atendimento?</v-card-title>
-
-          <v-card-text>
-            <v-text-field v-model="pendencia" label="Digite sua Pendência" style="    width: 88%;
+        <v-card-text>
+          <v-text-field v-model="pendencia" label="Digite sua Pendência" style="    width: 88%;
     padding-left: 12%;"></v-text-field>
 
-            <v-row class="linhaContatoConcluir">
-              <v-btn @click="finalizarPendente(finaliza = true), openDialogConcluirPendente = false" class="btnAudio"
-                v-model="finaliza">
-                Concluir! <v-icon> mdi-checkbox-marked-circle-outline</v-icon>
-
-              </v-btn>
-              <v-btn @click="finalizarPendente(finaliza = false), openDialogConcluirPendente = false"
-                class="btnAudioStop">
-                Cancelar <v-icon> mdi-cancel</v-icon>
-              </v-btn>
-
-
-            </v-row>
-
-
-            <br>
-
-          </v-card-text>
-
-        </v-card>
-
-      </v-dialog>
-      <v-dialog v-model="openDialogForm" max-width="500px" persistent>
-        <v-card>
-          <v-card-title>Transferir Contato</v-card-title>
           <v-row class="linhaContatoConcluir">
-            <v-select :items="setor" label="Setor" v-model="setorSelect" @update:modelValue="listar(setorSelect)"
-              class="filtro">
-              class="filtro"></v-select>
-            <v-select :items="items" label="Operadores" v-model="usuarioSelect" class="filtro"></v-select>
+            <v-btn @click="finalizarPendente(finaliza = true), openDialogConcluirPendente = false" class="btnAudio"
+              v-model="finaliza">
+              Concluir! <v-icon> mdi-checkbox-marked-circle-outline</v-icon>
+
+            </v-btn>
+            <v-btn @click="finalizarPendente(finaliza = false), openDialogConcluirPendente = false"
+              class="btnAudioStop">
+              Cancelar <v-icon> mdi-cancel</v-icon>
+            </v-btn>
           </v-row>
-          <v-card-actions>
-            <v-btn @click="transferir()" color="primary">Transferir</v-btn>
-            <v-btn @click="openDialogForm = false" color="error">Cancelar</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
 
 
-      <v-dialog v-model="openDialogEnviando" max-width="500px" persistent>
-        <v-card>
-          <v-card-title>Enviando, por favor aguarde</v-card-title>
           <br>
-          <v-row class="loading">
-            <v-progress-circular indeterminate color="primary"></v-progress-circular>
 
-          </v-row>
-          <br>
-          <br>
-          <br>
-        </v-card>
-      </v-dialog>
-    </div>
+        </v-card-text>
+
+      </v-card>
+
+    </v-dialog>
+
+    <v-dialog v-model="openDialogForm" max-width="500px" persistent>
+      <v-card>
+        <v-card-title>Transferir Contato</v-card-title>
+        <v-row class="linhaContatoConcluir">
+          <v-select :items="setor" label="Setor" v-model="setorSelect" @update:modelValue="listar(setorSelect)"
+            class="filtro">
+            class="filtro"></v-select>
+          <v-select :items="items" label="Operadores" v-model="usuarioSelect" class="filtro"></v-select>
+        </v-row>
+        <v-card-actions>
+          <v-btn @click="transferir()" color="primary">Transferir</v-btn>
+          <v-btn @click="openDialogForm = false" color="error">Cancelar</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="openDialogEnviando" max-width="500px" persistent>
+      <v-card>
+        <v-card-title>Enviando, por favor aguarde</v-card-title>
+        <br>
+        <v-row class="loading">
+          <v-progress-circular indeterminate color="primary"></v-progress-circular>
+
+        </v-row>
+        <br>
+        <br>
+        <br>
+      </v-card>
+    </v-dialog>
+
     <v-dialog v-model="mediaDialog" max-width="900px">
       <v-card style="background: #111;">
         <v-card-title style="color: white; display: flex; justify-content: space-between;">
@@ -916,10 +857,62 @@
         </v-card-text>
       </v-card>
     </v-dialog>
+    <v-dialog v-model="dialogDelete" max-width="400">
+      <v-card>
+        <v-card-title class="text-h6">
+          Confirmar exclusão
+        </v-card-title>
 
-  </div>
+        <v-card-text>
+          Deseja realmente excluir esta mensagem rápida?
+        </v-card-text>
 
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn text @click="dialogDelete = false">
+            Cancelar
+          </v-btn>
+
+          <v-btn color="red" dark @click="confirmarDelete">
+            Excluir
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="dialogEditAcao" max-width="500">
+      <v-card>
+        <v-card-title class="text-h6">
+          Editar Mensagem Rápida
+        </v-card-title>
+
+        <v-card-text>
+          <v-text-field label="Texto" v-model="mensagemEditando.texto" outlined dense></v-text-field>
+
+          <v-text-field label="Ação" v-model="mensagemEditando.acao" outlined dense></v-text-field>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn text @click="dialogEditAcao = false">
+            Cancelar
+          </v-btn>
+
+          <v-btn color="primary" dark @click="salvarEdicao, dialogEditAcao = false">
+            Salvar
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- ===== End restored dialogs/menus ===== -->
+
+  </v-app>
 </template>
+
+
+
+
 
 <script>
 import { api } from "@/conf/api";
@@ -949,11 +942,14 @@ export default {
     let usuario = JSON.parse(localStorage.getItem('usu'));
     this.tipo = usuario.tipo;
     this.usuario = usuario.usuario
+    console.log('eu sou o usuario', usuario)
     this.ramal = usuario.ramal
     this.id_empresa = usuario.id_empresa
     //this.idsetinterval = setInterval(() => this.buscarContato(), 5000);
     this.buscarContato(this.filtroSelecionado, "Todos");
     this.logar();
+    this.buscarMensagensRapidas()
+
     const token = sessionStorage.getItem("jwt");
     console.log("Token no beforeMount:", token);
     if (!usuario || !token) {
@@ -963,6 +959,7 @@ export default {
     let emp = await api.get(`/empresa/${this.id_empresa}`);
     this.empresa = emp.data.dados[0].empresa;
     console.log('empresa, eu sou empresa', this.empresa)
+
   },
 
   async enviaChamado() {
@@ -1011,6 +1008,15 @@ export default {
         { text: 'tipo', value: 'tipo' },
         { text: 'telefone', value: 'telefone' },
       ],
+      drawer: null,
+      showInfo: true,
+      dialogEditAcao: false,
+      openDialogPendencia: false,
+      mensagemEditando: {
+        id: null,
+        texto: '',
+        acao: ''
+      },
       informacao: [
         {
           text: 'Nome',
@@ -1036,6 +1042,7 @@ export default {
       id_empresa: "",
       offset: 0,
       pendencia: "",
+      msgRapidas: [],
       rama: "",
       setor: ['Técnico', 'Comercial', 'Financeiro', 'Admin'],
       setorSelect: "",
@@ -1056,6 +1063,8 @@ export default {
       agents: [],
       showEmojiPicker: false,
       observacao: "",
+      acao: "",
+      textoacao: "",
       messageId: "",
       openDialogLigacao: false,
       openDialogEdita: false,
@@ -1099,8 +1108,12 @@ export default {
       mediaType: "",
       novaMsgEditada: "",
       selectedMedia: null,
-
+      showQuickReplies: false,
+      quickReplySearch: '',
+      quickReplies: [],
+      addAcao: false,
       usuarioSelect: "",
+      descricaoPendencia: "",
       novoEmpresa: "",
       novoEmail: "",
       telefone: "telefone",
@@ -1114,6 +1127,7 @@ export default {
       newMessage: "",
       audioBlob: "",
       contacts: [],
+      dialogDelete: false,
       dados: [],
       dados2: [],
       selectedContact: null,
@@ -1132,12 +1146,34 @@ export default {
     };
   },
   created() {
-    this.socket = io('https://meso.plugphone.cloud:3333');
+    this.socket = io("https://meso.plugphone.cloud:3333", {
 
-    // Evento para mensagens de texto
-    /* this.socket.on('chat message', (nome, msg) => {
-       this.messages.push({ text: msg, sender: nome });
-     });*/
+    });
+
+    this.socket.onAny((event, ...args) => {
+      console.log("📩 EVENTO:", event, args);
+    });
+
+    this.socket.on("connect", () => {
+      console.log("✅ CONNECTED:", this.socket.id);
+      this.socket.emit("join-empresa", this.id_empresa);
+      console.log("📌 join-empresa:", this.id_empresa);
+    });
+
+    this.socket.on("connect_error", (err) => {
+      console.log("❌ connect_error:", err.message, err);
+    });
+
+    this.socket.on("disconnect", (reason) => {
+      console.log("⚠️ disconnect:", reason);
+    });
+
+    // seus listeners
+    this.socket.on("erro", (mensagem) => {
+      console.log("⚠️ erro:", mensagem);
+    });
+    this.socket.emit("join-empresa", this.id_empresa);
+
 
     // Evento para imagens
 
@@ -1199,6 +1235,10 @@ export default {
     });
 
 
+    this.socket.on('message-status-update', (data) => {
+      console.log('STATUS UPDATE RECEBIDO:', data);
+      this.receiveMessage()
+    });
     this.socket.on('chat image', async (nome, base64Image, telefone) => {
       this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
       console.log('eu sou o telefone', telefone)
@@ -1324,6 +1364,7 @@ export default {
   comments: {
     Navbar
   },
+
   watch: {
     setorSelect(novoValor) {
       if (novoValor) {
@@ -1331,7 +1372,120 @@ export default {
       }
     }
   },
+  computed: {
+    filteredQuickReplies() {
+      if (!this.quickReplySearch) return this.quickReplies
+
+      return this.quickReplies.filter(q =>
+        q.texto
+          .toLowerCase()
+          .startsWith('/' + this.quickReplySearch)
+      )
+    }
+  },
   methods: {
+    async salvarEdicao() {
+      try {
+        let editaMsg = {
+          id: this.mensagemEditando.id,
+          texto: this.mensagemEditando.texto,
+          acao: this.mensagemEditando.acao,
+        }
+
+
+        await api.post(`/editar-mensagem-rapida`, editaMsg);
+
+        this.buscarMensagensRapidas();
+      } catch (e) {
+        console.log("Erro ao editar", e);
+      } finally {
+        this.dialogEdit = false;
+        this.mensagemEditando = {
+          id: null,
+          texto: '',
+          acao: ''
+        };
+      }
+    },
+    abrirEdicao(reply) {
+      this.mensagemEditando = { ...reply };
+      this.dialogEditAcao = true;
+    },
+    async confirmarDelete() {
+      try {
+        await api.delete(`/deletar-mensagem-rapida/${this.mensagemParaDeletar.id}`);
+        this.buscarMensagensRapidas();
+      } catch (e) {
+        console.log("Erro ao deletar", e);
+      } finally {
+        this.dialogDelete = false;
+        this.mensagemParaDeletar = null;
+      }
+    },
+    abrirConfirmacao(reply) {
+      this.mensagemParaDeletar = reply;
+      this.dialogDelete = true;
+    },
+    async deletarMensagemRapida(id) {
+      try {
+        console.log('rei sozinho no xadres', id)
+        let remove = {
+          id: id
+        }
+        console.log('a aranha precisa subir', remove)
+        await api.delete(`/deletar-mensagem-rapida/${id}`)
+        this.buscarMensagensRapidas()
+      } catch (e) {
+        console.log('Erro ao deletar mensagem rápida', e)
+      }
+    },
+
+    async buscarMensagensRapidas() {
+      try {
+        const { data } = await api.get(`/buscar-mensagem-rapida-web/${this.id_empresa}`)
+        console.log('eu vou fazer a revolução', data)
+        this.quickReplies = data.dados
+        console.log('que ironia', this.quickReplies)
+
+      } catch (e) {
+        console.log('Erro ao buscar mensagens rápidas', e)
+      }
+    },
+
+    async insereAcao() {
+
+      this.quickReplies = []
+      let add = {
+        texto: "/" + this.textoacao,
+        acao: this.acao,
+        idEmpresa: this.id_empresa,
+      }
+      console.log(add)
+      let insere = await api.post(`/inserir-mensagem-rapida`, add)
+      console.log('deu certo?', insere)
+      this.addAcao = false
+      this.buscarMensagensRapidas()
+    },
+    checkQuickReply() {
+      console.log("digitando:", this.newMessage)
+
+      const match = this.newMessage.match(/^\/(\w*)$/)
+
+      if (match) {
+        console.log("ativou quick reply")
+        this.quickReplySearch = match[1].toLowerCase()
+        this.showQuickReplies = true
+      } else {
+        this.showQuickReplies = false
+      }
+    },
+
+    selectQuickReply(reply) {
+      this.newMessage = reply.texto
+      this.newMessage = reply.acao
+
+      this.showQuickReplies = false
+    },
     getStatusColor(status) {
       switch (status) {
         case 'Concluído':
@@ -1412,8 +1566,16 @@ export default {
     scrollToMatch() {
       this.$nextTick(() => {
         const index = this.matchedIndexes[this.currentMatchIndex]
-        const el = this.$refs['msg-' + index]?.[0]
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        let el = this.$refs['msg-' + index]
+
+        if (Array.isArray(el)) el = el[0]
+
+        if (el) {
+          el.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          })
+        }
       })
     },
 
@@ -1474,7 +1636,11 @@ export default {
 
     isAgent(sender) {
       if (!sender || !this.empresa) return false;
-      return sender.endsWith(`-${this.empresa}`);
+
+      const senderNormalized = sender.toLowerCase();
+      const empresaNormalized = this.empresa.toLowerCase();
+
+      return senderNormalized.endsWith(`-${empresaNormalized}`);
     },
 
     listar: async function (tipo) {
@@ -1516,9 +1682,9 @@ export default {
 
       const tamanho = this.novoNum.length
 
-      if (tamanho < 12 || tamanho > 13) {
+      if (tamanho < 11 || tamanho > 13) {
         alert(
-          "Número inválido.\nUse:\n• 12 dígitos (55 + DDD + número)\n• 13 dígitos (55 + DDD + 9 + número)"
+          "Número inválido.\nUse:\n• 11 dígitos (55 + DDD + número)\n• 13 dígitos (55 + DDD + 9 + número)"
         )
         this.openDialogContato = true
         return
@@ -1530,8 +1696,11 @@ export default {
         setor: this.setorSelect,
         email: this.novoEmail,
         empresa: this.novoEmpresa,
-        idEmpresa: this.id_empresa
+        id_empresa: this.id_empresa,
+        usuario: this.usuario
       }
+
+      console.log('ERO SENNIN!!', add)
 
       await api.post(`/cadastrarcontato`, add)
 
@@ -1543,7 +1712,7 @@ export default {
       this.editaNum = this.editaNum.replace(/\D/g, '')
       const tamanho = this.editaNum.length
 
-      if (tamanho < 12 || tamanho > 13) {
+      if (tamanho < 11 || tamanho > 13) {
         alert(
           "Número inválido.\nUse:\n• 12 dígitos (55 + DDD + número)\n• 13 dígitos (55 + DDD + 9 + número)"
         )
@@ -1564,6 +1733,22 @@ export default {
 
       this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
       this.openDialogEdita = false
+    },
+
+    async enviarPendencia() {
+
+
+      let edit = {
+        idEmpresa: this.id_empresa,
+        descricao: this.descricaoPendencia,
+        agente: this.usuario,
+        telefone: this.wppnum
+      }
+
+      await api.post(`/criaPendencia`, edit)
+
+      this.buscarContato(this.filtroSelecionado, this.estadoContatoAtual, this.offset)
+      this.openDialogPendencia = false
     },
 
 
@@ -1597,6 +1782,14 @@ export default {
     },
     async enviaAtendimentos() {
       this.$router.push("atendimentos");
+
+    },
+    async enviaAtendimentosGeral() {
+      this.$router.push("atendimentosgeral");
+
+    },
+    async enviaPendencias() {
+      this.$router.push("pendencia");
 
     },
     async ramalDigitado() {
@@ -1650,11 +1843,11 @@ export default {
     },
 
     scrollToBottom() {
-      console.log('JESUS CRISTO AMEEEEEEEEEEM')
-      const el = this.$refs.messages;
-      if (el) {
+      this.$nextTick(() => {
+        const el = this.$refs.messages;
+        if (!el) return;
         el.scrollTop = el.scrollHeight;
-      }
+      });
     },
 
 
@@ -1951,6 +2144,21 @@ export default {
             isImage: false,
             isAudio: false,
             isDocument: true,
+            isErro: false
+          });
+        }
+
+
+        else if (message.type === "erro") {
+          allMessages.push({
+            text: message.mensagem,
+            datetime: fixedDate.toISOString(),
+            messageId: message.message_id, // 👈 ESSENCIAL
+            sender: message.nome,
+            isImage: false,
+            isAudio: false,
+            isDocument: false,
+            isErro: true
           });
         }
 
@@ -1965,13 +2173,14 @@ export default {
             isImage: false,
             isAudio: false,
             isDocument: false,
+            isErro: false
           });
         }
       }
 
       console.log("allMessages final:", allMessages);
 
-      this.messages.push(...allMessages);
+      this.messages = allMessages;
       this.scrollToBottom();
       this.$nextTick(() => {
         const el = this.$refs.messages
@@ -2139,6 +2348,8 @@ export default {
             isImage: false,
             isAudio: false,
             isDocument: true,
+
+            isErro: false
           });
         }
 
@@ -2153,6 +2364,7 @@ export default {
             isImage: false,
             isAudio: false,
             isDocument: false,
+            isErro: false
           });
         }
       }
@@ -2319,14 +2531,9 @@ export default {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         this.recorder = new RecordRTC(stream, {
           type: 'audio',
-          mimeType: 'audio/mp3',  // Definir o tipo MIME como áudio MP3
+          mimeType: 'audio/webm',
           recorderType: RecordRTC.StereoAudioRecorder,
-          desiredSampRate: 16000,
-          audioBitsPerSecond: 128000,
           numberOfAudioChannels: 1,
-          bufferSize: 16384,
-          sampleRate: 44100,
-          frameRate: 20000,
         });
         this.recorder.startRecording();
         this.isRecording = true;
@@ -2347,6 +2554,16 @@ export default {
         this.audioUrl = URL.createObjectURL(this.audioBlob);
         this.isRecording = false;
       });
+    },
+    openFile(url, filename) {
+
+      // abre em nova aba
+      const win = window.open(url, "_blank");
+
+      // se o navegador bloquear popup, faz fallback pra download
+      if (!win) {
+        this.downloadFile(url, filename);
+      }
     },
     async uploadAudio() {
       const MPEGMode = 'stereo'; // ou 'mono', dependendo do seu caso
@@ -2371,7 +2588,7 @@ export default {
         audioDataInt16[i] = Math.max(-1, Math.min(1, audioData[i])) < 0 ? audioData[i] * 0x8000 : audioData[i] * 0x7FFF;
       }
 
-      const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, 128); // 1 canal, 44.1kHz, 128 kbps
+      const mp3Encoder = new lamejs.Mp3Encoder(1, audioBuffer.sampleRate, 128); // 1 canal, 44.1kHz, 128 kbps
       const mp3Data = [];
       const samplesPerFrame = 1152;
 
@@ -2416,6 +2633,7 @@ export default {
           sender: this.usuario,
           isAudio: true
         });
+
         this.openDialogEnviando = false
 
         this.openDialog1 = false;
@@ -2462,12 +2680,11 @@ export default {
 
             //this.messages.push({ text: this.newMessage, sender: this.usuario });
             console.log('eu sou oque vai ser enviado pelo socket', usuario, umaMensagem, numero)
-            this.socket.emit('send Message', { usuario, umaMensagem, numero });
+            //this.socket.emit('send Message', { usuario, umaMensagem, numero });
             console.log('passei do socket')
             let resposta = await api.post("/whatsapp/send", msg);
 
             console.log('passei do resposta')
-            await this.receiveMessage()
             console.log("limpou?", this.newMessage);
             console.log('verifica resposta da API', resposta.data.dados)
 
@@ -2475,6 +2692,8 @@ export default {
               console.log('palavrão não kkkkkkkkkkk')
               alert('Palavras de baixo calão não serão toleradas!')
             }
+            await this.receiveMessage()
+
             // deve imprimir string vazia
             this.$nextTick(() => {
               this.$refs.messages.scrollTop = this.$refs.messages.scrollHeight;
@@ -2677,10 +2896,17 @@ export default {
       const allowedTypes = [
         'application/pdf',
         'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-        'text/csv'
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/csv',
+
+        // novos
+        'application/zip',
+        'application/x-zip-compressed',
+        'application/x-rar-compressed',
+        'application/vnd.rar',
+        'application/x-pkcs12' // .pfx
       ];
 
       if (!allowedTypes.includes(this.selectedFile.type)) {
@@ -2881,8 +3107,129 @@ export default {
 };
 </script>
 
-
 <style>
+/* Container principal que ocupa 100% da altura disponível */
+
+.v-main {}
+
+.chat-main {
+  padding: 0 !important;
+  height: 85vh;
+  display: flex;
+
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #efe7dd;
+  background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+  background-repeat: repeat;
+}
+
+/* Área de mensagens com scroll e preenchimento flexível */
+/* área de mensagens */
+.messages-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+
+/* Barra de digitação com altura fixa no rodapé */
+.input-fixed-bar[data-v-32f2fec4] {
+  background-color: #f0f2f5;
+  border-top: 1px solid #ddd;
+  position: fixed;
+  flex-shrink: 0;
+
+  bottom: 0%;
+  padding: 5px 0;
+  width: -webkit-fill-available;
+  z-index: 10;
+}
+
+/* Estilos dos balões e alinhamento */
+.message-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.message-wrapper {
+  display: flex;
+  width: 100%;
+}
+
+.requester-side {
+  justify-content: flex-start;
+}
+
+.agent-side {
+  justify-content: flex-end;
+}
+
+.message-bubble {
+  max-width: 75%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.requester-bubble {
+  background-color: white;
+  color: #333;
+  border-top-left-radius: 2px;
+}
+
+.agent-bubble {
+  background: linear-gradient(135deg, #005c4b 0%, #004d3f 100%);
+  color: white;
+  border-top-right-radius: 2px;
+}
+
+.sender-name {
+  font-size: 11px;
+  font-weight: bold;
+  margin-bottom: 2px;
+  opacity: 0.8;
+}
+
+.message-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 4px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.date-divider {
+  align-self: center;
+  color: #000000;
+  background: rgb(159 159 159 / 62%);
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-left: -1% !important;
+  margin: 15px 0;
+}
+
+/* Customização da barra de scroll para ficar mais limpa */
+.messages-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+/* ===== Restored legacy styles from original (dialogs/backend UI) ===== */
 .message {
   margin-bottom: -65px !important;
   padding: 5px;
@@ -2934,7 +3281,7 @@ export default {
   background-color: #ffffffc2 !important;
 }
 
-.sidebar {
+.sidebarCTT {
   color: #000000;
   background-color: #f5f5f5 !important;
   width: 300px !important;
@@ -2962,6 +3309,7 @@ export default {
   width: 100%;
   font-size: 20px;
   border-bottom: double;
+  height: 10px;
   border-color: #14276636;
   background-color: white;
 }
@@ -2969,7 +3317,8 @@ export default {
 
 .bottom-bar {
   position: relative;
-  margin-top: 64px;
+
+  height: 0px !important;
   width: 100%;
   padding: 10px;
   background-color: #ffffff00 !important;
@@ -3057,6 +3406,12 @@ export default {
   margin-left: 3%;
 }
 
+.addAcao {
+  width: 50%;
+  margin-left: 3%;
+  margin-bottom: 1%;
+}
+
 .dialogo {
   height: 302px
 }
@@ -3119,17 +3474,6 @@ export default {
   position: relative;
 }
 
-.date-divider {
-  text-align: center;
-  margin-top: 1%;
-  margin-left: 47%;
-  font-size: 13px;
-  color: #000000;
-  background: rgb(159 159 159 / 62%);
-  padding: 4px 10px;
-  border-radius: 10px;
-  display: inline-block;
-}
 
 .tema {
   left: 94%;
@@ -3273,10 +3617,15 @@ export default {
 }
 
 /* Alvo o container do drawer - ajuste o seletor se o seu for outro */
-.v-navigation-drawer__content,
+.v-navigation-drawer__content {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .navbar,
 /* opcional, se tiver outro seletor */
-.sidebar {
+.sidebarCTT {
   /* Firefox */
   scrollbar-width: thin;
   /* "auto" | "thin" | "none" */
@@ -3378,12 +3727,12 @@ export default {
 
 .searchField .v-field__prepend-inner {
   margin-left: 12px;
-  color: #A8A8A8 !important;
+  color: black !important;
   /* cor suave do ícone */
 }
 
 .searchField .v-text-field .v-field__input::placeholder {
-  color: #A8A8A8 !important;
+  color: black !important;
 }
 
 /* ===== MIDIAS CLICAVEIS / DESTACAVEIS ===== */
@@ -3525,13 +3874,13 @@ export default {
 }
 
 .doc-icon {
-  color: white;
+  color: #5aa6e7;
   font-size: 26px;
   flex-shrink: 0;
 }
 
 .doc-download {
-  color: white;
+  color: #5aa6e7;
   font-size: 20px;
   flex-shrink: 0;
 }
@@ -3543,7 +3892,7 @@ export default {
 }
 
 .doc-name {
-  color: white;
+  color: #5aa6e7;
   font-weight: 600;
   font-size: 14px;
   white-space: nowrap;
@@ -3551,8 +3900,33 @@ export default {
   text-overflow: ellipsis;
 }
 
+.erro-card {
+  background: #ffe5e5;
+  border: 1px solid #ff4d4f;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.erro-icon {
+  color: #ff4d4f;
+  font-size: 22px;
+}
+
+.erro-title {
+  font-weight: 600;
+  color: #d32f2f;
+}
+
+.erro-sub {
+  font-size: 12px;
+  color: #b71c1c;
+}
+
 .doc-sub {
-  color: rgba(255, 255, 255, 0.75);
+  color: #5aa6e7;
   font-size: 12px;
 }
 
@@ -3612,10 +3986,183 @@ export default {
 }
 
 .carregarMensagens {
-  margin-left: 48%;
-  width: 72px;
-  margin-right: 2%;
-  max-height: 80vh;
+  width: 25%;
+  left: 37%;
+  background-color: transparent !important;
+  box-shadow: none;
+  max-height: 72vh;
   overflow-y: auto;
+}
+
+/* ===== End legacy styles ===== */
+
+.imageIcon {
+  left: 91%;
+  font-size: 25px;
+  top: 3px;
+  width: 35px;
+}
+
+.theme--light.v-input input,
+.theme--light.v-input textarea {
+  color: #000000 !important;
+
+}
+
+
+.theme--light.v-input input,
+.theme--light.v-input textarea {
+  color: black !important;
+}
+
+/* Força o texto digitado em inputs e textareas a ficar preto */
+.v-application>>>.v-text-field input,
+.v-application>>>.v-text-field textarea,
+.v-application>>>.v-textarea textarea {
+  color: #000000 !important;
+  font-weight: 500 !important;
+}
+
+/* Ajusta a cor do placeholder (o texto de fundo) para não confundir */
+.v-application>>>.v-text-field input::placeholder,
+.v-application>>>.v-textarea textarea::placeholder {
+  color: #000000 !important;
+}
+
+.v-application {
+  color: #000 !important;
+}
+
+.v-dialog {
+  color: #000000 !important;
+}
+
+/* Força títulos, textos e labels dentro de diálogos a serem pretos */
+.v-dialog .v-card__title,
+.v-dialog .v-card__text,
+.v-dialog .v-label,
+.v-dialog .v-input input,
+.v-dialog .v-input textarea {
+  color: #000000 !important;
+  opacity: 1 !important;
+}
+
+/* Garante que o texto digitado nos campos dos diálogos seja nítido */
+.v-dialog>>>.v-text-field input,
+.v-dialog>>>.v-textarea textarea {
+  color: #000000 !important;
+}
+
+::v-deep .v-dialog {
+  color: #000 !important;
+}
+
+::v-deep .v-dialog .v-label {
+  color: #000 !important;
+  opacity: 1 !important;
+}
+
+.theme--light.v-input input,
+.theme--light.v-input textarea {
+  color: #000 !important;
+}
+
+:global(.v-dialog__content) .v-card__title,
+:global(.v-dialog__content) .v-card__text,
+:global(.v-dialog__content) .v-label,
+:global(.v-dialog__content) input,
+:global(.v-dialog__content) textarea {
+  color: #000000 !important;
+  opacity: 1 !important;
+}
+
+.v-application .v-text-field input,
+.v-application .v-text-field textarea,
+.v-application .v-select .v-select__selection {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  /* Garante em navegadores Webkit */
+}
+
+/* Força os Labels (títulos dos campos) a ficarem pretos e sem transparência */
+.v-application .v-label {
+  color: #000000 !important;
+  opacity: 1 !important;
+}
+
+/* Garante que o texto digitado nos diálogos seja visível */
+.v-dialog__content .v-input input,
+.v-dialog__content .v-input textarea {
+  color: #000000 !important;
+  opacity: 1 !important;
+}
+
+/* Ajusta a cor do texto de ajuda/placeholder para um cinza mais escuro */
+.v-application .v-text-field input::placeholder {
+  color: #000000 !important;
+}
+
+::v-deep(.v-text-field input) {
+  color: #000;
+}
+
+.theme--light.v-input,
+.theme--light.v-input input,
+.theme--light.v-input textarea {
+  background-color: white !important;
+}
+
+.v-application--is-ltr .v-textarea.v-text-field--enclosed .v-text-field__slot {
+  margin-right: 10px !important;
+}
+
+#botaoEditar {
+  left: 1% !important;
+}
+
+.message-bubble {
+  display: flex;
+  flex-direction: column;
+}
+
+.text-content {
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.quick-reply-box {
+  position: absolute;
+  bottom: 60px;
+  left: 10px;
+  width: 350px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 9999;
+}
+
+.quick-reply-item {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.quick-reply-item:hover {
+  background: #f0f0f0;
+}
+
+.addAcaoBtn {
+  width: 96%;
+  left: 3%;
+}
+
+.botaoAtendimento {
+  left: 55%;
 }
 </style>

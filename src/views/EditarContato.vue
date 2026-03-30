@@ -71,11 +71,23 @@
 import { api } from "@/conf/api";
 import Navbar from "../components/Navbar";
 import Footer from "../components/footer.vue";
+
+
+
 export default {
+  async beforeMount() {
+    let usuario = JSON.parse(localStorage.getItem('usu'));
+    console.log('O CAOS', usuario)
+    this.id_empresa = usuario.id_empresa
+    this.initialize();
+
+  },
+
   name: "HelloView",
   data: () => ({
     selectedValue: "",
     dados: [],
+    id_empresa: "",
     pegaGrupo: [],
     grupoArray: [],
     dialog: false,
@@ -146,14 +158,11 @@ export default {
     },
   },
 
-  created() {
-    this.initialize();
-  },
 
   methods: {
     async initialize() {
-      console.log('a gente veio do macaco?')
-      let res = await api.get("/listacontatos");
+      console.log('a gente veio do macaco?', this.id_empresa)
+      let res = await api.get("/listacontatos/" + this.id_empresa);
       console.log('eu sou o cara que quer ', res.data.dados);
       this.desserts = res.data.dados;
       console.log('sera?', this.desserts)

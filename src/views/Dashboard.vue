@@ -89,7 +89,8 @@ export default {
     this.idsetinterval3 = setInterval(async () => await this.realtime(), 2000);
   },
 
-  async beforeUnmount() {
+  // eslint-disable-next-line vue/no-deprecated-destroyed-lifecycle
+  async beforeDestroy() {
     console.log("eu sou idsetinterval", this.idsetinterval);
     clearInterval(this.idsetinterval);
     this.idsetinterval = 0;

@@ -15,7 +15,7 @@ let send = async function (to, body, nome, res) {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
-            'Authorization': "Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq"
+            'Authorization': "Bearer Seu Token"
         },
         body: JSON.stringify({
             "messaging_product": "whatsapp", // Adicione o messaging_product aqui
@@ -70,7 +70,7 @@ let sendGpt = async function (mensagem) {
         url: 'https://api.openai.com/v1/chat/completions',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer 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',
+            'Authorization': 'Bearer Seu Token GPT',
         },
         data: data
     };
@@ -107,7 +107,7 @@ async function verificaPalavrao(mensagem) {
             {
                 headers: {
                     "Content-Type": "application/json",
-                    'Authorization': 'Bearer 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',
+                    'Authorization': 'Bearer Seu Token GPT',
                 },
             }
         );
@@ -148,7 +148,7 @@ let getDocument = async function (caminho) {
         maxBodyLength: Infinity,
         url: 'https://graph.facebook.com/v17.0/116793154851650/media',
         headers: {
-            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq',
+            'Authorization': 'Bearer Seu Token',
             ...data.getHeaders()
         },
         data: data
@@ -180,7 +180,7 @@ let getImage = async function (caminho) {
         maxBodyLength: Infinity,
         url: 'https://graph.facebook.com/v17.0/116793154851650/media',
         headers: {
-            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq',
+            'Authorization': 'Bearer Seu Token',
             ...data.getHeaders()
         },
         data: data
@@ -212,7 +212,7 @@ let getAudio = async function (caminho) {
         maxBodyLength: Infinity,
         url: 'https://graph.facebook.com/v17.0/116793154851650/media',
         headers: {
-            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq',
+            'Authorization': 'Bearer Seu Token',
             ...data.getHeaders()
         },
         data: data
@@ -238,7 +238,7 @@ let sendImage = async function (to, id, usuario, res) {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
-            'Authorization': "Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq"
+            'Authorization': "Bearer Seu Token"
         },
         body: JSON.stringify({
             "messaging_product": "whatsapp", // Adicione o messaging_product aqui
@@ -284,7 +284,7 @@ let sendAudio = async function (to, id, usuario, res) {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
-            'Authorization': "Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq"
+            'Authorization': "Bearer Seu Token"
         },
         body: JSON.stringify({
             "messaging_product": "whatsapp", // Adicione o messaging_product aqui
@@ -327,7 +327,7 @@ let reciveMediaLink = async function (id, res) {
         method: 'GET', // Mudança: Alterado de POST para GET para buscar informações
         headers: {
             "Content-Type": "application/json",
-            'Authorization': "Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq" // Token de autorização
+            'Authorization': "Bearer Seu Token" // Token de autorização
         }
     };
 
@@ -359,7 +359,7 @@ let geraMedia = async function (url, res) {
         method: 'GET', // Mudança: Alterado de POST para GET para buscar informações
         headers: {
             "Content-Type": "application/json",
-            'Authorization': "Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq" // Token de autorização
+            'Authorization': "Bearer Seu Token" // Token de autorização
         }
     };
 
@@ -398,7 +398,7 @@ let sendVideo = async function (to, id, link, res) {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
-            'Authorization': "Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq"
+            'Authorization': "Bearer Seu Token"
         },
         body: JSON.stringify({
             "messaging_product": "whatsapp", // Adicione o messaging_product aqui
@@ -443,7 +443,7 @@ let sendDocument = async (to, id, filename, usuario, res) => {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
-            'Authorization': "Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq"
+            'Authorization': "Bearer Seu Token"
         },
         body: JSON.stringify({
             "messaging_product": "whatsapp", // Adicione o messaging_product aqui
@@ -494,7 +494,7 @@ let sendTemplateMenu = async (to, name, res) => {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': "Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq"
+                'Authorization': "Bearer Seu Token"
             },
             body: JSON.stringify({
                 "messaging_product": "whatsapp",
@@ -540,7 +540,7 @@ let sendTemplate = async (to, name, usuario, res) => {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
-            'Authorization': "Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq"
+            'Authorization': "Bearer Seu Token"
         },
         body: JSON.stringify({
             "messaging_product": "whatsapp",
@@ -591,7 +591,7 @@ let download = async function (id, nome, formato, res) {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq"
+            "Authorization": "Bearer Seu Token"
         }
     };
 
@@ -609,7 +609,7 @@ let download = async function (id, nome, formato, res) {
             responseType: 'arraybuffer',
             headers: {
                 "Content-Type": "application/pdf",
-                'Authorization': "Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq"
+                'Authorization': "Bearer Seu Token"
             }
         });
 

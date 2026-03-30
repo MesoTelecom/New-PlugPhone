@@ -18,6 +18,7 @@ const { exec } = require("child_process");
 const zlib = require('zlib');
 const crypto = require('crypto');
 const { buscarMensagem } = require("../../webhook/SocketConnection");
+const { stat } = require("fs/promises");
 const upload = multer({ dest: 'uploads/' });
 class ExpressController {
   constructor(expressAppWrapper, porta) {
@@ -158,6 +159,52 @@ class ExpressController {
       }
     })
 
+    this.expressAppWrapper.get("/teste-mensagem/:idEmpresa/:telefone/:termoBusca", async (req, res, next) => {
+
+      let idEmpresa = req.params.idEmpresa
+      let telefone = req.params.telefone
+      let termoBusca = req.params.termoBusca
+      let idMensagem = "";
+
+
+      let qry55 = `select telefone from meso_empresas where id_empresa = '${idEmpresa}'`;
+      console.log("Consulta da empresa:", qry55);
+      let empresa = await executaQry(qry55);
+
+      if (!empresa?.dados?.length) {
+        console.log('Empresa não encontrada');
+        // É uma boa prática retornar aqui para não continuar a execução
+        return;
+      }
+
+      let wpnumber = empresa.dados[0].telefone;
+      let qry;
+
+      // Constrói a base da consulta SQL
+      let baseQuery = `select * from meso_mensagens_solicitante where telefone = '${telefone}' and wpnumber = ${wpnumber}`;
+
+      // Adiciona o filtro de busca, se o termo for enviado pelo front-end
+      if (termoBusca && termoBusca.trim() !== '') {
+        // Usamos LIKE com '%' para buscar o termo em qualquer parte da mensagem.
+        // É importante "escapar" o termo para evitar SQL Injection,
+        // embora o ideal seja usar prepared statements.
+        baseQuery += ` AND mensagem LIKE '%${termoBusca.replace(/'/g, "''")}%'`;
+      }
+
+      // Adiciona a condição de paginação (carregar mais antigas)
+      if (idMensagem && idMensagem !== '') {
+        baseQuery += ` and id <= ${idMensagem}`;
+      }
+
+      // Adiciona a ordenação e o limite
+      qry = `${baseQuery} order by id desc limit 20`;
+
+      console.log("Olha minha qry", qry);
+      const mensagens = await executaQry(qry);
+
+      res.json(mensagens)
+    })
+
     this.expressAppWrapper.post('/resetaTokenMobile', async (req, res, next) => {
       let usuario = req.body.usuario
       let qry1 = `update meso_usuariologin set tokenMobile = null, logadoMobile = 0 where usuario = '${usuario}'  `
@@ -174,7 +221,7 @@ class ExpressController {
     })
 
     this.expressAppWrapper.post('/cadastrarcontato', async (req, res) => {
-      const { nome, telefone, setor, email, empresa, id_empresa } = req.body;
+      const { nome, telefone, setor, email, empresa, id_empresa, usuario } = req.body;
 
       console.log('merda', id_empresa)
 
@@ -185,9 +232,9 @@ class ExpressController {
 
         const qry = `
     INSERT INTO meso_contatos 
-      (nome, telefone, estado, datahora, setor, email, empresa, id_empresa)
+      (nome, telefone, estado, datahora, setor, email, empresa, id_empresa,usuario)
     VALUES 
-      ('${nome}', '${telefone}', 'Novo', NOW(), '${setor}', '${email}', '${empresa}', '${id_empresa}')
+      ('${nome}', '${telefone}', 'Novo', NOW(), '${setor}', '${email}', '${empresa}', '${id_empresa}', '${usuario}')
   `;
 
         console.log('bumbum profundo', qry);
@@ -247,7 +294,6 @@ class ExpressController {
         res.status(500).json({ sucesso: false, mensagem: "Erro ao editar usuário", erro: error.message });
       }
     });
-
 
 
     // Filtro para arquivos de áudio
@@ -416,13 +462,15 @@ class ExpressController {
       let url = req.body.url;
       let id = req.body.id;
 
+      console.log("Olha que cu", url, id)
+
       try {
         const response = await axios({
           method: 'get',
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'SEU TOKEN '
+            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
           }
         });
 
@@ -718,6 +766,87 @@ class ExpressController {
       }
     });
 
+    this.expressAppWrapper.get('/buscarAtendimentosGeral/:idEmpresa', async (req, res, next) => {
+      try {
+        let telefone = req.params.telefone;
+        let id_empresa = req.params.idEmpresa
+
+
+
+
+        let qry = `
+      SELECT 
+       *
+      FROM meso_atendimentos
+      WHERE id_empresa='${id_empresa}'
+      ORDER BY data_inicio DESC;
+    `;
+        console.log('eu n sei quem é', qry)
+
+        let result = await executaQry(qry);
+        res.json(result);
+
+      } catch (err) {
+        console.error('Erro ao buscar atendimentos por telefone:', err);
+        res.status(500).json({ error: err.message });
+      }
+    });
+
+    this.expressAppWrapper.post('/atualizarStatusPendencia', async (req, res) => {
+
+      let id = req.body.id
+      let status = req.body.status
+
+      let qry = `
+    UPDATE meso_pendencias
+    SET status = '${status}',
+        atualizado_em = NOW()
+    WHERE id = ${id}
+  `
+
+      console.log("Atualizando status da pendência:", qry)
+
+      let res1 = await executaQry(qry)
+
+      res.json(res1)
+
+    });
+
+    this.expressAppWrapper.get('/buscarPendencias/:idEmpresa/:tipo', async (req, res, next) => {
+      try {
+        //let telefone = req.params.telefone;
+        let id_empresa = req.params.idEmpresa
+        let tipo = req.params.tipo
+        let qry
+
+        if (tipo == 'admin') {
+          qry = `
+      SELECT 
+       *
+      FROM meso_pendencias
+      WHERE id_empresa='${id_empresa}'
+      ORDER BY criado_em DESC; 
+      `
+        } else {
+          qry = `
+      SELECT 
+       *
+      FROM meso_pendencias
+      WHERE id_empresa='${id_empresa}' and setor = '${tipo}'
+      ORDER BY criado_em DESC;
+    `;
+        }
+        console.log('eu n sei quem é', qry)
+
+        let result = await executaQry(qry);
+        res.json(result);
+
+      } catch (err) {
+        console.error('Erro ao buscar atendimentos por telefone:', err);
+        res.status(500).json({ error: err.message });
+      }
+    });
+
 
     this.expressAppWrapper.post("/geraImage/", async (req, res, next) => {
       let url = req.body.url;
@@ -729,7 +858,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'SEU TOKEN '
+            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
           }
         });
 
@@ -776,7 +905,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'SEU TOKEN '
+            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
           }
         });
 
@@ -827,7 +956,7 @@ class ExpressController {
           url: url,
           responseType: 'stream',
           headers: {
-            'Authorization': 'SEU TOKEN '
+            'Authorization': 'Bearer EABpILka8Wz0BO2G1rtqYyWSXcueuIsbQZCMYxt6xd3Dp39MB9CIVJxs1yBv9G8W0ZCdnpIdPi5ZAC3pgsqjDZCLwtCMefB5SSdj6p9KeZC56FxdjZBwENoK6B0vlm7jJo1induvWW3tpVQ9mElh1HPJVl8byZBnYACtcnKl4ZCfFemPoOZBLaDsQmIarSCTKDiKMq'
           }
         });
 
@@ -1397,13 +1526,17 @@ WHERE telefone = '${telefone}'
       let where = [`meso_contatos.id_empresa = '${idEmpresa}'`];
 
       // regra por tipo
-      if (tipo !== "admin" && tipo !== "Técnico") {
-        where.push(`(meso_contatos.usuario LIKE '%${usuario}%' OR meso_contatos.usuario IS NULL)`);
+      if (tipo !== "admin" && tipo !== "Técnico" && tipo !== "Financeiro") {
+        // where.push(`(meso_contatos.usuario LIKE '%${usuario}%' OR meso_contatos.usuario IS NULL)`);
         where.push(`meso_contatos.setor = '${tipo}'`);
       }
 
       if (tipo === "Técnico") {
         where.push(`meso_contatos.setor = 'Técnico'`);
+      }
+
+      if (tipo === "Financeiro") {
+        where.push(`meso_contatos.setor = 'Financeiro'`);
       }
 
       // estado
@@ -1437,6 +1570,8 @@ WHERE telefone = '${telefone}'
     LIMIT 100 OFFSET ${offset}
   `;
 
+      console.log("QUERY FINAL:", qry);
+
       let resultado = await executaQry(qry);
       return res.json(resultado);
     });
@@ -1459,6 +1594,137 @@ WHERE telefone = '${telefone}'
       res.json(res20)
       ////console.log('contatos resposta', res20)
 
+    })
+
+    this.expressAppWrapper.get("/buscar-mensagem-rapida-web/:idEmpresa", async (req, res, next) => {
+      let idEmpresa = req.params.idEmpresa
+      let qry = `select * from meso_mensagens_rapidas where id_empresa = ${idEmpresa}`
+      console.log('é muita história', qry)
+      let mensagensRapidas = await executaQry(qry)
+      res.json(mensagensRapidas)
+    })
+
+    this.expressAppWrapper.get("/buscar-mensagem-rapida/:idEmpresa", async (req, res, next) => {
+      let idEmpresa = req.params.idEmpresa
+      let qry = `select * from meso_mensagens_rapidas where id_empresa = ${idEmpresa}`
+      console.log('é muita história', qry)
+      let mensagensRapidas = await executaQry(qry)
+      res.json(mensagensRapidas.dados)
+    })
+
+    this.expressAppWrapper.delete("/deletar-mensagem-rapida/:id", async (req, res, next) => {
+      let id = req.params.id
+      let qry = `delete from meso_mensagens_rapidas where id = ${id}`
+      console.log('é muita melodia', qry)
+      let mensagensRapidas = await executaQry(qry)
+      res.json(mensagensRapidas.dados)
+    })
+
+
+    this.expressAppWrapper.post("/editar-mensagem-rapida", async (req, res, next) => {
+      let id = req.body.id
+      let texto = req.body.texto
+      let acao = req.body.acao
+      let qry = `update meso_mensagens_rapidas set texto = '${texto}', acao = '${acao}' where id = ${id}`
+      console.log('esculacha a concorrência', qry)
+      let mensagensRapidas = await executaQry(qry)
+      res.json(mensagensRapidas.dados)
+    });
+
+    this.expressAppWrapper.post("/erro-flutter", async (req, res, next) => {
+      let erro = req.body.erro
+
+      let qry = `insert into meso_erros (erro) values ('${erro}')`;
+      console.log('esculacha a concorrência', qry)
+      await executaQry(qry)
+      res.json('Erro de mensagem cadastrado')
+    });
+
+    this.expressAppWrapper.post("/atualizarStatusAtendimento", async (req, res, next) => {
+      let id = req.body.id
+      let status = req.body.status
+      let qry = `UPDATE meso_atendimentos
+            SET status = '${status}'
+            WHERE id = '${id}'
+`
+      console.log('eu sou o atualizarStatusAtendimento', qry)
+      let atualizaEstado = await executaQry(qry)
+      res.json(atualizaEstado)
+    });
+
+
+
+    this.expressAppWrapper.post("/inserir-mensagem-rapida", async (req, res, next) => {
+      let idEmpresa = req.body.idEmpresa
+      let texto = req.body.texto
+      let acao = req.body.acao
+
+      console.log('Olha aqui', idEmpresa, texto, acao)
+
+      let existe = await executaQry(`select exists (select 1 from meso_mensagens_rapidas where texto = '${texto}' and id_empresa ='${idEmpresa}') as existe;`)
+
+      if (existe.dados[0].existe == 0) {
+        let qry = `insert into meso_mensagens_rapidas (id_empresa, texto,acao) values (${idEmpresa}, '${texto}', '${acao}')`
+        let resultado = await executaQry(qry);
+
+        try {
+          if (resultado?.dados.affectedRows > 0) {
+            console.log('chegou aqui no insert');
+            res.json({ success: true, mensagem: 'Mensagem rápida cadastrada com sucesso!' });
+          } else {
+            console.log('não chegou aqui no insert');
+            res.json({ success: false, mensagem: 'Não foi possível cadastrar mensagem rápida!' });
+          }
+        } catch (error) {
+          console.error("Erro ao cadastrar mensagem rápida:", error);
+          res.status(500).json({ sucesso: false, mensagem: "Erro ao cadastrar mensagem rápida", erro: error.message });
+        }
+      } else {
+        res.json({ success: true, mensagem: `A mensagem rápida ${texto} já foi cadastrada` });
+        console.log("Esse mensagem rápida já foi cadastrada")
+      }
+    })
+
+    this.expressAppWrapper.post("/atualizar-mensagem-rapida", async (req, res, next) => {
+      let id = req.body.id
+      let texto = req.body.texto
+      let acao = req.body.acao
+
+      let qry = `update meso_mensagens_rapidas set texto = '${texto}', acao = '${acao}' where id = ${id}`
+      let resultado = await executaQry(qry);
+
+      try {
+        if (resultado?.dados.affectedRows > 0) {
+          console.log('chegou aqui no update');
+          res.json({ success: true, mensagem: 'Mensagem rápida editada com sucesso!' });
+        } else {
+          console.log('não chegou aqui no update');
+          res.json({ success: false, mensagem: 'Não foi possível editar mensagem rápida!' });
+        }
+      } catch (error) {
+        console.error("Erro ao editar mensagem rápida:", error);
+        res.status(500).json({ sucesso: false, mensagem: "Erro ao editar mensagem rápida", erro: error.message });
+      }
+
+    })
+
+    this.expressAppWrapper.delete("/delete-mensagem-rapida/:id", async (req, res, next) => {
+      let id = req.params.id;
+      let qry = `delete from meso_mensagens_rapidas where id = ${id}`
+      let resultado = await executaQry(qry)
+
+      try {
+        if (resultado?.dados.affectedRows > 0) {
+          console.log('chegou aqui no exclúida');
+          res.json({ success: true, mensagem: 'Mensagem rápida exclúida com sucesso!' });
+        } else {
+          console.log('não chegou aqui no exclúida');
+          res.json({ success: false, mensagem: 'Não foi possível exclúir mensagem rápida!' });
+        }
+      } catch (error) {
+        console.error("Erro ao exclúir mensagem rápida:", error);
+        res.status(500).json({ sucesso: false, mensagem: "Erro ao exclúir mensagem rápida", erro: error.message });
+      }
     })
 
     this.expressAppWrapper.get("/filtrocontatos/:usuario/:tipo/:estado", async (req, res, next) => {
@@ -1910,9 +2176,10 @@ ORDER BY id ASC;
 
     });
 
-    this.expressAppWrapper.get("/buscar-usuario-tipo/:tipo", async (req, res, next) => {
+    this.expressAppWrapper.get("/buscar-usuario-tipo/:tipo/:idEmpresa", async (req, res, next) => {
       let tipo = req.params.tipo
-      let qry = `select usuario from meso_usuariologin where tipo = '${tipo}'`
+      let idEmpresa = req.params.idEmpresa
+      let qry = `select usuario from meso_usuariologin where tipo = '${tipo}' and id_empresa = ${idEmpresa}`
       let res20 = await executaQry(qry);
       let res21 = [];
       for (let x = 0; x < res20.dados.length; x++) {
@@ -2072,7 +2339,7 @@ ORDER BY id ASC;
     //Na verdade o que eu fiz foi atendidas e não realtime do em ligação.... ;(
     this.expressAppWrapper.get("/dashligacao/:id_empresa", async (req, res, next) => {
       let id_empresa = req.params.id_empresa
-      let qry = `select status from meso_atendimentos where status = 'Em Andamento' and id_empresa = '${id_empresa}' `;
+      let qry = `select distinct telefone,  status from meso_atendimentos where id_empresa = '${id_empresa}' and status <> 'Concluído' `;
       //console.log('sérginho groisma', qry);
 
 
@@ -2438,6 +2705,7 @@ ORDER BY id ASC;
           ramal: user.ramal,
           telefone: user.telefone,
           id_empresa: user.id_empresa,
+          statusCode: 200
         });
       } catch (e) {
         console.error("❌ Erro em /loginconfere2:", e);
@@ -2827,6 +3095,79 @@ WHERE r.resposta_datetime IS NOT NULL;
       }
     })
 
+    this.expressAppWrapper.get('/selectColuna/:idEmpresa/:tipo', async (req, res, next) => {
+      let idEmpresa = req.params.idEmpresa
+      let tipo = req.params.tipo
+
+      let qry = ``
+
+      if (tipo == 'admin') {
+        qry = `
+      select * from meso_kanban_colunas where id_empresa = ${idEmpresa} order by ordem ASC 
+      `
+      } else {
+        qry = `
+      select * from meso_kanban_colunas where id_empresa = ${idEmpresa} and setor = '${tipo}' order by ordem ASC
+    `;
+      }
+
+      console.log('sou eu aqui o kanban', qry)
+      let res1 = await executaQry(qry)
+      res.json(res1)
+
+    })
+
+    this.expressAppWrapper.post('/deletarColunaKanban', async (req, res, next) => {
+
+      let nome = req.body.nome
+      let idEmpresa = req.body.idEmpresa
+
+      let qry = `
+    DELETE FROM meso_kanban_colunas
+    WHERE nome = '${nome}'
+    AND id_empresa = ${idEmpresa}
+  `
+
+      console.log("Deletando coluna Kanban:", qry)
+
+      let res1 = await executaQry(qry)
+
+      res.json(res1)
+
+    })
+
+    this.expressAppWrapper.post('/criarColunaKanban', async (req, res) => {
+
+      let nome = req.body.nome
+      let id_empresa = req.body.idEmpresa
+      let ordem = req.body.posicao
+      let cor = req.body.cor
+      let setor = req.body.setor
+
+
+      // 1️⃣ empurra as colunas para baixo
+      let qryUpdate = `
+    UPDATE meso_kanban_colunas
+    SET ordem = ordem + 1
+    WHERE ordem >= ${ordem}
+    AND id_empresa = ${id_empresa} and setor = '${setor}'
+  `
+
+      await executaQry(qryUpdate)
+
+      // 2️⃣ insere nova coluna
+      let qryInsert = `
+    INSERT INTO meso_kanban_colunas (nome, ordem, id_empresa, cor, setor)
+    VALUES ('${nome}', ${ordem}, ${id_empresa}, '${cor}', '${setor}')
+  `
+
+      console.log('Elizabeth Webber', qryInsert)
+
+      let res1 = await executaQry(qryInsert)
+
+      res.json(res1)
+
+    })
     //fim de login--------------------------------------------------------------------------
 
     //TMA ----------------------------------------------------------------------------------
@@ -2900,12 +3241,13 @@ WHERE r.resposta_datetime IS NOT NULL;
     })
 
 
-    this.expressAppWrapper.get("/listacontatos", async (req, res) => {
+    this.expressAppWrapper.get("/listacontatos/:idEmpresa", async (req, res) => {
       //let dataini = req.params.d1;
       // let datafim = req.params.d2;
+      let idEmpresa = req.params.idEmpresa
       try {
         let qry = `
-        select * from meso_contatos
+        select * from meso_contatos where id_empresa = ${idEmpresa}
         `;
         let res27 = await executaQry(qry);
         res.json(res27);
@@ -3844,7 +4186,8 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       let pendencia = req.body.pendencia
       let id_empresa = req.body.idEmpresa
 
-      console.log("Olha a pendencia", telefone, pendencia);
+
+      console.log("Olha a pendencia", telefone, pendencia), id_empresa;
 
       let qry = `update meso_contatos set estado = 'Concluído' where telefone like '%${telefone}%' and id_empresa = '${id_empresa}'`
       console.log('som de milhões? hmmmmm', qry)
@@ -3866,43 +4209,75 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
     }
     )
 
-    this.expressAppWrapper.get("/ligar/:ramal/:telefone", async (req, res) => {
-      //let dataini = req.params.d1;
-      // let datafim = req.params.d2;
-      let telefone = req.params.telefone;
-      let ramal = 'PJSIP/' + req.params.ramal;
-      let ramal2 = req.params.ramal;
+    this.expressAppWrapper.post('/criaPendencia', async (req, res, next) => {
 
-      ////console.log('teoricamente eu sou o telefone', telefone)
-      ////console.log('talvez eu seja o ramal', ramal)
+      let id_empresa = req.body.idEmpresa
+      let descricao = req.body.descricao
+      let agente = req.body.agente
+      let telefone = req.body.telefone
+      let setor = req.body.setor
+      let prazo = req.body.prazo
 
-      if (telefone.startsWith("5531")) {
-        telefone = telefone.slice(4)
-        telefone = "9" + telefone
-      } else {
-        telefone = telefone.slice(2)
-        telefone = telefone.slice(0, 3) + "9" + telefone.slice(3);
+      let qryInsert = `
+INSERT INTO meso_pendencias
+  ( id_empresa, descricao, status,setor, agente, prioridade, criado_em, atualizado_em, telefone, prazo)
+VALUES (
+  '${id_empresa}',
+  '${descricao}',
+  'Novo',
+  '${setor}',
+  '${agente}',
+  'Media',
+  NOW(),
+  NOW(),
+  '${telefone}',
+  '${prazo}'
+);
+`
+      console.log('coroa de espinhos clama por uma resolução', qryInsert)
+      let res99 = await executaQry(qryInsert)
+      res.json(res99);
+    }
+    ),
 
-      }
+
+      this.expressAppWrapper.get("/ligar/:ramal/:telefone", async (req, res) => {
+        //let dataini = req.params.d1;
+        // let datafim = req.params.d2;
+        let telefone = req.params.telefone;
+        let ramal = 'PJSIP/' + req.params.ramal;
+        let ramal2 = req.params.ramal;
+
+        ////console.log('teoricamente eu sou o telefone', telefone)
+        ////console.log('talvez eu seja o ramal', ramal)
+
+        if (telefone.startsWith("5531")) {
+          telefone = telefone.slice(4)
+          telefone = "9" + telefone
+        } else {
+          telefone = telefone.slice(2)
+          telefone = telefone.slice(0, 3) + "9" + telefone.slice(3);
+
+        }
 
 
-      var ami = new require('asterisk-manager')('5038', 'localhost', 'admin', 'Mtes0206', true);
-      // In case of any connectiviy problems we got you coverd.
-      ami.keepConnected();
+        var ami = new require('asterisk-manager')('5038', 'localhost', 'admin', 'Mtes0206', true);
+        // In case of any connectiviy problems we got you coverd.
+        ami.keepConnected();
 
-      ami.action(
-        {
-          action: "Originate",
-          actionid: "321",
-          Channel: ramal,
-          Exten: telefone,
-          priority: 1,
-          Context: "from-internal",
+        ami.action(
+          {
+            action: "Originate",
+            actionid: "321",
+            Channel: ramal,
+            Exten: telefone,
+            priority: 1,
+            Context: "from-internal",
 
-        })
-      res.status(200).send('ok')
+          })
+        res.status(200).send('ok')
 
-    })
+      })
     this.expressAppWrapper.get('/logar/:ramal/:tipo/:usuario', async (req, res) => {
 
       try {
@@ -4093,6 +4468,96 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
 
     })
 
+
+    this.expressAppWrapper.post("/editarPendencia", async (req, res, next) => {
+      let id = req.body.id;
+      let pendencia = req.body.pendencia
+      let prioridade = req.body.prioridade
+      let setor = req.body.setor
+      let prazo = req.body.prazo
+
+      let qry = `update meso_pendencias set descricao = '${pendencia}', prazo = '${prazo}', prioridade = '${prioridade}', setor = '${setor}', atualizado_em = NOW() where id = '${id}'`;
+      console.log('tava só piscano', qry);
+
+
+      ////console.log(qry)
+      let res99 = await executaQry(qry);
+
+      res.json(res99);
+      ////console.log(res99);
+
+    });
+
+    this.expressAppWrapper.post("/deletarPendencia", async (req, res, next) => {
+      let id = req.body.id;
+
+      let qry = `delete from meso_pendencias where id = '${id}'`;
+      console.log('tava só piscano', qry);
+
+
+      ////console.log(qry)
+      let res99 = await executaQry(qry);
+
+      res.json(res99);
+      ////console.log(res99);
+
+    });
+
+    this.expressAppWrapper.post("/editarColunaKanban", async (req, res, next) => {
+      try {
+
+        const { id, nomeNovo, cor, ordem, idEmpresa } = req.body;
+
+        if (!id) {
+          return res.status(400).json({ erro: "ID da coluna é obrigatório" });
+        }
+
+        let nomeAntigo = `select nome from meso_kanban_colunas where id = '${id}'`
+        let nomeAntigoArray = await executaQry(nomeAntigo)
+        console.log('o et bilu', nomeAntigoArray)
+        let nomeAntigoReal = nomeAntigoArray.dados[0].nome
+
+        let qry = `
+      UPDATE meso_kanban_colunas
+      SET 
+        nome = '${nomeNovo}',
+        cor = '${cor}',
+        ordem = ${ordem || 0}
+      WHERE id = ${id}
+      AND id_empresa = ${idEmpresa}
+    `;
+
+        console.log("EDITANDO COLUNA:", qry);
+
+        let result = await executaQry(qry);
+
+        // 🔥 EXTRA: se o nome mudou, atualiza pendências
+        if (nomeNovo) {
+          let qryPendencias = `
+        UPDATE meso_pendencias
+        SET status = '${nomeNovo}'
+        WHERE status = '${nomeAntigoReal}'
+        AND id_empresa = ${idEmpresa}
+      `;
+
+          console.log("SYNC STATUS:", qryPendencias);
+
+          await executaQry(qryPendencias);
+        }
+
+        res.json({
+          sucesso: true,
+          result
+        });
+
+      } catch (err) {
+        console.log("Erro ao editar coluna:", err);
+        res.status(500).json({ erro: "Erro ao editar coluna" });
+      }
+    });
+
+
+
     this.expressAppWrapper.post("/acciolyaltera/", async (req, res, next) => {
       let id = req.body.id;
       let pedido = req.body.pedido;
@@ -4106,13 +4571,11 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       let qry = `update meso_estoque set pedido = '${pedido}', situacao = '${situacao}' where ramalvendedor ='${ramal}' and cliente='${telefone}' and diaatual >= '${d1}' and diaatual <= '${d2}'`;
       ////console.log(qry);
 
-
       ////console.log(qry)
       let res99 = await executaQry(qry);
 
       res.json(res99);
       ////console.log(res99);
-
     });
 
     //Operadores realtime--------------------------------------------------------------------------------------------------------------------------
@@ -4789,24 +5252,17 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       let id_empresa = req.body.idEmpresa
 
       //////console.log('dificil heim kkkkkkk', to, body, nome)
-      let palavrao = await verificaPalavrao(body)
-      //////console.log('palavrão nãokkkkkkk', palavrao)
-      if (palavrao) {
-        let qry = `insert into meso_mensagens_banidas (nome, mensagem) VALUES ('${nome}', '${body}')`
-        await executaQry(qry)
-        res.json({ "dados": "mensagem não tolerada" });
-      } else {
-        console.log('passei mesmo kkkkk')
-        let qry = `update meso_contatos set ultimamsg = '${body}' where telefone = ${to}`
-        console.log('eu sou a ultimamsg', qry)
-        await executaQry(qry)
-        send(to, body, nome, res)
 
-        //console.log('chorava em vão')
-        buscarMensagem(to);
+      console.log('passei mesmo kkkkk')
+      let qry = `update meso_contatos set ultimamsg = '${body}' where telefone = ${to}`
+      console.log('eu sou a ultimamsg', qry)
+      await executaQry(qry)
+      send(to, body, nome, res)
 
-        res.json({ "dados": "mensagem enviada" });
-      }
+      //console.log('chorava em vão')
+      buscarMensagem(to);
+
+      res.json({ "dados": "mensagem enviada" });
 
     })
 
@@ -4961,7 +5417,7 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
     })
 
 
-    this.expressAppWrapper.post("/sendtemplate", async (req, res) => {
+    this.expressAppWrapper.post("/sendtemplateOld", async (req, res) => {
 
       let to = req.body.to
       let name = req.body.name
@@ -5014,7 +5470,14 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
     this.expressAppWrapper.get('/contaMsg/:num', async (req, res, next) => {
       let num = req.params.num
       try {
-        let qry5 = `select count(*) as mensagens from meso_mensagens_solicitante where telefone = '${num}' and DATE(datetime) = CURDATE();`
+        let qry5 = `
+  SELECT COUNT(*) AS mensagens
+  FROM meso_mensagens_solicitante
+  WHERE telefone = '${num}'
+    AND datetime >= NOW() - INTERVAL 24 HOUR
+    
+`;
+        console.log('qry contamsg', qry5)
         let res1 = await executaQry(qry5)
 
         res.json(res1)
@@ -5228,6 +5691,8 @@ WHERE datahora BETWEEN '${data1}' AND '${data2}'
       }
 
       let caminho = req.file.path;
+
+      console.log("Me mostre o caminho", caminho)
 
       // função que faz upload pra META igual getImage
       let idVideo = await getVideo(caminho);

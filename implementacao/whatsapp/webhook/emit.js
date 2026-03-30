@@ -1,38 +1,63 @@
 const { executaQry } = require("./db");
 
-let emitMensagem = function (socket, nome, msg, telefone) {
-    socket.emit('chat message', nome, msg, telefone)
-    console.log('Mensagem enviada:', nome, msg, telefone);
+let emitMensagem = function (io, idEmpresa, nome, msg, telefone) {
+    const room = `empresa:${idEmpresa}`;
 
-}
+    console.log("🚀 EMITINDO CHAT MESSAGE");
+    console.log("room:", room);
+    console.log("nome:", nome);
+    console.log("msg:", msg);
+    console.log("telefone:", telefone);
 
-let emitMensagem2 = function (socket, nome, msg, telefone) {
-    socket.emit('chat_message_teste', data.nome, data.telefone, data.mensagem, data.agente, data.type, data.datetime)
-    console.log('Mensagem enviada 2.0:', data.nome, data.telefone, data.mensagem, data.agente, data.type, data.datetime);
-
-}
-let emitVideo = function (socket, nome, videoUrl, telefone) {
-    socket.emit('chat video', nome, videoUrl, telefone);
-    console.log('video enviado:', nome, videoUrl, telefone);
+    io.to(room).emit('chat message', nome, msg, telefone);
 };
 
-let emitImage = function (socket, nome, imageBuffer, telefone) {
-    socket.emit('chat image', nome, imageBuffer, telefone);
-    //console.log('Imagem enviada:', nome, telefone);
+let emitMensagem2 = function (io, idEmpresa, data) {
+    const room = `empresa:${idEmpresa}`;
+    io.to(room).emit(
+        'chat_message_teste',
+        data.nome,
+        data.telefone,
+        data.mensagem,
+        data.agente,
+        data.type,
+        data.datetime
+    );
+
+    console.log('Mensagem enviada 2.0:', data, 'empresa:', idEmpresa);
 };
 
-let emitAudio = function (socket, nome, audioBuffer, telefone) {
-    socket.emit('chat audio', nome, audioBuffer, telefone);
-    console.log('audio enviado:', nome);
+let emitVideo = function (io, idEmpresa, nome, videoUrl, telefone) {
+    const room = `empresa:${idEmpresa}`;
+    io.to(room).emit('chat video', nome, videoUrl, telefone);
+
+    console.log('video enviado:', nome, videoUrl, telefone, 'empresa:', idEmpresa);
 };
 
-let emitDocument = function (socket, nome, documentBuffer) {
-    socket.emit('chat document', nome, documentBuffer)
-    console.log('documento enviado:', nome)
-}
+let emitImage = function (io, idEmpresa, nome, imageBuffer, telefone) {
+    const room = `empresa:${idEmpresa}`;
+    io.to(room).emit('chat image', nome, imageBuffer, telefone);
+
+    console.log('imagem enviada:', nome, telefone, 'empresa:', idEmpresa);
+};
+
+let emitAudio = function (io, idEmpresa, nome, audioBuffer, telefone) {
+    const room = `empresa:${idEmpresa}`;
+    io.to(room).emit('chat audio', nome, audioBuffer, telefone);
+
+    console.log('audio enviado:', nome, telefone, 'empresa:', idEmpresa);
+};
+
+let emitDocument = function (io, idEmpresa, nome, documentBuffer) {
+    const room = `empresa:${idEmpresa}`;
+    io.to(room).emit('chat document', nome, documentBuffer);
+
+    console.log('documento enviado:', nome, 'empresa:', idEmpresa);
+};
 
 async function cadastrarMensagem(msg) {
-    console.log('buraco profundo', msg)
+    console.log('buraco profundo', msg);
+
     let qry = `insert into meso_mensagens_solicitante 
         (telefone, nome, agent, wpnumber, mensagem, type) 
         values ('${msg.telefone}','${msg.nome}','${msg.agente}','551131646301','${msg.mensagem}','${msg.type}')`;
@@ -40,13 +65,14 @@ async function cadastrarMensagem(msg) {
     await executaQry(qry);
 }
 
-async function emitContatosFlutter(socket, estado, usuario, setor) {
-    console.log('estado campanha baralho', estado, usuario, setor)
-    let qry
+async function emitContatosFlutter(io, idEmpresa, estado, usuario, setor) {
+    console.log('estado campanha baralho', estado, usuario, setor);
+
+    let qry;
+
     if (setor === 'admin') {
-        qry = `SELECT * FROM meso_contatos ORDER BY datahora DESC`
+        qry = `SELECT * FROM meso_contatos WHERE id_empresa = ${idEmpresa} ORDER BY datahora DESC`;
     } else {
-        // Usuário comum
         const usuarioFiltro = usuario == null
             ? `usuario IS NULL`
             : `usuario = '${usuario}'`;
@@ -55,15 +81,26 @@ async function emitContatosFlutter(socket, estado, usuario, setor) {
             SELECT * FROM meso_contatos
             WHERE ${usuarioFiltro}
             AND setor = '${setor}'
+            AND id_empresa = ${idEmpresa}
             ORDER BY datahora DESC
         `;
     }
 
-    console.log('Tá de brincadeira comigo né?', qry)
     let contatos = await executaQry(qry);
-    console.log("Chamou o buscar-contato ", contatos.dados);
-    socket.emit('contatos', contatos.dados);
+
+    const room = `empresa:${idEmpresa}`;
+    io.to(room).emit('contatos', contatos.dados);
+
+    console.log("Contatos enviados empresa:", idEmpresa);
 }
 
-module.exports = { emitMensagem, emitImage, emitAudio, emitDocument, cadastrarMensagem, emitContatosFlutter, emitMensagem2, emitVideo };
-
+module.exports = {
+    emitMensagem,
+    emitImage,
+    emitAudio,
+    emitDocument,
+    cadastrarMensagem,
+    emitContatosFlutter,
+    emitMensagem2,
+    emitVideo
+};

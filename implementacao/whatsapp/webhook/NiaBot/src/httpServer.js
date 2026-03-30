@@ -7,7 +7,12 @@ const { sendToNia } = require("./niaService");   // <-- IMPORTAÇÃO CERTA
 const app = express();
 app.use(bodyParser.json());
 
+app.get("/", (req, res) => {
+    res.send("NIA is running");
+});
+
 app.post("/nia", async (req, res) => {
+    console.log("[PlugBot-NIA] Requisição recebida");
     try {
         const { message, threadId } = req.body;
 
